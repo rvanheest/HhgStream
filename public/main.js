@@ -12,6 +12,7 @@ function createWindow() {
     height: 600,
     show: false,
     fullscreenable: false,
+    icon: 'public/favicon.ico',
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
