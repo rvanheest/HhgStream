@@ -1,3 +1,5 @@
+import React from 'react'
+
 export const IconFile = () => (
     <svg
       className="icon-file"

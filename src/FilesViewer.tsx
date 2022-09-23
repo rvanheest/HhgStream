@@ -1,6 +1,18 @@
+import React from 'react'
 import { IconFile, IconFolderOpen, IconFolder } from "./icons"
 
-const FilesViewer = ({files, onBack, onOpen}) => (
+export type File = {
+    name: string
+    directory: boolean
+    size: string | null
+}
+type FilesViewerInput = {
+    files: File[]
+    onBack: () => void
+    onOpen: (name: string) => void
+}
+
+const FilesViewer = ({files, onBack, onOpen}: FilesViewerInput) => (
     <table className="table">
         <tbody>
             <tr className="clickable" onClick={onBack}>

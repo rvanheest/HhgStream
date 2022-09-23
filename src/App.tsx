@@ -1,21 +1,20 @@
-import { useMemo, useState } from "react"
-import FilesViewer from "./FilesViewer"
+import React, { useMemo, useState } from "react"
+import FilesViewer, { File } from "./FilesViewer"
 
+const { app } = window.require('@electron/remote')
 const fs = window.require('fs')
 const pathModule = window.require('path')
 
-const { app } = window.require('@electron/remote')
-
-function formatSize(size) {
+function formatSize(size: number): string {
   var i = Math.floor(Math.log(size) / Math.log(1024))
   return (
-    (size / Math.pow(1024, i)).toFixed(2) * 1 +
+    (size / Math.pow(1024, i)).toFixed(2) +
     ' ' +
     ['B', 'kB', 'MB', 'GB', 'TB'][i]
   )
 }
 
-function listFiles(path) {
+function listFiles(path: string) : File[] {
   return fs.readdirSync(path)
     .map(file => {
       const stats = fs.statSync(pathModule.join(path, file))
@@ -33,15 +32,15 @@ function listFiles(path) {
     })
 }
 
-function App() {
-  const [path, setPath] = useState(app.getAppPath())
+const App = () => {
+  const [path, setPath] = useState<string>(app.getAppPath())
 
   const files = useMemo(() => listFiles(path), [path])
 
   const onBack = () => setPath(pathModule.dirname(path))
-  const onOpen = folder => setPath(pathModule.join(path, folder))
+  const onOpen = (folder: string) => setPath(pathModule.join(path, folder))
 
-  const [searchString, setSearchString] = useState('')
+  const [searchString, setSearchString] = useState<string>('')
   const filteredFiles = files.filter(s => s.name.startsWith(searchString))
 
   return (
