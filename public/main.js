@@ -10,6 +10,8 @@ function createWindow() {
   const window = new BrowserWindow({
     width: 800,
     height: 600,
+    show: false,
+    fullscreenable: false,
     webPreferences: {
       nodeIntegration: true,
       enableRemoteModule: true,
@@ -24,6 +26,10 @@ function createWindow() {
       ? 'http://localhost:3000'
       : `file://${path.join(__dirname, '../build/index.html')}`
   );
+
+  if (isDev) window.webContents.openDevTools();
+  window.maximize();
+  window.show();
 }
 
 app.whenReady().then(createWindow);
