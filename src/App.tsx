@@ -1,9 +1,12 @@
 import React, { useMemo, useState } from "react"
 import FilesViewer, { File } from "./FilesViewer"
+import * as Electron from "electron"
+import * as Fs from 'fs'
+import * as PathModule from 'path'
 
-const { app } = window.require('@electron/remote')
-const fs = window.require('fs')
-const pathModule = window.require('path')
+const { app }: typeof Electron = window.require('@electron/remote')
+const fs: typeof Fs = window.require('fs')
+const pathModule: typeof PathModule = window.require('path')
 
 function formatSize(size: number): string {
   var i = Math.floor(Math.log(size) / Math.log(1024))
