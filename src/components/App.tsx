@@ -1,6 +1,7 @@
 import React from "react"
-import { getConfig } from "../config"
+import Camera from "./Camera"
 import ConfigErrorPage from "./ConfigErrorPage"
+import { getConfig } from "../config"
 
 const App = () => {
   const config = getConfig()
@@ -8,12 +9,15 @@ const App = () => {
     return (<ConfigErrorPage error={config} />)
   }
 
-  const configString = JSON.stringify(config, null, 2)
-
   return (
     <div className="container-fluid p-4">
-      <h1>Camera bedieninig!!!</h1>
-      <pre>{configString}</pre>
+      <div className="row gx-6">
+        {config.cameras.map(camera => (
+          <div className="col">
+            <Camera camera={camera} key={camera.title} />
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

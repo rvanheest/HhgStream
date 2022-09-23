@@ -5,7 +5,7 @@ import * as PathModule from 'path'
 const fs: typeof FsModule = window.require('fs')
 const pathModule: typeof PathModule = window.require('path')
 
-export type CameraPosition = {
+export type Position = {
   index: number
   title: string
   thumbnail?: string
@@ -15,7 +15,7 @@ export type Camera = {
   baseUrl: string
   sessionId: string
   title: string
-  positions: CameraPosition[]
+  positions: Position[]
 }
 
 export type AppConfig = {

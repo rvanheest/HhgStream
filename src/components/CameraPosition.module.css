@@ -1,0 +1,11 @@
+.position {
+	border: 2px solid black;
+	border-radius: 10px;
+	background-color: lightblue;
+	text-align: center;
+	cursor: pointer;
+}
+
+.thumbnail {
+	width: 100px;
+}

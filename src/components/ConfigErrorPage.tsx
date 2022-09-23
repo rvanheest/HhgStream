@@ -5,7 +5,7 @@ type ConfigErrorProps = {
     error: ConfigErrorInput
 }
 
-const ConfigErrorPage = ({error: { message, error }}: ConfigErrorProps) => (
+const ConfigErrorPageComponent = ({error: { message, error }}: ConfigErrorProps) => (
     <div className="container-fluid p-4">
         <h1>ERROR!!!</h1>
         <p>{message}</p>
@@ -13,4 +13,4 @@ const ConfigErrorPage = ({error: { message, error }}: ConfigErrorProps) => (
     </div>
 )
 
-export default ConfigErrorPage;
+export default ConfigErrorPageComponent;

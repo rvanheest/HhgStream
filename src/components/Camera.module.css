@@ -1,0 +1,16 @@
+.camera {
+	border: 3px solid black;
+	border-radius: 10px;
+	text-align: center;
+}
+
+.camera h1 {
+	font-size: 20px;
+	font-weight: bold;
+	margin: 0;
+}
+
+.camera p.description {
+	font-style: italic;
+	font-size: 12px;
+}
