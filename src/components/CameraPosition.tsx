@@ -15,7 +15,9 @@ const CameraPositionComponent = ({ position, onSelect }: CameraPositionProps) =>
 
     return (
         <div className={`${styles.position} p-2`} onClick={event => onClick(event)}>
-            {position.thumbnail ? <img className={`${styles.thumbnail}`} src={position.thumbnail} /> : undefined}
+            {position.thumbnail ? <img className={`${styles.thumbnail}`}
+                                       src={position.thumbnail}
+                                       alt={position.thumbnail} /> : undefined}
             <div>{position.title}</div>
         </div>
     )
