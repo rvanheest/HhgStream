@@ -1,7 +1,8 @@
 import React from "react"
 import styles from "./Camera.module.css"
 import CameraPosition from "./CameraPosition"
-import { Camera, Position } from "../config"
+import { Camera, Position } from "../core/config"
+import { moveCamera } from "../core/camera"
 
 type CameraProps = {
     camera: Camera
@@ -9,28 +10,7 @@ type CameraProps = {
 
 const CameraComponent = ({ camera }: CameraProps) => {
     async function onPositionClick(position: Position) {
-        console.log(`camera ${camera.title}, position ${position.title} clicked`);
-    
-        const method = 'POST';
-        const url = `${camera.baseUrl}/cgi-bin/cmd.cgi`;
-        const body = {
-            Request: {
-                Command: 'SetPTZPreset',
-                SessionID: camera.sessionId,
-                Params: {
-                    No: position.index,
-                    Operation: 'Move'
-                }
-            }
-        };
-    
-        const response = await fetch(url, {
-            method: method,
-            headers: { 'Content-Type': 'application/json' },
-            mode: 'no-cors',
-            body: JSON.stringify(body)
-        })
-        return console.log('done', response)
+        await moveCamera(camera, position)
     }
 
     return (
