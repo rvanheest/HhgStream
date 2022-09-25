@@ -1,5 +1,6 @@
 const { app, BrowserWindow } = require('electron')
 const remoteMain = require('@electron/remote/main')
+const { autoUpdater } = require("electron-updater")
 
 remoteMain.initialize()
 
@@ -31,6 +32,10 @@ function createWindow() {
   if (isDev) window.webContents.openDevTools();
   window.maximize();
   window.show();
+
+  if (!isDev) {
+    autoUpdater.checkForUpdatesAndNotify()
+  }
 }
 
 app.whenReady().then(createWindow);
