@@ -13,8 +13,8 @@ const App = () => {
     <div className="container-fluid p-4">
       <div className="row gx-6">
         {config.cameras.map(camera => (
-          <div className="col">
-            <Camera camera={camera} key={camera.title} />
+          <div className="col" key={camera.title}>
+            <Camera camera={camera} />
           </div>
         ))}
       </div>

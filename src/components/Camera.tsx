@@ -20,8 +20,8 @@ const CameraComponent = ({ camera }: CameraProps) => {
             <div className="container py-1">
                 <div className="row row-cols-3 align-items-center g-2">
                     {camera.positions.map(position => (
-                        <div className="col">
-                            <CameraPosition position={position} onSelect={p => onPositionClick(p)} key={`${camera.title}-${position.title}`} />
+                        <div className="col" key={`${camera.title}-${position.index}`}>
+                            <CameraPosition position={position} onSelect={p => onPositionClick(p)} />
                         </div>
                     ))}
                 </div>
