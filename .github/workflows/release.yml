@@ -1,0 +1,52 @@
+name: Release HhgStream
+
+on:
+  push:
+    tags:
+      - "*"
+
+jobs:
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      gitversion: ${{ steps.gitversion.outputs.previous-version }}
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ github.head_ref }}   # checkout the correct branch name
+          fetch-depth: 0                # fetch the whole repo history
+
+      - name: Git Version
+        uses: codacy/git-version@2.4.0
+        id: gitversion
+
+      - name: Automatic Releases
+        uses: marvinpinto/action-automatic-releases@v1.2.1
+        with:
+          repo_token: "${{ secrets.GITHUB_TOKEN }}"
+          prerelease: false
+
+  build:
+    runs-on: windows-latest
+    needs: version
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Use Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Apply Git Version to package.json
+        run: npm version ${{ needs.version.outputs.gitversion }} --no-commit-hooks --no-git-tag-version
+
+      - run: npm ci
+
+      - name: Build/release
+        uses: samuelmeuli/action-electron-builder@v1
+        with:
+          github_token: ${{ secrets.github_token }}
+          release: true
+          build_script_name: "react:build"

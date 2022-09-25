@@ -38,6 +38,15 @@
     },
     "extraFiles": [
       "public/config.json"
+    ],
+    "publish": [
+      {
+        "provider": "github",
+        "owner": "rvanheest",
+        "repo": "HhgStream",
+        "vPrefixedTagName": false,
+        "releaseType": "release"
+      }
     ]
   },
   "eslintConfig": {
