@@ -1,6 +1,5 @@
 {
   "name": "hhgstream",
-  "version": "0.1.0",
   "private": true,
   "dependencies": {
     "@electron/remote": "^2.0.8",
