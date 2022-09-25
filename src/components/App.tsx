@@ -1,7 +1,7 @@
 import React from "react"
 import Camera from "./Camera"
 import ConfigErrorPage from "./ConfigErrorPage"
-import { getConfig } from "../config"
+import { getConfig } from "../core/config"
 
 const App = () => {
   const config = getConfig()

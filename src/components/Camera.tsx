@@ -1,7 +1,7 @@
 import React from "react"
 import styles from "./Camera.module.css"
 import CameraPosition from "./CameraPosition"
-import { Camera, Position } from "../config"
+import { Camera, Position } from "../core/config"
 
 type CameraProps = {
     camera: Camera

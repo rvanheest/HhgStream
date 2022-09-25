@@ -1,5 +1,5 @@
 import React from "react"
-import { ConfigError as ConfigErrorInput } from "../config"
+import { ConfigError as ConfigErrorInput } from "../core/config"
 
 type ConfigErrorProps = {
     error: ConfigErrorInput
