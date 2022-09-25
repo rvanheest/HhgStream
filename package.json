@@ -9,12 +9,12 @@
   "homepage": "./",
   "scripts": {
     "start": "npm run electron:serve",
-    "build": "npm run electron:build",
+    "build": "npm run react:build && npm run electron:build",
     "react:start": "react-scripts start",
     "react:build": "react-scripts build",
     "react:eject": "react-scripts eject",
     "electron:serve": "concurrently -k \"cross-env BROWSER=none npm run react:start\" \"npm run electron:start\"",
-    "electron:build": "npm run react:build && electron-builder build --windows",
+    "electron:build": "electron-builder",
     "electron:start": "wait-on tcp:127.0.0.1:3000 && electron ."
   },
   "build": {
