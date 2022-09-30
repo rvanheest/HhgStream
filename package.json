@@ -38,7 +38,7 @@
       "main": "build/main.js"
     },
     "extraFiles": [
-      "public/config.json"
+      "public/default-config.json"
     ],
     "publish": [
       {
@@ -69,8 +69,12 @@
     ]
   },
   "devDependencies": {
+    "@fortawesome/fontawesome-svg-core": "^6.2.0",
+    "@fortawesome/free-solid-svg-icons": "^6.2.0",
+    "@fortawesome/react-fontawesome": "^0.2.0",
     "@types/node": "^18.7.18",
     "@types/react": "^18.0.21",
+    "@types/react-bootstrap": "^0.32.30",
     "@types/react-dom": "^18.0.6",
     "bootstrap": "^5.2.1",
     "concurrently": "^7.4.0",
@@ -78,9 +82,11 @@
     "electron": "^20.2.0",
     "electron-builder": "^23.3.3",
     "react": "^18.2.0",
+    "react-bootstrap": "^2.5.0",
     "react-dom": "^18.2.0",
     "react-scripts": "5.0.1",
     "typescript": "^4.8.3",
     "wait-on": "^6.0.1"
-  }
+  },
+  "version": "1.0.0"
 }
