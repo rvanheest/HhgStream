@@ -5,6 +5,7 @@ import { faVideoCamera, faGear, faFileLines } from "@fortawesome/free-solid-svg-
 import styles from "./TabPane.module.css"
 import { AppConfig } from "../core/config";
 import Camera from "./camera/Camera"
+import WIP from "./configuration/WIP";
 
 const tabs = {
     cameras: {
@@ -30,13 +31,7 @@ const tabs = {
     },
     configuration: {
         link: <FontAwesomeIcon icon={faGear} />,
-        body: (config: AppConfig) => (
-            <div>
-                <h3 className="text-center">WORK IN PROGRESS</h3>
-                <p className="text-center fst-italic">Hier kan de configuratie worden ingesteld.</p>
-                <pre className="mb-0" style={{maxHeight: "calc(100vh - 82px)"}}>{JSON.stringify(config, null, 2)}</pre>
-            </div>
-        ),
+        body: (config: AppConfig) => <WIP config={config}/>,
     },
 }
 
