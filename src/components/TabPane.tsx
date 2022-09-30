@@ -12,7 +12,7 @@ const tabs = {
         body: ({cameras}: AppConfig) => (
             <Row>
                 {cameras.map(camera => (
-                    <Col key={camera.title} className="mx-2 py-1 border border-dark border-3 rounded-4 text-center">
+                    <Col key={camera.title} className="mx-2 px-1 py-1 border border-dark border-3 rounded-3 text-center">
                         <Camera camera={camera} />
                     </Col>
                 ))}
@@ -34,7 +34,7 @@ const tabs = {
             <div>
                 <h3 className="text-center">WORK IN PROGRESS</h3>
                 <p className="text-center fst-italic">Hier kan de configuratie worden ingesteld.</p>
-                <pre className="mb-0" style={{maxHeight: "calc(100vh - 90px)"}}>{JSON.stringify(config, null, 2)}</pre>
+                <pre className="mb-0" style={{maxHeight: "calc(100vh - 82px)"}}>{JSON.stringify(config, null, 2)}</pre>
             </div>
         ),
     },
@@ -46,17 +46,17 @@ type TabPaneProps = {
 
 const TabPane = ({ config }: TabPaneProps) => (
     <Tab.Container defaultActiveKey={Object.keys(tabs)[0]}>
-        <Row>
-            <Col sm={1}>
+        <Row className="vh-100">
+            <Col sm={1} className="pe-0 bg-dark">
                 <Nav variant="pills" className="flex-column">
                     {Object.entries(tabs).map(([key, tab]) => (
                         <Nav.Item key={key} className={`text-center fs-2 ${styles.navItem}`}>
-                            <Nav.Link eventKey={key}>{tab.link}</Nav.Link>
+                            <Nav.Link eventKey={key} className="border-bottom">{tab.link}</Nav.Link>
                         </Nav.Item>
                     ))}
                 </Nav>
             </Col>
-            <Col sm={11}>
+            <Col sm={11} className="bg-light">
                 <Tab.Content>
                     {Object.entries(tabs).map(([key, tab]) => (
                         <Tab.Pane key={key} eventKey={key}>{tab.body(config)}</Tab.Pane>

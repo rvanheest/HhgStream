@@ -1,4 +1,7 @@
 .navItem > a {
-    border-bottom-left-radius: 0!important;
-    border-top-left-radius: 0!important;
+    --bs-nav-pills-border-radius: 0;
+    --bs-nav-pills-link-active-bg: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity));
+    --bs-nav-pills-link-active-color: rgba(var(--bs-light-rgb), var(--bs-bg-opacity));
+    --bs-nav-link-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity));
+    --bs-nav-link-hover-color: rgba(var(--bs-light-rgb), var(--bs-bg-opacity));
 }

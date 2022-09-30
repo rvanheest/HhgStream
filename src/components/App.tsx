@@ -21,7 +21,7 @@ const App = () => {
   }
 
   return (
-    <Container fluid className="vh-100 pt-2 ps-0">
+    <Container fluid className="ps-0">
       <TabPane config={config} />
     </Container>
   )

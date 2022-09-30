@@ -13,7 +13,7 @@ const CameraPositionComponent = ({ position, onSelect }: CameraPositionProps) =>
     }
 
     return (
-        <div className="py-2 border border-dark border-2 rounded-4 bg-info bg-gradient bg-opacity-50 text-center"
+        <div className="py-2 border border-dark border-2 rounded-3 bg-info bg-gradient bg-opacity-50 text-center"
              style={{cursor: "pointer"}}
              onClick={event => onClick(event)}>
             {position.thumbnail ? <img style={{width: 100}}
