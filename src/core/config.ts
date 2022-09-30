@@ -1,9 +1,7 @@
-import { getAppPath } from "./utils";
+import { getConfigPath, getDefaultConfigPath } from "./utils";
 import * as FsModule from 'fs'
-import * as PathModule from 'path'
 
 const fs: typeof FsModule = window.require('fs')
-const pathModule: typeof PathModule = window.require('path')
 
 export type Position = {
   index: number
@@ -29,12 +27,25 @@ export type ConfigError = {
   isError: true
 }
 
-export function getConfig(): AppConfig | ConfigError {
-  const appPath = getAppPath()
-  const configPath = pathModule.join(appPath, 'public', 'config.json');
+export function loadConfig(): AppConfig | ConfigError {
+  const configPath = getConfigPath()
+
+  if (!fs.existsSync(configPath)) {
+    const defaultConfigPath = getDefaultConfigPath()
+    if (fs.existsSync(defaultConfigPath)) {
+      fs.copyFileSync(defaultConfigPath, configPath, fs.constants.COPYFILE_EXCL)
+    }
+    else {
+      return ({
+        message: `config file doesn't exist at path ${configPath}; also default-config at ${defaultConfigPath} doesn't exist to initialize config file`,
+        isError: true,
+      })
+    }
+  }
+
   if (fs.existsSync(configPath)) {
     try {
-      return {...JSON.parse(fs.readFileSync(configPath, 'utf-8')), isError: false}
+      return ({...JSON.parse(fs.readFileSync(configPath, 'utf-8')), isError: false})
     }
     catch (e) {
       return ({

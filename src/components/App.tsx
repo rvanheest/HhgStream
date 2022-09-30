@@ -1,24 +1,29 @@
-import React from "react"
-import Camera from "./Camera"
+import React, { useEffect, useState } from "react"
+import { Container } from "react-bootstrap"
 import ConfigErrorPage from "./ConfigErrorPage"
-import { getConfig } from "../core/config"
+import { AppConfig, ConfigError, loadConfig } from "../core/config"
+import TabPane from "./TabPane"
 
 const App = () => {
-  const config = getConfig()
+  const [config, setConfig] = useState<AppConfig | ConfigError>()
+
+  useEffect(() => {
+    const c = loadConfig()
+    setConfig(c)
+  }, [])
+
+  if (!config) {
+    return (<div>Loading...</div>)
+  }
+
   if (config.isError) {
     return (<ConfigErrorPage error={config} />)
   }
 
   return (
-    <div className="container-fluid p-4">
-      <div className="row gx-6">
-        {config.cameras.map(camera => (
-          <div className="col">
-            <Camera camera={camera} key={camera.title} />
-          </div>
-        ))}
-      </div>
-    </div>
+    <Container fluid className="ps-0">
+      <TabPane config={config} />
+    </Container>
   )
 }
 
