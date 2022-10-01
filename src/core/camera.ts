@@ -248,20 +248,13 @@ class CameraInteraction implements ICameraInteraction {
     async changeWhiteBalence({ blue, red }: WhiteBalance): Promise<void> {
         console.log(`change white balence for camera ${this.camera.title} to (B=${blue}, R=${red})`)
 
-        return await this.runRequest(
-            this.camera.baseUrl,
-            {
-                Command: "SetWebKeyEvent",
-                SessionID: this.camera.sessionId,
-                Params: {
-                    Kind: "WhPaintRB",
-                    XPosition: blue,
-                    YPosition: red,
-                },
-            },
-            () => console.log(`changed white balence for camera ${this.camera.title} to (B=${blue}, R=${red})`),
-            error => console.error(`failed to change white balence for camera ${this.camera.title} to (B=${blue}, R=${red})`, error),
-        )
+        for (let i = 0; i < Math.abs(blue); i++) {
+            await this.changeWhiteBalanceLevelBlue(Math.sign(blue))
+        }
+
+        for (let i = 0; i < Math.abs(red); i++) {
+            await this.changeWhiteBalanceLevelRed(Math.sign(red))
+        }
     }
 
     async changeWhiteBalanceLevelBlue(levelChange: number): Promise<void> {
