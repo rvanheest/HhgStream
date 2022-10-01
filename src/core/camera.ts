@@ -153,8 +153,9 @@ class CameraInteraction implements ICameraInteraction {
     }
 
     private parseLetter(letter: string): number | undefined {
+        const sign = letter.trim().startsWith('-') ? -1 : 1
         const number = Number.parseInt(letter.replace('+', '').replace('-', '').trim())
-        return Number.isNaN(number) ? undefined : number
+        return Number.isNaN(number) ? undefined : number * sign
     }
 
     async getCameraStatus(): Promise<CameraStatus | undefined> {
