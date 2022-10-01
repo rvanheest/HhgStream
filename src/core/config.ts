@@ -3,10 +3,16 @@ import * as FsModule from 'fs'
 
 const fs: typeof FsModule = window.require('fs')
 
+export type WhiteBalance = {
+  blue: number
+  red: number
+}
+
 export type Position = {
   index: number
   title: string
   thumbnail?: string
+  adjustedWhiteBalance?: WhiteBalance
 }
 
 export type Camera = {

@@ -3,13 +3,13 @@ import { Position } from "../../core/config"
 
 type CameraPositionProps = {
     position: Position
-    onSelect: (position: Position) => void
+    onSelect: (position: Position) => Promise<void>
 }
 
-const CameraPositionComponent = ({ position, onSelect }: CameraPositionProps) => {
-    const onClick = (event: React.MouseEvent<HTMLDivElement, MouseEvent>) => {
+const CameraPosition = ({ position, onSelect }: CameraPositionProps) => {
+    async function onClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>): Promise<void> {
         event.stopPropagation();
-        onSelect(position)
+        await onSelect(position)
     }
 
     return (
@@ -24,4 +24,4 @@ const CameraPositionComponent = ({ position, onSelect }: CameraPositionProps) =>
     )
 }
 
-export default CameraPositionComponent;
+export default CameraPosition;
