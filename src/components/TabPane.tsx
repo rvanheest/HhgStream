@@ -2,10 +2,14 @@ import React from "react"
 import { Col, Nav, Row, Tab } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faVideoCamera, faGear, faFileLines } from "@fortawesome/free-solid-svg-icons"
+import * as Electron from "electron"
 import styles from "./TabPane.module.css"
+import { getCameraInteraction } from "../core/camera";
 import { AppConfig } from "../core/config";
 import Camera from "./camera/Camera"
 import WIP from "./configuration/WIP";
+
+const { app: { isPackaged } }: typeof Electron = window.require('@electron/remote')
 
 const tabs = {
     cameras: {
@@ -14,7 +18,7 @@ const tabs = {
             <Row>
                 {cameras.map(camera => (
                     <Col key={camera.title} className="mx-2 px-1 py-1 border border-dark border-3 rounded-3 text-center">
-                        <Camera camera={camera} />
+                        <Camera camera={camera} cameraInteraction={getCameraInteraction(camera, !isPackaged)} />
                     </Col>
                 ))}
             </Row>

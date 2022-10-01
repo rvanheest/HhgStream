@@ -1,27 +1,20 @@
 import React, { useEffect, useState } from "react"
 import { Button, ButtonGroup, Col, Row } from 'react-bootstrap';
-import * as Electron from "electron"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faChevronCircleUp, faChevronCircleDown } from "@fortawesome/free-solid-svg-icons"
 import CameraPosition from "./CameraPosition"
 import { Camera, Position } from "../../core/config"
-import { CameraStatus, getCameraInteraction, ICameraInteraction } from "../../core/camera";
-
-const { app: { isPackaged } }: typeof Electron = window.require('@electron/remote')
+import { CameraStatus, ICameraInteraction } from "../../core/camera";
 
 type CameraProps = {
     camera: Camera
+    cameraInteraction: ICameraInteraction
 }
 
-const CameraComponent = ({ camera }: CameraProps) => {
-    const [cameraInteraction, setCameraInteraction] = useState<ICameraInteraction>()
+const CameraComponent = ({ camera, cameraInteraction }: CameraProps) => {
     const [latestPosition, setLatestPosition] = useState<Position>()
     const [cameraStatus, setCameraStatus] = useState<CameraStatus>()
     const [whbDisabled, setWhbDisabled] = useState<boolean>(false)
-
-    useEffect(() => {
-        setCameraInteraction(getCameraInteraction(camera, !isPackaged))
-    }, [])
 
     useEffect(() => {
         const interval = setInterval(async () => {
@@ -32,7 +25,6 @@ const CameraComponent = ({ camera }: CameraProps) => {
         }, 1000)
 
         return function cleanUp() {
-            console.log(`clear interval for camera ${camera.title}`)
             clearInterval(interval)
         }
     }, [cameraInteraction])
