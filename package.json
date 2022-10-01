@@ -11,8 +11,8 @@
   "scripts": {
     "start": "npm run electron:serve",
     "build": "npm run react:build && npm run electron:build",
-    "react:start": "react-scripts start",
-    "react:build": "react-scripts build",
+    "react:start": "cross-env CI=true react-scripts start",
+    "react:build": "cross-env CI=true react-scripts build",
     "react:eject": "react-scripts eject",
     "electron:serve": "concurrently -k \"cross-env BROWSER=none npm run react:start\" \"npm run electron:start\"",
     "electron:build": "electron-builder",
