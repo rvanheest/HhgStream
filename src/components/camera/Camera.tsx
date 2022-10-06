@@ -1,8 +1,8 @@
 import React, { useEffect, useState } from "react"
-import { Button, ButtonGroup, Col, Row } from 'react-bootstrap';
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faChevronCircleUp, faChevronCircleDown } from "@fortawesome/free-solid-svg-icons"
-import CameraPosition from "./CameraPosition"
+import { Col, Row } from 'react-bootstrap';
+import CameraAeLevels from "./CameraAeLevels";
+import CameraPositionTabPane from "./CameraPositionTabPane";
+import CameraWhiteBalance from "./CameraWhiteBalance";
 import { Camera, Position } from "../../core/config"
 import { CameraStatus, ICameraInteraction } from "../../core/camera";
 
@@ -14,7 +14,6 @@ type CameraProps = {
 const CameraComponent = ({ camera, cameraInteraction }: CameraProps) => {
     const [latestPosition, setLatestPosition] = useState<Position>()
     const [cameraStatus, setCameraStatus] = useState<CameraStatus>()
-    const [whbDisabled, setWhbDisabled] = useState<boolean>(false)
 
     useEffect(() => {
         const interval = setInterval(async () => {
@@ -28,30 +27,6 @@ const CameraComponent = ({ camera, cameraInteraction }: CameraProps) => {
             clearInterval(interval)
         }
     }, [cameraInteraction])
-
-    async function sleep(timeMs: number): Promise<void> {
-        await new Promise(resolve => setTimeout(resolve, timeMs))
-    }
-
-    async function onAeLevelClick(levelChange: number) {
-        await cameraInteraction?.changeAeLevel(levelChange)
-    }
-
-    async function onWhiteBalanceClick() {
-        await cameraInteraction?.correctWhiteBalence()
-        setWhbDisabled(true)
-        await sleep(5000)
-        if (latestPosition?.adjustedWhiteBalance) await cameraInteraction?.changeWhiteBalence(latestPosition.adjustedWhiteBalance)
-        setWhbDisabled(false)
-    }
-
-    async function onWhiteBalanceBlueClick(levelChange: number) {
-        await cameraInteraction?.changeWhiteBalanceLevelBlue(levelChange)
-    }
-
-    async function onWhiteBalanceRedClick(levelChange: number) {
-        await cameraInteraction?.changeWhiteBalanceLevelRed(levelChange)
-    }
 
     async function onPositionClick(position: Position): Promise<void> {
         await cameraInteraction?.moveCamera(position)
@@ -68,69 +43,19 @@ const CameraComponent = ({ camera, cameraInteraction }: CameraProps) => {
                 </Col>
                 <Col sm={2}>{
                     cameraStatus?.aeLevels.changeAllowed
-                        ? <>
-                            <div className="fst-italic" style={{fontSize: "12px"}}>AE Level: {cameraStatus?.aeLevels.value}</div>
-                            <ButtonGroup>
-                                <Button variant="secondary"
-                                        className="border-end"
-                                        onClick={() => onAeLevelClick(-1)}>
-                                    <FontAwesomeIcon icon={faChevronCircleDown} />
-                                </Button>
-                                <Button variant="secondary"
-                                        onClick={() => onAeLevelClick(1)}>
-                                    <FontAwesomeIcon icon={faChevronCircleUp} />
-                                </Button>
-                            </ButtonGroup>
-                        </>
+                        ? <CameraAeLevels aeLevels={cameraStatus.aeLevels} cameraInteraction={cameraInteraction} />
                         : undefined
                 }</Col>
                 <Col sm={5}>{
                     cameraStatus?.whiteBalance.changeAllowed
-                        ? <>
-                            <div className="fst-italic" style={{fontSize: "12px"}}>Witbalans (R, B): ({cameraStatus?.whiteBalance.red}, {cameraStatus?.whiteBalance.blue})</div>
-                            <ButtonGroup className="me-2">
-                                <Button variant="danger"
-                                        className="border-end"
-                                        disabled={whbDisabled}
-                                        onClick={() => onWhiteBalanceRedClick(-1)}>
-                                    <FontAwesomeIcon icon={faChevronCircleDown} />
-                                </Button>
-                                <Button variant="danger"
-                                        disabled={whbDisabled}
-                                        onClick={() => onWhiteBalanceRedClick(1)}>
-                                    <FontAwesomeIcon icon={faChevronCircleUp} />
-                                </Button>
-                            </ButtonGroup>
-                            <ButtonGroup className="me-2">
-                                <Button variant="secondary"
-                                        disabled={whbDisabled}
-                                        onClick={() => onWhiteBalanceClick()}>
-                                    W
-                                </Button>
-                            </ButtonGroup>
-                            <ButtonGroup>
-                                <Button variant="primary"
-                                        className="border-end"
-                                        disabled={whbDisabled}
-                                        onClick={() => onWhiteBalanceBlueClick(-1)}>
-                                    <FontAwesomeIcon icon={faChevronCircleDown} />
-                                </Button>
-                                <Button variant="primary"
-                                        disabled={whbDisabled}
-                                        onClick={() => onWhiteBalanceBlueClick(1)}>
-                                    <FontAwesomeIcon icon={faChevronCircleUp} />
-                                </Button>
-                            </ButtonGroup>
-                        </>
+                        ? <CameraWhiteBalance whiteBalance={cameraStatus.whiteBalance} whiteBalanceOverride={latestPosition?.adjustedWhiteBalance} cameraInteraction={cameraInteraction} />
                         : undefined
                 }</Col>
             </Row>
-            <Row className="row-cols-4 p-1 g-2">
-                {camera.positions.map(position => (
-                    <Col key={`${camera.title}-${position.index}`}>
-                        <CameraPosition position={position} onSelect={p => onPositionClick(p)} />
-                    </Col>
-                ))}
+            <Row>
+                <Col>
+                    <CameraPositionTabPane groups={camera.positionGroups} onPositionClick={p => onPositionClick(p)} cameraInteraction={cameraInteraction} />
+                </Col>
             </Row>
         </>
     )
