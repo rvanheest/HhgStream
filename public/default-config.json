@@ -4,42 +4,47 @@
 			"baseUrl": "http://192.168.2.101",
 			"sessionId": "957baa795be2d40b9ece8750a3c06160",
 			"title": "Hoofdcamera",
-			"positions": [
+			"positionGroups": [
 				{
-					"index": 1,
-					"title": "Preekstoel"
-				},
-				{
-					"index": 2,
-					"title": "Orgel"
-				},
-				{
-					"index": 3,
-					"title": "Tuin"
-				},
-				{
-					"index": 4,
-					"title": "Kerkzaal"
-				},
-				{
-					"index": 5,
-					"title": "Doopfont"
-				},
-				{
-					"index": 6,
-					"title": "Katheder"
-				},
-				{
-					"index": 7,
-					"title": "Psalmbord"
-				},
-				{
-					"index": 8,
-					"title": "Preekstoel close-up"
-				},
-				{
-					"index": 9,
-					"title": "Doopfont uitzoom"
+					"title": "default",
+					"positions": [
+						{
+							"index": 1,
+							"title": "Preekstoel"
+						},
+						{
+							"index": 2,
+							"title": "Orgel"
+						},
+						{
+							"index": 3,
+							"title": "Tuin"
+						},
+						{
+							"index": 4,
+							"title": "Kerkzaal"
+						},
+						{
+							"index": 5,
+							"title": "Doopfont"
+						},
+						{
+							"index": 6,
+							"title": "Katheder"
+						},
+						{
+							"index": 7,
+							"title": "Psalmbord"
+						},
+						{
+							"index": 8,
+							"title": "Preekstoel close-up"
+						},
+						{
+							"index": 9,
+							"title": "Doopfont uitzoom"
+						}
+					]
 				}
 			]
 		},
@@ -47,42 +52,47 @@
 			"baseUrl": "http://192.168.2.102",
 			"sessionId": "5fe560e7006da23e00c5fa76e3c3a538",
 			"title": "Zijcamera",
-			"positions": [
+			"positionGroups": [
 				{
-					"index": 1,
-					"title": "Preekstoel"
-				},
-				{
-					"index": 2,
-					"title": "Orgel"
-				},
-				{
-					"index": 3,
-					"title": "Tuin"
-				},
-				{
-					"index": 4,
-					"title": "Kerkzaal"
-				},
-				{
-					"index": 5,
-					"title": "Doopfont"
-				},
-				{
-					"index": 6,
-					"title": "Katheder"
-				},
-				{
-					"index": 7,
-					"title": "Psalmbord"
-				},
-				{
-					"index": 8,
-					"title": "Preekstoel close-up"
-				},
-				{
-					"index": 9,
-					"title": "Doopfont ouders"
+					"title": "default",
+					"positions": [
+						{
+							"index": 1,
+							"title": "Preekstoel"
+						},
+						{
+							"index": 2,
+							"title": "Orgel"
+						},
+						{
+							"index": 3,
+							"title": "Tuin"
+						},
+						{
+							"index": 4,
+							"title": "Kerkzaal"
+						},
+						{
+							"index": 5,
+							"title": "Doopfont"
+						},
+						{
+							"index": 6,
+							"title": "Katheder"
+						},
+						{
+							"index": 7,
+							"title": "Psalmbord"
+						},
+						{
+							"index": 8,
+							"title": "Preekstoel close-up"
+						},
+						{
+							"index": 9,
+							"title": "Doopfont ouders"
+						}
+					]
 				}
 			]
 		}

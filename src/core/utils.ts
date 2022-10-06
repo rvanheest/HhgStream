@@ -23,3 +23,7 @@ export function getDefaultConfigPath(): string {
 export function getConfigPath(): string {
   return pathModule.join(getUserDataPath(), 'config.json')
 }
+
+export async function sleep(timeMs: number): Promise<void> {
+  await new Promise(resolve => setTimeout(resolve, timeMs))
+}

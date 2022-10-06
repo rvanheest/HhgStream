@@ -1,4 +1,4 @@
-import { Camera, Position, WhiteBalance } from "./config"
+import { Camera, Position, WhiteBalanceOverride } from "./config"
 
 type CameraCommand = {
     Command: string,
@@ -6,17 +6,21 @@ type CameraCommand = {
     Params?: any
 }
 
+export type AeLevels = {
+    changeAllowed: boolean
+    value: number
+}
+
+export type WhiteBalance = {
+    changeAllowed: boolean
+    blue: number | undefined
+    red: number | undefined
+}
+
 export type CameraStatus = {
     name: string
-    aeLevels: {
-        changeAllowed: boolean
-        value: number
-    }
-    whiteBalance: {
-        changeAllowed: boolean
-        blue: number | undefined
-        red: number | undefined
-    }
+    aeLevels: AeLevels
+    whiteBalance: WhiteBalance
 }
 
 export function getCameraInteraction(camera: Camera, isDev: boolean): ICameraInteraction {
@@ -26,16 +30,30 @@ export function getCameraInteraction(camera: Camera, isDev: boolean): ICameraInt
         : new CameraInteraction(camera)
 }
 
+type Pan = "Left" | "Right" | "Stop"
+type Tilt = "Up" | "Down" | "Stop"
+type ZoomSpeed = -3 | -2 | -1 | 1 | 2 | 3
+
 export interface ICameraInteraction {
     getCameraStatus(): Promise<CameraStatus | undefined>
 
     moveCamera(position: Position): Promise<void>
 
+    startCameraMove(pan: Pan, tilt: Tilt): Promise<void>
+
+    stopCameraMove(): Promise<void>
+
+    moveCameraHome(): Promise<void>
+
+    startCameraZoom(speed: ZoomSpeed): Promise<void>
+
+    stopCameraZoom(): Promise<void>
+
     changeAeLevel(levelChange: number): Promise<void>
 
     correctWhiteBalence(): Promise<void>
 
-    changeWhiteBalence(whiteBalance: WhiteBalance): Promise<void>
+    changeWhiteBalence(whiteBalance: WhiteBalanceOverride): Promise<void>
 
     changeWhiteBalanceLevelBlue(levelChange: number): Promise<void>
 
@@ -72,7 +90,7 @@ class DummyCameraInteraction implements ICameraInteraction {
     }
 
     async moveCamera(position: Position): Promise<void> {
-        console.log(`[DEV] move camera ${this.camera.title} to position ${position.title}`)
+        console.log(`[DEV] move camera ${this.camera.title} to position ${position.title} (index ${position.index})`)
         this.selectedPosition = position
 
         const isPreekstoelPositie = position.index === 1 || position.index === 8
@@ -81,6 +99,26 @@ class DummyCameraInteraction implements ICameraInteraction {
         this.whbChangeAllowed = isPreekstoelPositie
         this.whbBlueValue = isPreekstoelPositie ? -5 : undefined
         this.whbRedValue = isPreekstoelPositie ? 6 : undefined
+    }
+
+    async startCameraMove(pan: Pan, tilt: Tilt): Promise<void> {
+        console.log(`[DEV] start moving camera ${this.camera.title} with PAN=${pan} and TILT=${tilt}`)
+    }
+
+    async stopCameraMove(): Promise<void> {
+        console.log(`[DEV] stop moving camera ${this.camera.title}`)
+    }
+
+    async moveCameraHome(): Promise<void> {
+        console.log(`[DEV] move camera ${this.camera.title} to HOME position`)
+    }
+
+    async startCameraZoom(speed: ZoomSpeed): Promise<void> {
+        console.log(`[DEV] start zoom on camera ${this.camera.title} with SPEED=${speed}`)
+    }
+
+    async stopCameraZoom(): Promise<void> {
+        console.log(`[DEV] stop zoom on camera ${this.camera.title}`)
     }
 
     async changeAeLevel(levelChange: number): Promise<void> {
@@ -100,7 +138,7 @@ class DummyCameraInteraction implements ICameraInteraction {
         }
     }
 
-    async changeWhiteBalence({ blue, red }: WhiteBalance): Promise<void> {
+    async changeWhiteBalence({ blue, red }: WhiteBalanceOverride): Promise<void> {
         console.log(`[DEV] change white balence for camera ${this.camera.title} to (B=${blue}, R=${red})`)
 
         if (this.whbChangeAllowed) {
@@ -190,7 +228,7 @@ class CameraInteraction implements ICameraInteraction {
     }
 
     async moveCamera({ index, title }: Position): Promise<void> {
-        console.log(`move camera ${this.camera.title} to position ${title}`)
+        console.log(`move camera ${this.camera.title} to position ${title} (index ${index})`)
 
         return await this.runRequest(
             this.camera.baseUrl,
@@ -204,6 +242,109 @@ class CameraInteraction implements ICameraInteraction {
             },
             () => console.log(`moved camera ${this.camera.title} to position ${title}`),
             error => console.error(`moving camera ${this.camera.title} to position ${title} failed`, error),
+        )
+    }
+
+    async startCameraMove(pan: Pan, tilt: Tilt): Promise<void> {
+        console.log(`start moving camera ${this.camera.title} with PAN=${pan} and TILT=${tilt}`)
+
+        return await this.runRequest(
+            this.camera.baseUrl,
+            {
+                Command: "SetPTCtrl",
+                SessionID: this.camera.sessionId,
+                Params: {
+                    PanDirection: pan,
+                    PanPosition: 0,
+                    PanSpeed: 10,
+                    TiltDirection: tilt,
+                    TiltPosition: 0,
+                    TiltSpeed: 10,
+                },
+            },
+            () => console.log(`started moving camera ${this.camera.title} with PAN=${pan} and TILT=${tilt}`),
+            error => console.error(`failed to start moving camera ${this.camera.title} with PAN=${pan} and TILT=${tilt}`, error),
+        )
+    }
+
+    async stopCameraMove(): Promise<void> {
+        console.log(`stop moving camera ${this.camera.title}`)
+
+        return await this.runRequest(
+            this.camera.baseUrl,
+            {
+                Command: "SetPTCtrl",
+                SessionID: this.camera.sessionId,
+                Params: {
+                    PanDirection: "Stop",
+                    PanPosition: 0,
+                    PanSpeed: 0,
+                    TiltDirection: "Stop",
+                    TiltPosition: 0,
+                    TiltSpeed: 0,
+                },
+            },
+            () => console.log(`stopped moving camera ${this.camera.title}`),
+            error => console.error(`failed to stop moving camera ${this.camera.title}`, error),
+        )
+    }
+
+    async moveCameraHome(): Promise<void> {
+        console.log(`move camera ${this.camera.title} to HOME position`)
+
+        return await this.runRequest(
+            this.camera.baseUrl,
+            {
+                Command: "SetPTCtrl",
+                SessionID: this.camera.sessionId,
+                Params: {
+                    PanDirection: "Home",
+                    PanPosition: 0,
+                    PanSpeed: 10,
+                    TiltDirection: "Home",
+                    TiltPosition: 0,
+                    TiltSpeed: 10,
+                },
+            },
+            () => console.log(`moved camera ${this.camera.title} to HOME position`),
+            error => console.error(`failed to move camera ${this.camera.title} to HOME position`, error),
+        )
+    }
+
+    async startCameraZoom(speed: ZoomSpeed): Promise<void> {
+        console.log(`start zoom on camera ${this.camera.title} with SPEED=${speed}`)
+        const key = speed < 0 ? `Wide${Math.abs(speed)}` : speed > 0 ? `Tele${speed}` : "Stop"
+
+        return await this.runRequest(
+            this.camera.baseUrl,
+            {
+                Command: "SetWebKeyEvent",
+                SessionID: this.camera.sessionId,
+                Params: {
+                    Kind: "Zoom",
+                    Key: key,
+                },
+            },
+            () => console.log(`started zoom on camera ${this.camera.title} with SPEED=${speed}`),
+            error => console.error(`failed to start zoom on camera ${this.camera.title} with SPEED=${speed}`, error),
+        )
+    }
+
+    async stopCameraZoom(): Promise<void> {
+        console.log(`stop zoom on camera ${this.camera.title}`)
+
+        return await this.runRequest(
+            this.camera.baseUrl,
+            {
+                Command: "SetWebKeyEvent",
+                SessionID: this.camera.sessionId,
+                Params: {
+                    Kind: "Zoom",
+                    Key: "Stop",
+                },
+            },
+            () => console.log(`stopped zoom on camera ${this.camera.title}`),
+            error => console.error(`failed to stop zoom on camera ${this.camera.title}`, error),
         )
     }
 
@@ -246,7 +387,7 @@ class CameraInteraction implements ICameraInteraction {
         )
     }
 
-    async changeWhiteBalence({ blue, red }: WhiteBalance): Promise<void> {
+    async changeWhiteBalence({ blue, red }: WhiteBalanceOverride): Promise<void> {
         console.log(`change white balence for camera ${this.camera.title} to (B=${blue}, R=${red})`)
 
         for (let i = 0; i < Math.abs(blue); i++) {

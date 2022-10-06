@@ -1,0 +1,12 @@
+.motionGroup, button:not(:first-child),
+.zoomGroup button:not(:first-child),
+.presetGroup button:not(:first-child) {
+    margin-left: 0!important;
+}
+
+.presetNumber:disabled {
+    background-color: #fff;
+    text-align: end;
+    margin-top: 3px;
+    margin-bottom: 4px;
+}
