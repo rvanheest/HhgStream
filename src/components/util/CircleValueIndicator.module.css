@@ -1,0 +1,10 @@
+.value {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: white;
+    color: black;
+    font-size: 12px;
+    z-index: 3;
+}

@@ -1,4 +1,5 @@
 import React from "react"
+import styling from "./CameraPosition.module.css"
 import { Position } from "../../core/config"
 
 type CameraPositionProps = {
@@ -13,8 +14,7 @@ const CameraPosition = ({ position, onSelect }: CameraPositionProps) => {
     }
 
     return (
-        <div className="py-2 border border-dark border-2 rounded-3 bg-info bg-gradient bg-opacity-50 text-center"
-             style={{cursor: "pointer"}}
+        <div className={`py-2 border border-light border-2 rounded-3 bg-dark bg-gradient text-light text-center ${styling.button}`}
              onClick={event => onClick(event)}>
             {position.thumbnail ? <img style={{width: 100}}
                                        src={position.thumbnail}

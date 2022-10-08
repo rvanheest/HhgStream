@@ -1,10 +1,44 @@
-import React, { useState } from "react"
+import React, { useEffect, useState } from "react"
 import { Button, ButtonGroup } from "react-bootstrap"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faChevronCircleUp, faChevronCircleDown } from "@fortawesome/free-solid-svg-icons"
 import { ICameraInteraction, WhiteBalance } from "../../core/camera"
 import { WhiteBalanceOverride } from "../../core/config"
 import { sleep } from "../../core/utils"
+import CircleValueIndicator from "../util/CircleValueIndicator"
+
+type WhiteBalanceControlProps = {
+    whbValue?: number | undefined
+    disabled: boolean
+    buttonVariant: string
+    buttonGroupClassName?: string
+    onChange: (change: number) => void
+}
+
+const WhiteBalanceControl = ({ whbValue, disabled, buttonVariant, buttonGroupClassName = "", onChange }: WhiteBalanceControlProps) => {
+    const [value, setValue] = useState<number | undefined>(whbValue)
+
+    useEffect(() => {
+        if (value !== whbValue) setValue(whbValue)
+    }, [whbValue])
+
+    function onButtonClick(change: number) {
+        setValue(v => (v ?? 0) + change)
+        onChange(change)
+    }
+
+    return (
+        <ButtonGroup className={buttonGroupClassName}>
+            <Button variant={buttonVariant} className="border-end border-2 bg-gradient" disabled={disabled} onClick={() => onButtonClick(-1)}>
+                <FontAwesomeIcon icon={faChevronCircleDown} />
+            </Button>
+            { value ? <CircleValueIndicator value={value} xOffset={34} yOffset={11} /> : undefined }
+            <Button variant={buttonVariant} className="bg-gradient" disabled={disabled} onClick={() => onButtonClick(1)}>
+                <FontAwesomeIcon icon={faChevronCircleUp} />
+            </Button>
+        </ButtonGroup>
+    )
+}
 
 type CameraWhiteBalanceProps = {
     whiteBalance: WhiteBalance
@@ -25,28 +59,22 @@ const CameraWhiteBalance = ({ whiteBalance, whiteBalanceOverride, cameraInteract
 
     return (
         <>
-            <div className="fst-italic" style={{fontSize: "12px"}}>Witbalans (R, B): ({whiteBalance.red}, {whiteBalance.blue})</div>
+            <div className="fst-italic" style={{fontSize: "12px"}}>Witbalans</div>
+            <WhiteBalanceControl whbValue={whiteBalance.red}
+                                 disabled={whbDisabled}
+                                 buttonVariant="danger"
+                                 buttonGroupClassName="me-2"
+                                 onChange={c => cameraInteraction.changeWhiteBalanceLevelRed(c)} />
             <ButtonGroup className="me-2">
-                <Button variant="danger" className="border-end" disabled={whbDisabled} onClick={() => cameraInteraction.changeWhiteBalanceLevelRed(-1)}>
-                    <FontAwesomeIcon icon={faChevronCircleDown} />
-                </Button>
-                <Button variant="danger" disabled={whbDisabled} onClick={() => cameraInteraction.changeWhiteBalanceLevelRed(1)}>
-                    <FontAwesomeIcon icon={faChevronCircleUp} />
+                <Button variant="secondary" className="bg-gradient" disabled={whbDisabled} onClick={() => onWhiteBalanceClick()}>
+                    WB
                 </Button>
             </ButtonGroup>
-            <ButtonGroup className="me-2">
-                <Button variant="secondary" disabled={whbDisabled} onClick={() => onWhiteBalanceClick()}>
-                    W
-                </Button>
-            </ButtonGroup>
-            <ButtonGroup>
-                <Button variant="primary" className="border-end" disabled={whbDisabled} onClick={() => cameraInteraction.changeWhiteBalanceLevelBlue(-1)}>
-                    <FontAwesomeIcon icon={faChevronCircleDown} />
-                </Button>
-                <Button variant="primary" disabled={whbDisabled} onClick={() => cameraInteraction.changeWhiteBalanceLevelBlue(1)}>
-                    <FontAwesomeIcon icon={faChevronCircleUp} />
-                </Button>
-            </ButtonGroup>
+            <WhiteBalanceControl whbValue={whiteBalance.blue}
+                                 disabled={whbDisabled}
+                                 buttonVariant="primary"
+                                 buttonGroupClassName="me-0"
+                                 onChange={c => cameraInteraction.changeWhiteBalanceLevelBlue(c)} />
         </>
     )
 }

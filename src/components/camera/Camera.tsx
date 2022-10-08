@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react"
-import { Col, Row } from 'react-bootstrap';
+import { Col, Container, Row } from 'react-bootstrap';
 import CameraAeLevels from "./CameraAeLevels";
 import CameraPositionTabPane from "./CameraPositionTabPane";
 import CameraWhiteBalance from "./CameraWhiteBalance";
@@ -34,30 +34,33 @@ const CameraComponent = ({ camera, cameraInteraction }: CameraProps) => {
     }
 
     return (
-        <>
-            <Row className="align-items-center">
-                <Col sm={5}>
-                    <h1 className="m-0 px-1 py-1 fs-4">{camera.title}</h1>
-                    <div className="fst-italic" style={{fontSize: "12px"}}>{camera.baseUrl}</div>
-                    <div className="fw-bold fs-6">Huidig: <span className="fw-normal fst-italic">{latestPosition?.title ?? "Onbekend"}</span></div>    
+        <Container fluid>
+            <Row className="text-center align-items-center py-1">
+                <Col sm={4} className="px-0">
+                    <h1 className="m-0 fs-4">{camera.title}</h1>
+                    <div className="fst-italic" style={{ fontSize: 12 }}>{camera.baseUrl}</div>
+                    <div>
+                        <span className="fw-bold fs-6">Huidig: </span>
+                        <span className="fw-normal fst-italic">{latestPosition?.title ?? "Onbekend"}</span>
+                    </div>    
                 </Col>
-                <Col sm={2}>{
+                <Col sm={2} className="px-0">{
                     cameraStatus?.aeLevels.changeAllowed
-                        ? <CameraAeLevels aeLevels={cameraStatus.aeLevels} cameraInteraction={cameraInteraction} />
+                        ? <CameraAeLevels aeLevels={cameraStatus.aeLevels.value} cameraInteraction={cameraInteraction} />
                         : undefined
                 }</Col>
-                <Col sm={5}>{
+                <Col sm={6} className="px-0">{
                     cameraStatus?.whiteBalance.changeAllowed
                         ? <CameraWhiteBalance whiteBalance={cameraStatus.whiteBalance} whiteBalanceOverride={latestPosition?.adjustedWhiteBalance} cameraInteraction={cameraInteraction} />
                         : undefined
                 }</Col>
             </Row>
-            <Row>
-                <Col>
+            <Row className="pt-1">
+                <Col className="px-0">
                     <CameraPositionTabPane groups={camera.positionGroups} onPositionClick={p => onPositionClick(p)} cameraInteraction={cameraInteraction} />
                 </Col>
             </Row>
-        </>
+        </Container>
     )
 }
 
