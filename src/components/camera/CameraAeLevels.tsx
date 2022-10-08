@@ -14,7 +14,7 @@ const CameraAeLevels = ({ aeLevels, cameraInteraction }: CameraAeLevelsProps) =>
     const [value, setValue] = useState<number>(aeLevels)
 
     useEffect(() => {
-        if (value !== aeLevels) setValue(aeLevels)
+        setValue(aeLevels)
     }, [aeLevels])
 
     function onButtonClick(change: number) {

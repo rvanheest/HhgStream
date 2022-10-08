@@ -19,7 +19,7 @@ const WhiteBalanceControl = ({ whbValue, disabled, buttonVariant, buttonGroupCla
     const [value, setValue] = useState<number | undefined>(whbValue)
 
     useEffect(() => {
-        if (value !== whbValue) setValue(whbValue)
+        setValue(whbValue)
     }, [whbValue])
 
     function onButtonClick(change: number) {
