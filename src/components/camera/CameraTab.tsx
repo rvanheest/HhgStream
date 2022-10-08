@@ -13,8 +13,9 @@ type CameraTabProps = {
 
 const CameraTab = ({ cameras }: CameraTabProps) => (
     <Row>
-        {cameras.map(camera => (
-            <Col key={camera.title} className="mx-2 px-1 py-1 border border-dark border-3 rounded-3 text-center">
+        {cameras.map((camera, index) => (
+            // px-1 py-1 
+            <Col key={camera.title} className={`${index === 0 ? "mx-2" : "me-2"} px-0 border border-dark border-3 rounded-3`}>
                 <Camera camera={camera} cameraInteraction={getCameraInteraction(camera, !isPackaged)} />
             </Col>
         ))}

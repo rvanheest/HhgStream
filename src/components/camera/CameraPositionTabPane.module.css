@@ -1,0 +1,24 @@
+.card {
+    --bs-card-cap-bg: rgba(0, 0, 0, 0.045);
+    --bs-card-inner-border-radius: 0;
+    border-top-left-radius: 0;
+    border-top-right-radius: 0;
+}
+
+.cardHeader {
+    border-top: var(--bs-card-border-width) solid var(--bs-card-border-color);
+}
+
+.cardNav {
+    --bs-nav-tabs-link-active-border-color: #dee2e6 #dee2e6 rgba(var(--bs-light-rgb),var(--bs-bg-opacity))
+}
+
+.cardNavLink {
+    --bs-nav-tabs-link-active-bg: rgba(var(--bs-light-rgb),var(--bs-bg-opacity));
+    color: #777;
+}
+
+.cardNavLink:hover,
+.cardNavLink:focus {
+    --bs-nav-link-hover-color: #777
+}

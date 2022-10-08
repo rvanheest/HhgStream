@@ -1,5 +1,6 @@
 import React, { useState } from "react"
 import { Nav, Tab } from "react-bootstrap"
+import styling from "./CameraPositionTabPane.module.css"
 import { ICameraInteraction } from "../../core/camera"
 import { Position, PositionGroup } from "../../core/config"
 import CameraManualControl from "./CameraManualControl"
@@ -17,23 +18,23 @@ const CameraPositionTabPane = ({ cameraInteraction, groups, onPositionClick }: C
     const [selected, setSelected] = useState<string>(() => groups.length >= 1 ? `${groups[0].title}-0` : manualControlKey)
 
     return (
-        <div className="card">
+        <div className={`border-0 rounded-0 bg-light ${styling.card} card`}>
             <Tab.Container activeKey={selected} onSelect={e => !!e && e !== selected && setSelected(e)}>
-                <div className="card-header" style={{padding: "5px 5px 0 5px"}}>
-                    <Nav variant="tabs" style={{borderBottom: "none"}}>
+                <div className={`px-1 pt-1 pb-0 ${styling.cardHeader} card-header`}>
+                    <Nav variant="tabs" className={`${styling.cardNav}`} style={{borderBottom: "none"}}>
                         <Nav.Item>
-                            <Nav.Link eventKey={manualControlKey} style={{color: "#777"}}>Besturing</Nav.Link>
+                            <Nav.Link eventKey={manualControlKey} className={`${styling.cardNavLink}`}>Besturing</Nav.Link>
                         </Nav.Item>
 
                         {groups.map(({title}, index) => (
                             <Nav.Item key={`${title}-${index}`}>
-                                <Nav.Link eventKey={`${title}-${index}`} style={{color: "#777"}}>{title}</Nav.Link>
+                                <Nav.Link eventKey={`${title}-${index}`} className={`${styling.cardNavLink}`}>{title}</Nav.Link>
                             </Nav.Item>
                         ))}
                     </Nav>
                 </div>
 
-                <Tab.Content>
+                <Tab.Content className="pt-1">
                     <Tab.Pane eventKey={manualControlKey}>
                         <CameraManualControl cameraInteraction={cameraInteraction} onPositionClick={onPositionClick} />
                     </Tab.Pane>
