@@ -1,5 +1,5 @@
-import React from "react"
-import { Col, Nav, Row, Tab } from "react-bootstrap";
+import React, { useState } from "react"
+import { Col, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faVideoCamera, faGear, faFileLines, IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import styles from "./TabPane.module.css"
@@ -12,50 +12,58 @@ const textKey = "text"
 const configurationKey = "configuration"
 
 type NavItemProps = {
-    eventKey: string
     icon: IconDefinition
+    active?: boolean
+    onClick: () => void
 }
 
-const NavItem = ({ eventKey: key, icon }: NavItemProps) => (
-    <Nav.Item className={`text-center fs-2 ${styles.navItem}`}>
-        <Nav.Link eventKey={key} className="border-bottom">
+const NavItem = ({ icon, active, onClick }: NavItemProps) => (
+    <div className={`text-center fs-2 ${styles.navItem}`}>
+        <a className={`border-bottom ${active ? styles.active : ''}`} onClick={onClick}>
             <FontAwesomeIcon icon={icon} />
-        </Nav.Link>
-    </Nav.Item>
+        </a>
+    </div>
 )
 
 type TabPaneProps = {
     config: AppConfig
 }
 
-const TabPane = ({ config }: TabPaneProps) => (
-    <Tab.Container defaultActiveKey={camerasKey}>
+const TabPane = ({ config }: TabPaneProps) => {
+    const [activeTab, setActiveTab] = useState<string>(camerasKey);
+
+    function isActive(key: string): boolean {
+        return activeTab === key;
+    }
+
+    function renderTab(): JSX.Element | undefined {
+        switch (activeTab) {
+            case camerasKey: return <CameraTab cameras={config.cameras} />
+            case textKey: return (
+                <div className="text-center">
+                    <h3>WORK IN PROGRESS</h3>
+                    <p className="fst-italic">Hier kunnen de teksten worden ingesteld</p>
+                </div>
+            )
+            case configurationKey: return <WIP config={config} />
+            default: return undefined
+        }
+    }
+
+    return (
         <Row className="vh-100">
             <Col sm={1} className="pe-0 bg-dark">
-                <Nav variant="pills" className="flex-column">
-                    <NavItem eventKey={camerasKey} icon={faVideoCamera} />
-                    <NavItem eventKey={textKey} icon={faFileLines} />
-                    <NavItem eventKey={configurationKey} icon={faGear} />
-                </Nav>
+                <div className="d-flex flex-column ps-0 m-0">
+                    <NavItem icon={faVideoCamera} active={isActive(camerasKey)} onClick={() => setActiveTab(camerasKey)} />
+                    <NavItem icon={faFileLines} active={isActive(textKey)} onClick={() => setActiveTab(textKey)} />
+                    <NavItem icon={faGear} active={isActive(configurationKey)} onClick={() => setActiveTab(configurationKey)} />
+                </div>
             </Col>
             <Col sm={11} className="bg-light">
-                <Tab.Content>
-                    <Tab.Pane eventKey={camerasKey}>
-                        <CameraTab cameras={config.cameras} />
-                    </Tab.Pane>
-                    <Tab.Pane eventKey={textKey}>
-                        <div className="text-center">
-                            <h3>WORK IN PROGRESS</h3>
-                            <p className="fst-italic">Hier kunnen de teksten worden ingesteld</p>
-                        </div>
-                    </Tab.Pane>
-                    <Tab.Pane eventKey={configurationKey}>
-                        <WIP config={config}/>
-                    </Tab.Pane>
-                </Tab.Content>
+                {renderTab()}
             </Col>
         </Row>
-    </Tab.Container>
-)
+    )
+}
 
 export default TabPane;

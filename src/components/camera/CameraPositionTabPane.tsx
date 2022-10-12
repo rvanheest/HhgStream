@@ -18,7 +18,7 @@ const CameraPositionTabPane = ({ cameraInteraction, groups, onPositionClick }: C
     const [selected, setSelected] = useState<string>(() => groups.length >= 1 ? `${groups[0].title}-0` : manualControlKey)
 
     return (
-        <div className={`border-0 rounded-0 bg-light ${styling.card} card`}>
+        <div className={`border-0 rounded-bottom-1 bg-light ${styling.card} card`}>
             <Tab.Container activeKey={selected} onSelect={e => !!e && e !== selected && setSelected(e)}>
                 <div className={`px-1 pt-1 pb-0 ${styling.cardHeader} card-header`}>
                     <Nav variant="tabs" className={`${styling.cardNav}`} style={{borderBottom: "none"}}>
