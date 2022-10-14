@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, {memo, useCallback, useState} from "react"
 import { Col, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faVideoCamera, faGear, faFileLines, IconDefinition } from "@fortawesome/free-solid-svg-icons"
@@ -25,12 +25,17 @@ const NavItem = ({ icon, active, onClick }: NavItemProps) => (
     </div>
 )
 
+const MemoedNavItem = memo(NavItem)
+
 type TabPaneProps = {
     config: AppConfig
 }
 
 const TabPane = ({ config }: TabPaneProps) => {
     const [activeTab, setActiveTab] = useState<string>(camerasKey);
+    const cameraActiveOnClick = useCallback(() => setActiveTab(camerasKey), [])
+    const textActiveOnClick = useCallback(() => setActiveTab(textKey), [])
+    const configurationActiveOnClick = useCallback(() => setActiveTab(configurationKey), [])
 
     function isActive(key: string): boolean {
         return activeTab === key;
@@ -54,9 +59,9 @@ const TabPane = ({ config }: TabPaneProps) => {
         <Row className="vh-100">
             <Col sm={1} className="pe-0 bg-dark">
                 <div className="d-flex flex-column ps-0 m-0">
-                    <NavItem icon={faVideoCamera} active={isActive(camerasKey)} onClick={() => setActiveTab(camerasKey)} />
-                    <NavItem icon={faFileLines} active={isActive(textKey)} onClick={() => setActiveTab(textKey)} />
-                    <NavItem icon={faGear} active={isActive(configurationKey)} onClick={() => setActiveTab(configurationKey)} />
+                    <MemoedNavItem icon={faVideoCamera} active={isActive(camerasKey)} onClick={cameraActiveOnClick} />
+                    <MemoedNavItem icon={faFileLines} active={isActive(textKey)} onClick={textActiveOnClick} />
+                    <MemoedNavItem icon={faGear} active={isActive(configurationKey)} onClick={configurationActiveOnClick} />
                 </div>
             </Col>
             <Col sm={11} className="bg-light">

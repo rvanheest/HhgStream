@@ -1,4 +1,4 @@
-import React, { useState } from "react"
+import React, { memo, useCallback, useState } from "react"
 import { Button, ButtonGroup, Col, Form, Row } from "react-bootstrap"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faHome, faAnglesRight, faAngleRight, faAnglesLeft, faAngleLeft, IconDefinition } from "@fortawesome/free-solid-svg-icons"
@@ -73,6 +73,7 @@ const ManualControl = ({ cameraInteraction }: ManualControlProps) => (
         </ButtonGroup>
     </div>
 )
+const MemoedManualControl = memo(ManualControl)
 
 const faAngles3Right: IconDefinition = {
     prefix: 'fas',
@@ -116,6 +117,7 @@ const ZoomControl = ({ cameraInteraction }: ZoomControlProps) => (
         </ButtonGroup>
     </div>
 )
+const MemoedZoomControl = memo(ZoomControl)
 
 type PresetControlProps = {
     onNumberClick: (x: string) => void
@@ -150,6 +152,7 @@ const PresetControl = ({ onNumberClick, onClean } : PresetControlProps) => (
         </ButtonGroup>
     </div>
 )
+const MemoedPresetControl = memo(PresetControl)
 
 type PresetActionButtonsProps = {
     preset: string
@@ -165,11 +168,12 @@ const PresetActionButtons = ({ preset, onMove }: PresetActionButtonsProps) => (
         <Button variant="dark"
                 className="border border-light border-1 rounded-0 bg-gradient"
                 style={{height: 45}}
-                onClick={() => onMove()}>
+                onClick={onMove}>
             Move
         </Button>
     </div>
 )
+const MemoedPresetActionButtons = memo(PresetActionButtons)
 
 type CameraManualControlProps = {
     cameraInteraction: ICameraInteraction
@@ -179,6 +183,10 @@ type CameraManualControlProps = {
 const CameraManualControl = ({ cameraInteraction, onPositionClick }: CameraManualControlProps) => {
     const [preset, setPreset] = useState("")
     const [moved, setMoved] = useState(true)
+
+    const memoedAppendPreset = useCallback(appendPreset, [moved])
+    const memoedCleanPreset = useCallback(cleanPreset, [])
+    const memoedMoveToPreset = useCallback(moveToPreset, [preset, onPositionClick])
 
     function appendPreset(x: string): void {
         setPreset(s => {
@@ -195,8 +203,8 @@ const CameraManualControl = ({ cameraInteraction, onPositionClick }: CameraManua
         setMoved(true)
     }
 
-    function moveToPreset(): void {
-        onPositionClick({ index: Number.parseInt(preset), title: "handmatig" })
+    async function moveToPreset(): Promise<void> {
+        await onPositionClick({ index: Number.parseInt(preset), title: "handmatig" })
         setMoved(true)
     }
 
@@ -204,19 +212,19 @@ const CameraManualControl = ({ cameraInteraction, onPositionClick }: CameraManua
         <div className="p-2">
             <Row>
                 <Col className="d-flex justify-content-center">
-                    <ManualControl cameraInteraction={cameraInteraction} />
+                    <MemoedManualControl cameraInteraction={cameraInteraction} />
                 </Col>
 
                 <Col className="d-flex justify-content-center">
-                    <ZoomControl cameraInteraction={cameraInteraction} />
+                    <MemoedZoomControl cameraInteraction={cameraInteraction} />
                 </Col>
 
                 <Col className="d-flex justify-content-center">
-                    <PresetControl onNumberClick={x => appendPreset(x)} onClean={() => cleanPreset()} />
+                    <MemoedPresetControl onNumberClick={memoedAppendPreset} onClean={memoedCleanPreset} />
                 </Col>
 
-                <Col>
-                    <PresetActionButtons preset={preset} onMove={() => moveToPreset()} />
+                <Col className="d-flex justify-content-center">
+                    <MemoedPresetActionButtons preset={preset} onMove={memoedMoveToPreset} />
                 </Col>
             </Row>
         </div>

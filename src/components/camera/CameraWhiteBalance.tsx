@@ -57,6 +57,8 @@ const CameraWhiteBalance = ({ whiteBalance, whiteBalanceOverride, cameraInteract
         setWhbDisabled(false)
     }
 
+    if (!whiteBalance.changeAllowed) return (<div />)
+
     return (
         <>
             <div className="fst-italic" style={{fontSize: "12px"}}>Witbalans</div>

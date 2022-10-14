@@ -2,25 +2,27 @@ import React, { useEffect, useState } from "react"
 import { Button, ButtonGroup } from "react-bootstrap"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faChevronCircleUp, faChevronCircleDown } from "@fortawesome/free-solid-svg-icons"
-import { ICameraInteraction } from "../../core/camera"
+import { AeLevels, ICameraInteraction } from "../../core/camera"
 import CircleValueIndicator from "../util/CircleValueIndicator"
 
 type CameraAeLevelsProps = {
-    aeLevels: number
+    aeLevels: AeLevels
     cameraInteraction: ICameraInteraction
 }
 
 const CameraAeLevels = ({ aeLevels, cameraInteraction }: CameraAeLevelsProps) => {
-    const [value, setValue] = useState<number>(aeLevels)
+    const [value, setValue] = useState<number>(aeLevels.value)
 
     useEffect(() => {
-        setValue(aeLevels)
-    }, [aeLevels])
+        setValue(aeLevels.value)
+    }, [aeLevels.value])
 
-    function onButtonClick(change: number) {
+    async function onButtonClick(change: number) {
         setValue(v => v + change)
-        cameraInteraction.changeAeLevel(change)
+        await cameraInteraction.changeAeLevel(change)
     }
+
+    if (!aeLevels.changeAllowed) return (<div />)
 
     return (
         <>
