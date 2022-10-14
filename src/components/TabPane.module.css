@@ -4,4 +4,19 @@
     --bs-nav-pills-link-active-color: rgba(var(--bs-light-rgb), var(--bs-bg-opacity));
     --bs-nav-link-color: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity));
     --bs-nav-link-hover-color: rgba(var(--bs-light-rgb), var(--bs-bg-opacity));
+
+    display: block;
+    padding: 0.5rem 1rem;
+    color: var(--bs-nav-link-color);
+    text-decoration: none;
+    transition: color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out;
+}
+
+.navItem > a.active {
+    color: var(--bs-nav-pills-link-active-color);
+    background-color: var(--bs-nav-pills-link-active-bg);
+}
+
+.navItem > a:hover {
+    color: var(--bs-nav-link-hover-color);
 }
