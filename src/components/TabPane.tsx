@@ -19,9 +19,9 @@ type NavItemProps = {
 
 const NavItem = ({ icon, active, onClick }: NavItemProps) => (
     <div className={`text-center fs-2 ${styles.navItem}`}>
-        <a className={`border-bottom ${active ? styles.active : ''}`} onClick={onClick}>
+        <div className={`border-bottom ${active ? styles.active : ''}`} onClick={onClick}>
             <FontAwesomeIcon icon={icon} />
-        </a>
+        </div>
     </div>
 )
 
