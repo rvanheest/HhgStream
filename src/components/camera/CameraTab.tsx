@@ -1,5 +1,5 @@
 import React from "react"
-import { Col, Row } from "react-bootstrap"
+import {Col, Row} from "react-bootstrap"
 import * as Electron from "electron"
 import { getCameraInteraction } from "../../core/camera"
 import { Camera as CameraConfig } from "../../core/config"
@@ -12,10 +12,9 @@ type CameraTabProps = {
 }
 
 const CameraTab = ({ cameras }: CameraTabProps) => (
-    <Row>
-        {cameras.map((camera, index) => (
-            // px-1 py-1 
-            <Col key={camera.title} className={`${index === 0 ? "mx-2" : "me-2"} px-0 border border-dark border-3 rounded-3`}>
+    <Row className="row-cols-2 g-2">
+        {cameras.map(camera => (
+            <Col key={camera.title}>
                 <Camera camera={camera} cameraInteraction={getCameraInteraction(camera, !isPackaged)} />
             </Col>
         ))}

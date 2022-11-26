@@ -13,8 +13,8 @@ export type AeLevels = {
 
 export type WhiteBalance = {
     changeAllowed: boolean
-    blue: number | undefined
-    red: number | undefined
+    blue: number
+    red: number
 }
 
 export type CameraStatus = {
@@ -67,8 +67,8 @@ class DummyCameraInteraction implements ICameraInteraction {
     aeLevelsValue: number = 0
 
     whbChangeAllowed: boolean = false
-    whbBlueValue: number | undefined = undefined
-    whbRedValue: number | undefined = undefined
+    whbBlueValue: number = 0
+    whbRedValue: number = 0
 
     constructor(private camera: Camera) {}
 
@@ -97,8 +97,8 @@ class DummyCameraInteraction implements ICameraInteraction {
         this.aeLevelsChangeAllowed = position.index !== 5
         this.aeLevelsValue = isPreekstoelPositie ? 4 : 2
         this.whbChangeAllowed = isPreekstoelPositie
-        this.whbBlueValue = isPreekstoelPositie ? -5 : undefined
-        this.whbRedValue = isPreekstoelPositie ? 6 : undefined
+        this.whbBlueValue = isPreekstoelPositie ? -5 : 0
+        this.whbRedValue = isPreekstoelPositie ? 6 : 0
     }
 
     async startCameraMove(pan: Pan, tilt: Tilt): Promise<void> {
@@ -215,8 +215,8 @@ class CameraInteraction implements ICameraInteraction {
                     },
                     whiteBalance: {
                         changeAllowed: data.Enable.Whb.WhPaintRP && data.Enable.Whb.WhPaintRM && data.Enable.Whb.WhPaintBP && data.Enable.Whb.WhPaintBM,
-                        blue: this.parseLetter(data.Whb.WhPaintBLetter),
-                        red: this.parseLetter(data.Whb.WhPaintRLetter),
+                        blue: this.parseLetter(data.Whb.WhPaintBLetter) ?? 0,
+                        red: this.parseLetter(data.Whb.WhPaintRLetter) ?? 0,
                     },
                 })
             },

@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react"
-import { Container } from "react-bootstrap"
 import ConfigErrorPage from "./ConfigErrorPage"
 import { AppConfig, ConfigError, loadConfig } from "../core/config"
 import TabPane from "./TabPane"
@@ -20,11 +19,7 @@ const App = () => {
     return (<ConfigErrorPage error={config} />)
   }
 
-  return (
-    <Container fluid className="ps-0">
-      <TabPane config={config} />
-    </Container>
-  )
+  return (<TabPane config={config} />)
 }
 
 export default App

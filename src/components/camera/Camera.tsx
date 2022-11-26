@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useEffect, useMemo, useState } from "react"
+import React, { memo, useCallback, useEffect, useState } from "react"
 import { Col, Container, Row } from 'react-bootstrap';
 import CameraAeLevels from "./CameraAeLevels";
 import CameraTitle from "./CameraTitle";
@@ -7,10 +7,17 @@ import CameraWhiteBalance from "./CameraWhiteBalance";
 import { Camera, Position } from "../../core/config"
 import { CameraStatus, ICameraInteraction } from "../../core/camera";
 
-const MemoedCameraAeLevels = memo(CameraAeLevels)
+const MemoedCameraAeLevels = memo(CameraAeLevels, (prevProps, nextProps) => {
+    return prevProps.aeLevels.changeAllowed === nextProps.aeLevels.changeAllowed &&
+        prevProps.aeLevels.value === nextProps.aeLevels.value
+})
 const MemoedCameraPositionTabPane = memo(CameraPositionTabPane)
 const MemoedCameraTitle = memo(CameraTitle)
-const MemoedCameraWhiteBalance = memo(CameraWhiteBalance)
+const MemoedCameraWhiteBalance = memo(CameraWhiteBalance, (prevProps, nextProps) => {
+    return prevProps.whiteBalance.changeAllowed === nextProps.whiteBalance.changeAllowed &&
+        prevProps.whiteBalance.blue === nextProps.whiteBalance.blue &&
+        prevProps.whiteBalance.red === nextProps.whiteBalance.red
+})
 
 type CameraProps = CameraStatusWrapperProps & {
     cameraStatus: CameraStatus
@@ -19,10 +26,6 @@ type CameraProps = CameraStatusWrapperProps & {
 const CameraComponent = ({ camera, cameraInteraction, cameraStatus: { aeLevels, whiteBalance } }: CameraProps) => {
     const [latestPosition, setLatestPosition] = useState<Position>()
     const memoedOnPositionClick = useCallback(onPositionClick, [cameraInteraction])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const memoedWhiteBalance = useMemo(() => whiteBalance, [whiteBalance.changeAllowed, whiteBalance.blue, whiteBalance.red])
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const memoedAeLevels = useMemo(() => aeLevels, [aeLevels.changeAllowed, aeLevels.value])
 
     async function onPositionClick(position: Position): Promise<void> {
         await cameraInteraction?.moveCamera(position)
@@ -38,11 +41,11 @@ const CameraComponent = ({ camera, cameraInteraction, cameraStatus: { aeLevels, 
                                        latestPosition={latestPosition?.title} />
                 </Col>
                 <Col sm={2} className="px-0">
-                    <MemoedCameraAeLevels aeLevels={memoedAeLevels}
+                    <MemoedCameraAeLevels aeLevels={aeLevels}
                                           cameraInteraction={cameraInteraction} />
                 </Col>
                 <Col sm={6} className="px-0">
-                    <MemoedCameraWhiteBalance whiteBalance={memoedWhiteBalance}
+                    <MemoedCameraWhiteBalance whiteBalance={whiteBalance}
                                               whiteBalanceOverride={latestPosition?.adjustedWhiteBalance}
                                               cameraInteraction={cameraInteraction} />
                 </Col>
@@ -58,7 +61,14 @@ const CameraComponent = ({ camera, cameraInteraction, cameraStatus: { aeLevels, 
     )
 }
 
-const MemoedCameraComponent = memo(CameraComponent)
+const MemoedCameraComponent = memo(CameraComponent, (prevProps, nextProps) => {
+    return prevProps.cameraStatus.name === nextProps.cameraStatus.name &&
+        prevProps.cameraStatus.aeLevels.changeAllowed === nextProps.cameraStatus.aeLevels.changeAllowed &&
+        prevProps.cameraStatus.aeLevels.value === nextProps.cameraStatus.aeLevels.value &&
+        prevProps.cameraStatus.whiteBalance.changeAllowed === nextProps.cameraStatus.whiteBalance.changeAllowed &&
+        prevProps.cameraStatus.whiteBalance.blue === nextProps.cameraStatus.whiteBalance.blue &&
+        prevProps.cameraStatus.whiteBalance.red === nextProps.cameraStatus.whiteBalance.red
+})
 
 type CameraStatusWrapperProps = {
     camera: Camera
@@ -67,15 +77,6 @@ cameraInteraction: ICameraInteraction
 
 const CameraStatusWrapper = ({ camera, cameraInteraction }: CameraStatusWrapperProps) => {
     const [cameraStatus, setCameraStatus] = useState<CameraStatus>()
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    const memoedCameraStatus = useMemo(() => cameraStatus, [
-        cameraStatus?.name,
-        cameraStatus?.aeLevels.changeAllowed,
-        cameraStatus?.aeLevels.value,
-        cameraStatus?.whiteBalance.changeAllowed,
-        cameraStatus?.whiteBalance.blue,
-        cameraStatus?.whiteBalance.red,
-    ])
 
     useEffect(() => {
         async function loadStatus(): Promise<void> {
@@ -90,10 +91,12 @@ const CameraStatusWrapper = ({ camera, cameraInteraction }: CameraStatusWrapperP
         return () => clearInterval(interval)
     }, [cameraInteraction])
 
-    if (!memoedCameraStatus) return (<div>Loading...</div>)
+    if (!cameraStatus) return (<div>Loading...</div>)
 
     return (
-        <MemoedCameraComponent camera={camera} cameraInteraction={cameraInteraction} cameraStatus={memoedCameraStatus} />
+        <div className="border border-dark border-3 rounded-3">
+            <MemoedCameraComponent camera={camera} cameraInteraction={cameraInteraction} cameraStatus={cameraStatus} />
+        </div>
     )
 }
 
