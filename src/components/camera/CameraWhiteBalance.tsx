@@ -32,7 +32,7 @@ const WhiteBalanceControl = ({ whbValue, disabled, buttonVariant, buttonGroupCla
             <Button variant={buttonVariant} className="border-end border-2 bg-gradient" disabled={disabled} onClick={() => onButtonClick(-1)}>
                 <FontAwesomeIcon icon={faChevronCircleDown} />
             </Button>
-            { value ? <CircleValueIndicator value={value} xOffset={34} yOffset={11} /> : undefined }
+            { value || value === 0 ? <CircleValueIndicator value={value} xOffset={34} yOffset={11} /> : undefined }
             <Button variant={buttonVariant} className="bg-gradient" disabled={disabled} onClick={() => onButtonClick(1)}>
                 <FontAwesomeIcon icon={faChevronCircleUp} />
             </Button>
