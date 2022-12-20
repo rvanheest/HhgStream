@@ -8,7 +8,7 @@ import { sleep } from "../../core/utils"
 import CircleValueIndicator from "../util/CircleValueIndicator"
 
 type WhiteBalanceControlProps = {
-    whbValue?: number | undefined
+    whbValue: number
     disabled: boolean
     buttonVariant: string
     buttonGroupClassName?: string
@@ -16,7 +16,7 @@ type WhiteBalanceControlProps = {
 }
 
 const WhiteBalanceControl = ({ whbValue, disabled, buttonVariant, buttonGroupClassName = "", onChange }: WhiteBalanceControlProps) => {
-    const [value, setValue] = useState<number | undefined>(whbValue)
+    const [value, setValue] = useState<number>(whbValue)
 
     useEffect(() => {
         setValue(whbValue)
@@ -32,7 +32,7 @@ const WhiteBalanceControl = ({ whbValue, disabled, buttonVariant, buttonGroupCla
             <Button variant={buttonVariant} className="border-end border-2 bg-gradient" disabled={disabled} onClick={() => onButtonClick(-1)}>
                 <FontAwesomeIcon icon={faChevronCircleDown} />
             </Button>
-            { value ? <CircleValueIndicator value={value} xOffset={34} yOffset={11} /> : undefined }
+            <CircleValueIndicator value={value} xOffset={34} yOffset={11} />
             <Button variant={buttonVariant} className="bg-gradient" disabled={disabled} onClick={() => onButtonClick(1)}>
                 <FontAwesomeIcon icon={faChevronCircleUp} />
             </Button>

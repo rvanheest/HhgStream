@@ -1,5 +1,5 @@
 import React, {memo, useCallback, useState} from "react"
-import { Col, Row } from "react-bootstrap";
+import { Col, Container, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faVideoCamera, faGear, faFileLines, IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import styles from "./TabPane.module.css"
@@ -56,18 +56,20 @@ const TabPane = ({ config }: TabPaneProps) => {
     }
 
     return (
-        <Row className="vh-100">
-            <Col sm={1} className="pe-0 bg-dark">
-                <div className="d-flex flex-column ps-0 m-0">
-                    <MemoedNavItem icon={faVideoCamera} active={isActive(camerasKey)} onClick={cameraActiveOnClick} />
-                    <MemoedNavItem icon={faFileLines} active={isActive(textKey)} onClick={textActiveOnClick} />
-                    <MemoedNavItem icon={faGear} active={isActive(configurationKey)} onClick={configurationActiveOnClick} />
-                </div>
-            </Col>
-            <Col sm={11} className="bg-light">
-                {renderTab()}
-            </Col>
-        </Row>
+        <Container fluid className="ps-0">
+            <Row className="vh-100">
+                <Col sm={1} className="pe-0 bg-dark">
+                    <div className="d-flex flex-column ps-0 m-0">
+                        <MemoedNavItem icon={faVideoCamera} active={isActive(camerasKey)} onClick={cameraActiveOnClick} />
+                        <MemoedNavItem icon={faFileLines} active={isActive(textKey)} onClick={textActiveOnClick} />
+                        <MemoedNavItem icon={faGear} active={isActive(configurationKey)} onClick={configurationActiveOnClick} />
+                    </div>
+                </Col>
+                <Col sm={11} className="gx-3 bg-light py-2">
+                    {renderTab()}
+                </Col>
+            </Row>
+        </Container>
     )
 }
 
