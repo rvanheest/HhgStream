@@ -1,7 +1,16 @@
-import { getConfigPath, getDefaultConfigPath } from "./utils";
-import * as FsModule from 'fs'
-
-const fs: typeof FsModule = window.require('fs')
+import {
+    copyFile,
+    createDirectoryIfNotExists,
+    fileExists,
+    getConfigPath,
+    getDefaultConfigPath,
+    getDefaultTextPath,
+    getDefaultTextTemplateDir,
+    getDefaultTextTemplateOutputDir,
+    readJsonFile,
+    resolve,
+    saveJsonFile
+} from "./utils";
 
 export type WhiteBalanceOverride = {
   blue: number
@@ -27,9 +36,21 @@ export type Camera = {
   positionGroups: PositionGroup[]
 }
 
+export type TextTemplate = {
+    name: string
+    templateDir: string
+    outputDir: string
+}
+
+export type TextsConfig = {
+    textsPath: string
+    templates: TextTemplate[]
+}
+
 export type AppConfig = {
   version: number
   cameras: Camera[]
+  texts: TextsConfig
   isError: false
 }
 
@@ -42,10 +63,10 @@ export type ConfigError = {
 export function loadConfig(): AppConfig | ConfigError {
   const configPath = getConfigPath()
 
-  if (!fs.existsSync(configPath)) {
+  if (!fileExists(configPath)) {
     const defaultConfigPath = getDefaultConfigPath()
-    if (fs.existsSync(defaultConfigPath)) {
-      fs.copyFileSync(defaultConfigPath, configPath, fs.constants.COPYFILE_EXCL)
+    if (fileExists(defaultConfigPath)) {
+      copyFile(defaultConfigPath, configPath)
     }
     else {
       return ({
@@ -55,9 +76,9 @@ export function loadConfig(): AppConfig | ConfigError {
     }
   }
 
-  if (fs.existsSync(configPath)) {
+  if (fileExists(configPath)) {
     try {
-      const config = JSON.parse(fs.readFileSync(configPath, 'utf-8'))
+      const config = readJsonFile<AppConfig>(configPath)
       return migrateConfig(config, configPath);
     }
     catch (e) {
@@ -75,11 +96,12 @@ export function loadConfig(): AppConfig | ConfigError {
 }
 
 function saveConfig(newConfig: AppConfig, configPath: string): void {
-  fs.writeFileSync(configPath, JSON.stringify(newConfig, null, 4), { encoding: 'utf8', flag: 'w'})
+    saveJsonFile(newConfig, configPath)
 }
 
 function migrateConfig(config: any, configPath: string): AppConfig {
   config = migrateCameraPositionGroups(config, configPath)
+  config = migrateTexts(config, configPath)
 
   return ({ ...config, isError: false})
 }
@@ -108,4 +130,39 @@ function migrateCameraPositionGroups(config: any, configPath: string): any {
     return newConfig
   }
   else return config
+}
+
+function migrateTexts(config: any, configPath: string): any {
+    let newConfig = config
+    if (!config.texts) {
+        const kerkdienstTemplateDir = resolve(getDefaultTextTemplateDir(), 'kerkdienst')
+        const kerkdienstOutputDir = resolve(getDefaultTextTemplateOutputDir(), 'kerkdienst')
+
+        createDirectoryIfNotExists(kerkdienstTemplateDir)
+        createDirectoryIfNotExists(kerkdienstOutputDir)
+
+        newConfig = ({
+            ...config,
+            texts: {
+                textsPath: getDefaultTextPath(),
+                templates: [
+                    {
+                        name: "kerkdienst",
+                        templateDir: getDefaultTextTemplateDir(),
+                        outputDir: getDefaultTextTemplateOutputDir(),
+                    },
+                ],
+            },
+            version: 2,
+        })
+
+        saveConfig(newConfig, configPath)
+    }
+
+    newConfig.texts.templates.forEach((template: any) => {
+        createDirectoryIfNotExists(template.templateDir)
+        createDirectoryIfNotExists(template.outputDir)
+    })
+
+    return newConfig
 }

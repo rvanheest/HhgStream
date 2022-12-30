@@ -1,3 +1,7 @@
+.navItems {
+    width: calc(100% / 12 + 1px - var(--bs-gutter-x) * .5);
+}
+
 .navItem > div {
     --bs-nav-pills-border-radius: 0;
     --bs-nav-pills-link-active-bg: rgba(var(--bs-secondary-rgb), var(--bs-bg-opacity));
