@@ -3,11 +3,7 @@ import { Form } from "react-bootstrap"
 import { TextPosition } from "../../../core/text"
 import { FieldControl } from "./FieldControl"
 
-type PositionSelectProps = {
-
-}
-
-const PositionSelect = ({}: PositionSelectProps, ref: ForwardedRef<FieldControl<TextPosition>>) => {
+const PositionSelect = (_: unknown, ref: ForwardedRef<FieldControl<TextPosition>>) => {
     const textPositionRef = useRef<HTMLSelectElement>(null)
     useImperativeHandle(ref, () => ({
         getOutput: () => {
