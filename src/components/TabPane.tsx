@@ -6,6 +6,7 @@ import styles from "./TabPane.module.css"
 import { AppConfig } from "../core/config";
 import WIP from "./configuration/WIP";
 import CameraTab from "./camera/CameraTab";
+import TextTab from "./text/TextTab";
 
 const camerasKey = "cameras"
 const textKey = "text"
@@ -44,12 +45,7 @@ const TabPane = ({ config }: TabPaneProps) => {
     function renderTab(): JSX.Element | undefined {
         switch (activeTab) {
             case camerasKey: return <CameraTab cameras={config.cameras} />
-            case textKey: return (
-                <div className="text-center">
-                    <h3>WORK IN PROGRESS</h3>
-                    <p className="fst-italic">Hier kunnen de teksten worden ingesteld</p>
-                </div>
-            )
+            case textKey: return <TextTab config={config.texts} />
             case configurationKey: return <WIP config={config} />
             default: return undefined
         }
@@ -59,7 +55,7 @@ const TabPane = ({ config }: TabPaneProps) => {
         <Container fluid className="ps-0">
             <Row className="vh-100">
                 <Col sm={1} className="pe-0 bg-dark">
-                    <div className="d-flex flex-column ps-0 m-0">
+                    <div className={`position-fixed ${styles.navItems}`}>
                         <MemoedNavItem icon={faVideoCamera} active={isActive(camerasKey)} onClick={cameraActiveOnClick} />
                         <MemoedNavItem icon={faFileLines} active={isActive(textKey)} onClick={textActiveOnClick} />
                         <MemoedNavItem icon={faGear} active={isActive(configurationKey)} onClick={configurationActiveOnClick} />
