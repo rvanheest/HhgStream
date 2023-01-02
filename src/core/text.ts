@@ -111,7 +111,7 @@ export function formatSongs(songs: string[]): string[] {
     }
 
     function parseSong(song: string): Song | string {
-        const match = song.match(/^(Psalm|Gezang) (\d+)\s?:\s?(.*)$/)
+        const match = song.match(/^(Psalm|Gezang)\s+(\d+)\s+:\s+(.+)$/)
         return match ? { type: match[1], space: 0, nummer: match[2], rest: match[3] } : song
     }
 
