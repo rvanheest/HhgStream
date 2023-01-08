@@ -1,14 +1,134 @@
-import React, { useEffect, useRef } from "react"
-import TextForm from "./TextForm";
-import { FieldControl } from "../util/form/FieldControl";
+import React from "react"
+import { TextTemplate } from "../../core/config"
+import { defaultKerkdienst, fillTemplates, formatSongs, KerkdienstTextStore, TextPosition } from "../../core/text"
+import { useForm } from "react-hook-form";
+import TextForm from "../util/form/TextForm";
 import InputGroup from "../util/form/InputGroup";
+import TextField from "../util/form/TextField";
+import CheckboxExtension from "../util/form/CheckboxExtension";
 import PositionSelect from "../util/form/PositionSelect";
-import TextArea, { TextAreaOutput } from "../util/form/TextArea";
-import TextField, { TextFieldOutput } from "../util/form/TextField";
-import TextFieldArray, { TextFieldArrayOutput } from "../util/form/TextFieldArray";
-import CheckboxExtension, { CheckboxExtensionOutput } from "../util/form/CheckboxExtension";
-import { defaultKerkdienst, fillTemplates, formatSongs, KerkdienstTextStore, TextPosition } from "../../core/text";
-import { TextTemplate } from "../../core/config";
+import TextFieldArray from "../util/form/TextFieldArray";
+import TextArea from "../util/form/TextArea";
+
+type TextArrayElement = { value: string }
+
+type FormInput = {
+    voorzang: string
+    voorzangPosition: TextPosition
+    zingen: TextArrayElement[]
+    zingenPosition: TextPosition
+    schriftlezingen : TextArrayElement[]
+    schriftlezingenPosition : TextPosition
+    preekBijbeltekst : string
+    preekBijbeltekstPosition : TextPosition
+    preekBijbelcitaat : string
+    preekBijbelcitaatCheckbox : boolean
+    preekThema : string
+    preekThemaOndertitel : string
+    preekThemaPosition : TextPosition
+    preekPunten : TextArrayElement[]
+    doopKinderen : TextArrayElement[]
+    doopKinderenPosition : TextPosition
+    mededelingen : string
+    mededelingenPosition : TextPosition
+}
+
+function emptyTextArrayElement(): TextArrayElement {
+    return ({ value: '' })
+}
+
+function mapTextArray(array: string[]): TextArrayElement[] {
+    return !!array.filter(s => s).length ? array.map(v => ({ value: v })) : [emptyTextArrayElement()]
+}
+
+function mapTextArrayToStore(array: TextArrayElement[]): string[] {
+    return !!array.filter(o => o.value).length ? array.map(o => o.value) : []
+}
+
+function mapTextArea(lines: string[]): string {
+    return lines.join("\n")
+}
+
+function mapTextAreaToStore(lines: string): string[] {
+    const split = lines.split("\n")
+    return !!split.filter(s => s).length ? split : []
+}
+
+function mapFormToTextStore(data: FormInput): KerkdienstTextStore {
+    return {
+        voorzang: {
+            value: data.voorzang,
+            position: data.voorzangPosition
+        },
+        zingen: {
+            values: mapTextArrayToStore(data.zingen),
+            position: data.zingenPosition,
+        },
+        schriftlezingen: {
+            values: mapTextArrayToStore(data.schriftlezingen),
+            position: data.schriftlezingenPosition,
+        },
+        preekBijbeltekst: {
+            value: data.preekBijbeltekst,
+            position: data.preekBijbeltekstPosition,
+        },
+        preekBijbelcitaat: {
+            value: data.preekBijbelcitaat,
+            isCitaat: data.preekBijbelcitaatCheckbox,
+        },
+        preekThema: {
+            value: data.preekThema,
+            position: data.preekThemaPosition,
+        },
+        preekThemaOndertitel: {
+            value: data.preekThemaOndertitel,
+        },
+        preekPunten: {
+            values: mapTextArrayToStore(data.preekPunten),
+        },
+        doopKinderen: {
+            values: mapTextArrayToStore(data.doopKinderen),
+            position: data.doopKinderenPosition,
+        },
+        mededelingen: {
+            lines: mapTextAreaToStore(data.mededelingen),
+            position: data.mededelingenPosition,
+        },
+    }
+}
+
+function mapTextStoreToForm(data: KerkdienstTextStore): FormInput {
+    return {
+        voorzang: data.voorzang.value,
+        voorzangPosition: data.voorzang.position,
+        zingen: mapTextArray(data.zingen.values),
+        zingenPosition: data.zingen.position,
+        schriftlezingen: mapTextArray(data.schriftlezingen.values),
+        schriftlezingenPosition: data.schriftlezingen.position,
+        preekBijbeltekst: data.preekBijbeltekst.value,
+        preekBijbeltekstPosition: data.preekBijbeltekst.position,
+        preekBijbelcitaat: data.preekBijbelcitaat.value,
+        preekBijbelcitaatCheckbox: data.preekBijbelcitaat.isCitaat,
+        preekThema: data.preekThema.value,
+        preekThemaPosition: data.preekThema.position,
+        preekThemaOndertitel: data.preekThemaOndertitel.value,
+        preekPunten: mapTextArray(data.preekPunten.values),
+        doopKinderen: mapTextArray(data.doopKinderen.values),
+        doopKinderenPosition: data.doopKinderen.position,
+        mededelingen: mapTextArea(data.mededelingen.lines),
+        mededelingenPosition: data.mededelingen.position,
+    }
+}
+
+function formatTekstenForTemplates(teksten: KerkdienstTextStore): KerkdienstTextStore {
+    return {
+        ...teksten,
+        zingen: {
+            ...teksten.zingen,
+            values: formatSongs(teksten.zingen.values),
+        },
+    }
+}
 
 type KerkdienstTekstenProps = {
     teksten: KerkdienstTextStore
@@ -17,143 +137,100 @@ type KerkdienstTekstenProps = {
 }
 
 const KerkdienstTeksten = ({ teksten, tekstTemplate, saveTeksten }: KerkdienstTekstenProps) => {
-    const voorzang = useRef<FieldControl<TextFieldOutput>>(null)
-    const voorzangPosition = useRef<FieldControl<TextPosition>>(null)
-    const zingen = useRef<FieldControl<TextFieldArrayOutput>>(null)
-    const zingenPosition = useRef<FieldControl<TextPosition>>(null)
-    const schriftlezingen = useRef<FieldControl<TextFieldArrayOutput>>(null)
-    const schriftlezingenPosition = useRef<FieldControl<TextPosition>>(null)
-    const preekBijbeltekst = useRef<FieldControl<TextFieldOutput>>(null)
-    const preekBijbeltekstPosition = useRef<FieldControl<TextPosition>>(null)
-    const preekBijbelcitaat = useRef<FieldControl<TextFieldOutput>>(null)
-    const preekBijbelcitaatCheckbox = useRef<FieldControl<CheckboxExtensionOutput>>(null)
-    const preekThema = useRef<FieldControl<TextFieldOutput>>(null)
-    const preekThemaOndertitel = useRef<FieldControl<TextFieldOutput>>(null)
-    const preekThemaPosition = useRef<FieldControl<TextPosition>>(null)
-    const preekPunten = useRef<FieldControl<TextFieldArrayOutput>>(null)
-    const doopKinderen = useRef<FieldControl<TextFieldArrayOutput>>(null)
-    const doopKinderenPosition = useRef<FieldControl<TextPosition>>(null)
-    const mededelingen = useRef<FieldControl<TextAreaOutput>>(null)
-    const mededelingenPosition = useRef<FieldControl<TextPosition>>(null)
+    const { control, handleSubmit, register, reset } = useForm<FormInput>({ defaultValues: mapTextStoreToForm(teksten) })
 
-    useEffect(() => {
-        voorzang.current?.setOutput(teksten.voorzang.value)
-        voorzangPosition.current?.setOutput(teksten.voorzang.position)
-        zingen.current?.setOutput(teksten.zingen.values)
-        zingenPosition.current?.setOutput(teksten.zingen.position)
-        schriftlezingen.current?.setOutput(teksten.schriftlezingen.values)
-        schriftlezingenPosition.current?.setOutput(teksten.schriftlezingen.position)
-        preekBijbeltekst.current?.setOutput(teksten.preekBijbeltekst.value)
-        preekBijbeltekstPosition.current?.setOutput(teksten.preekBijbeltekst.position)
-        preekBijbelcitaat.current?.setOutput(teksten.preekBijbelcitaat.value)
-        preekBijbelcitaatCheckbox.current?.setOutput(teksten.preekBijbelcitaat.isCitaat)
-        preekThema.current?.setOutput(teksten.preekThema.value)
-        preekThemaOndertitel.current?.setOutput(teksten.preekThemaOndertitel.value)
-        preekThemaPosition.current?.setOutput(teksten.preekThema.position)
-        preekPunten.current?.setOutput(teksten.preekPunten.values)
-        doopKinderen.current?.setOutput(teksten.doopKinderen.values)
-        doopKinderenPosition.current?.setOutput(teksten.doopKinderen.position)
-        mededelingen.current?.setOutput(teksten.mededelingen.lines)
-        mededelingenPosition.current?.setOutput(teksten.mededelingen.position)
-        // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [teksten])
+    function onSubmit(data: FormInput) {
+        const tekstStore = mapFormToTextStore(data)
+        const tekstenVoorTemplates = formatTekstenForTemplates(tekstStore)
 
-    function onSubmit() {
-        const teksten = {
-            voorzang: {
-                value: voorzang.current?.getOutput() ?? defaultKerkdienst.voorzang.value,
-                position: voorzangPosition.current?.getOutput() ?? defaultKerkdienst.voorzang.position,
-            },
-            zingen: {
-                values: zingen.current?.getOutput() ?? defaultKerkdienst.zingen.values,
-                position: zingenPosition.current?.getOutput() ?? defaultKerkdienst.zingen.position,
-            },
-            schriftlezingen: {
-                values: schriftlezingen.current?.getOutput() ?? defaultKerkdienst.schriftlezingen.values,
-                position: schriftlezingenPosition.current?.getOutput() ?? defaultKerkdienst.schriftlezingen.position,
-            },
-            preekBijbeltekst: {
-                value: preekBijbeltekst.current?.getOutput() ?? defaultKerkdienst.preekBijbeltekst.value,
-                position: preekBijbeltekstPosition.current?.getOutput() ?? defaultKerkdienst.preekBijbeltekst.position,
-            },
-            preekBijbelcitaat: {
-                value: preekBijbelcitaat.current?.getOutput() ?? defaultKerkdienst.preekBijbelcitaat.value,
-                isCitaat: preekBijbelcitaatCheckbox.current?.getOutput() ?? defaultKerkdienst.preekBijbelcitaat.isCitaat,
-            },
-            preekThema: {
-                value: preekThema.current?.getOutput() ?? defaultKerkdienst.preekThema.value,
-                position: preekThemaPosition.current?.getOutput() ?? defaultKerkdienst.preekThema.position,
-            },
-            preekThemaOndertitel: {
-                value: preekThemaOndertitel.current?.getOutput() ?? defaultKerkdienst.preekThemaOndertitel.value,
-            },
-            preekPunten: {
-                values: preekPunten.current?.getOutput() ?? defaultKerkdienst.preekPunten.values,
-            },
-            doopKinderen: {
-                values: doopKinderen.current?.getOutput() ?? defaultKerkdienst.doopKinderen.values,
-                position: doopKinderenPosition.current?.getOutput() ?? defaultKerkdienst.doopKinderen.position,
-            },
-            mededelingen: {
-                lines: mededelingen.current?.getOutput() ?? defaultKerkdienst.mededelingen.lines,
-                position: mededelingenPosition.current?.getOutput() ?? defaultKerkdienst.mededelingen.position,
-            },
-        }
-
-        const tekstenVoorTemplates = {
-            ...teksten,
-            zingen: {
-                ...teksten.zingen,
-                values: formatSongs(teksten.zingen.values),
-            },
-        }
-
+        reset(mapTextStoreToForm(tekstStore))
         if (!!tekstTemplate) fillTemplates(tekstTemplate, tekstenVoorTemplates)
-        saveTeksten(teksten)
+        saveTeksten(tekstStore)
+    }
+
+    function onClear() {
+        reset(mapTextStoreToForm(defaultKerkdienst))
+        saveTeksten(defaultKerkdienst)
     }
 
     return (
-        <TextForm onClear={() => saveTeksten(defaultKerkdienst)} onSubmit={onSubmit}>
-            <InputGroup controlId="formVoorzang" label="Voorzang" position={<PositionSelect ref={voorzangPosition} />}>
-                <TextField ref={voorzang} placeholder="Psalm/Gezang" />
+        <TextForm onClear={onClear} onSubmit={handleSubmit(onSubmit)}>
+            <InputGroup controlId="kerkdienstVoorzang"
+                        label="Voorzang"
+                        renderPosition={() => <PositionSelect control={control} name="voorzangPosition" />}>
+                <TextField placeholder="Psalm/Gezang" control={control} name="voorzang" />
             </InputGroup>
 
-            <InputGroup controlId="formZingen" label="Zingen" position={<PositionSelect ref={zingenPosition} />}>
-                <TextFieldArray ref={zingen} placeholder="Psalm/Gezang" />
+            <InputGroup controlId="kerkdienstZingen"
+                        label="Zingen"
+                        renderPosition={() => <PositionSelect control={control} name="zingenPosition" />}>
+                <TextFieldArray placeholder="Psalm/Gezang"
+                                register={register}
+                                control={control}
+                                name="zingen"
+                                generateElement={emptyTextArrayElement} />
             </InputGroup>
 
-            <InputGroup controlId="formSchriftlezingen" label="Schriftlezing" position={<PositionSelect ref={schriftlezingenPosition} />}>
-                <TextFieldArray ref={schriftlezingen} placeholder="Bijbelgedeelte" />
+            <InputGroup controlId="kerkdienstSchriftlezingen"
+                        label="Schriftlezing"
+                        renderPosition={() => <PositionSelect control={control} name="schriftlezingenPosition" />}>
+                <TextFieldArray placeholder="Bijbelgedeelte"
+                                register={register}
+                                control={control}
+                                name="schriftlezingen"
+                                generateElement={emptyTextArrayElement} />
             </InputGroup>
 
-            <InputGroup controlId="formPreekBijbeltekst" label="Preek - Bijbeltekst" position={<PositionSelect ref={preekBijbeltekstPosition} />}>
-                <TextField ref={preekBijbeltekst} placeholder="Bijbeltekst" />
+            <InputGroup controlId="kerkdienstPreekBijbeltekst"
+                        label="Preek - Bijbeltekst"
+                        renderPosition={() => <PositionSelect control={control} name="preekBijbeltekstPosition" />}>
+                <TextField placeholder="Bijbeltekst" control={control} name="preekBijbeltekst" />
             </InputGroup>
 
-            <InputGroup controlId="formPreekBijbelcitaat" label="Preek - Bijbelcitaat">
-                <TextField ref={preekBijbelcitaat} placeholder="Bijbelcitaat">
-                    <CheckboxExtension ref={preekBijbelcitaatCheckbox} controlId="formPreekBijbelcitaat_checkbox" checkboxLabel="Citaat" />
+            <InputGroup controlId="kerkdienstPreekBijbelcitaat" label="Preek - Bijbelcitaat">
+                <TextField placeholder="Bijbelcitaat" control={control} name="preekBijbelcitaat">
+                    <CheckboxExtension controlId="kerkdienstPreekBijbelcitaat_checkbox"
+                                       checkboxLabel="Citaat"
+                                       control={control}
+                                       name="preekBijbelcitaatCheckbox" />
                 </TextField>
             </InputGroup>
 
-            <InputGroup controlId="formPreekThema" label="Preek - Thema" position={<PositionSelect ref={preekThemaPosition} />}>
-                <TextField ref={preekThema} placeholder="Thema" />
+            <InputGroup controlId="kerkdienstPreekThema"
+                        label="Preek - Thema"
+                        renderPosition={() => <PositionSelect control={control} name="preekThemaPosition" />}>
+                <TextField placeholder="Thema" control={control} name="preekThema" />
             </InputGroup>
 
-            <InputGroup controlId="formPreekThemaOndertitel" label="Preek - Thema ondertitel">
-                <TextField ref={preekThemaOndertitel} placeholder="Ondertitel" />
+            <InputGroup controlId="kerkdienstPreekThemaOndertitel" label="Preek - Thema ondertitel">
+                <TextField placeholder="Ondertitel" control={control} name="preekThemaOndertitel" />
             </InputGroup>
 
-            <InputGroup controlId="formPreekPunten" label="Preek - Punten">
-                <TextFieldArray ref={preekPunten} placeholder="" />
+            <InputGroup controlId="kerkdienstPreekPunten" label="Preek - Punten">
+                <TextFieldArray placeholder=""
+                                register={register}
+                                control={control}
+                                name="preekPunten"
+                                generateElement={emptyTextArrayElement} />
             </InputGroup>
 
-            <InputGroup controlId="formDoopkinderen" label="Doopkinderen" position={<PositionSelect ref={doopKinderenPosition} />}>
-                <TextFieldArray ref={doopKinderen} placeholder="[Naam] ~ [Tekst]" />
+            <InputGroup controlId="kerkdienstDoopkinderen"
+                        label="Doopkinderen"
+                        renderPosition={() => <PositionSelect control={control} name="doopKinderenPosition" />}>
+                <TextFieldArray placeholder="[Naam] ~ [Tekst]"
+                                register={register}
+                                control={control}
+                                name="doopKinderen"
+                                generateElement={emptyTextArrayElement} />
             </InputGroup>
 
-            <InputGroup controlId="formAlgemeneMededelingen" label="Mededelingen" position={<PositionSelect ref={mededelingenPosition} />}>
-                <TextArea ref={mededelingen} placeholder="Mededelingen" rows={3} />
+            <InputGroup controlId="kerkdienstAlgemeneMededelingen"
+                        label="Mededelingen"
+                        renderPosition={() => <PositionSelect control={control} name="mededelingenPosition" />}>
+                <TextArea placeholder="Mededelingen"
+                          rows={3}
+                          control={control}
+                          name="mededelingen" />
             </InputGroup>
         </TextForm>
     )

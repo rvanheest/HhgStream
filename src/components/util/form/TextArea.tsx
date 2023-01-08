@@ -1,34 +1,20 @@
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useRef } from "react"
+import React from "react"
 import { Form } from "react-bootstrap"
-import { FieldControl } from "./FieldControl"
+import { FieldValues, useController, UseControllerProps } from "react-hook-form"
 
-type TextAreaProps = {
+export type TextAreaProps<TFieldValues extends FieldValues> = UseControllerProps<TFieldValues> & {
     placeholder: string
     rows: number
 }
 
-export type TextAreaOutput = string[]
-
-const TextArea = ({rows, placeholder}: TextAreaProps, ref: ForwardedRef<FieldControl<TextAreaOutput>>) => {
-    const textareaRef = useRef<HTMLTextAreaElement>(null)
-    useImperativeHandle(ref, () => ({
-        getOutput: () => {
-            const array = textareaRef.current?.value.split("\n") ?? []
-            return !array.filter(s => s).length ? [] : array
-        },
-        setOutput(value: TextAreaOutput) {
-            if (textareaRef.current) textareaRef.current.value = value.join("\n")
-        }
-    }))
+const TextArea = <TFieldValues extends FieldValues>({ rows, placeholder, ...rest }: TextAreaProps<TFieldValues>) => {
+    const { field } = useController(rest)
 
     return (
         <div className="input-group">
-            <Form.Control ref={textareaRef}
-                          as="textarea"
-                          rows={rows}
-                          placeholder={placeholder} />
+            <Form.Control as="textarea" rows={rows} placeholder={placeholder} { ...field } />
         </div>
     )
 }
 
-export default forwardRef(TextArea)
+export default TextArea
