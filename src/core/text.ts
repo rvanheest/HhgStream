@@ -80,8 +80,8 @@ export const defaultKerkdienst: KerkdienstTextStore = {
 
 export const defaultBijbellezing: BijbellezingTextStore = {
     voorganger: { value: "", position: TextPosition.TopRight },
-    datum: { value: "" },
-    datumVolgendeKeer: { value: "" },
+    datum: { value: new Date().toDateString() },
+    datumVolgendeKeer: { value: new Date().toDateString() },
     zingen: { values: [], position: TextPosition.TopLeft },
     schriftlezingen: { values: [], position: TextPosition.BottomLeft },
     meditatieBijbeltekst: { value: "", position: TextPosition.BottomLeft },
