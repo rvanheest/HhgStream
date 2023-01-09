@@ -5,11 +5,11 @@ import Label from "./Label";
 type InputGroupProps = {
     controlId: string
     label: string
-    position?: ReactNode | undefined
+    renderPosition?: () => JSX.Element
     children: ReactNode
 }
 
-const InputGroup = ({ controlId, label, position, children }: InputGroupProps) => {
+const InputGroup = ({ controlId, label, renderPosition, children }: InputGroupProps) => {
     return (
         <Form.Group controlId={controlId}>
             <Row className="mb-2">
@@ -19,7 +19,7 @@ const InputGroup = ({ controlId, label, position, children }: InputGroupProps) =
                 <Col sm={{span: 5}}>
                     {children}
                 </Col>
-                {position && <Col sm={{span: 2}}>{position}</Col>}
+                {renderPosition && <Col sm={{span: 2}}>{renderPosition()}</Col>}
             </Row>
         </Form.Group>
     )

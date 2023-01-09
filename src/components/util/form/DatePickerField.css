@@ -1,0 +1,8 @@
+.noBorder .react-date-picker__wrapper {
+    border: none;
+}
+
+.react-date-picker__calendar--open,
+.react-date-picker__calendar--closed {
+    position: absolute;
+}

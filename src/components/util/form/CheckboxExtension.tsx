@@ -1,28 +1,20 @@
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useRef } from "react";
-import { Form } from "react-bootstrap";
-import { FieldControl } from "./FieldControl";
+import React from "react"
+import { Form } from "react-bootstrap"
+import { FieldValues, useController, UseControllerProps } from "react-hook-form"
 
-type CheckboxExtensionProps = {
+export type CheckboxExtensionProps<TFieldValues extends FieldValues> = UseControllerProps<TFieldValues> & {
     checkboxLabel: string
     controlId: string
 }
 
-export type CheckboxExtensionOutput = boolean | undefined
-
-const CheckboxExtension = ({ checkboxLabel, controlId }: CheckboxExtensionProps, ref: ForwardedRef<FieldControl<CheckboxExtensionOutput>>) => {
-    const checkboxFieldRef = useRef<HTMLInputElement>(null)
-    useImperativeHandle(ref, () => ({
-        getOutput: () => checkboxFieldRef.current?.checked,
-        setOutput(value: CheckboxExtensionOutput) {
-            if (checkboxFieldRef.current) checkboxFieldRef.current.checked = value ?? false
-        }
-    }))
+const CheckboxExtension = <TFieldValues extends FieldValues>({ checkboxLabel, controlId, ...rest }: CheckboxExtensionProps<TFieldValues>) => {
+    const { field } = useController(rest)
 
     return (
         <div className="input-group-text">
-            <Form.Check ref={checkboxFieldRef} reverse id={controlId} label={checkboxLabel} type="checkbox" />
+            <Form.Check reverse id={controlId} label={checkboxLabel} type="checkbox" { ...field } />
         </div>
     )
 }
 
-export default forwardRef(CheckboxExtension)
+export default CheckboxExtension

@@ -1,28 +1,33 @@
-import React, { ForwardedRef, forwardRef, useImperativeHandle, useRef } from "react"
+import React from "react"
 import { Form } from "react-bootstrap"
+import { FieldValues, useController, UseControllerProps } from "react-hook-form"
 import { TextPosition } from "../../../core/text"
-import { FieldControl } from "./FieldControl"
 
-const PositionSelect = (_: unknown, ref: ForwardedRef<FieldControl<TextPosition>>) => {
-    const textPositionRef = useRef<HTMLSelectElement>(null)
-    useImperativeHandle(ref, () => ({
-        getOutput: () => {
-            const value = textPositionRef.current?.value ?? "";
-            return TextPosition[value as keyof typeof TextPosition];
-        },
-        setOutput(position: TextPosition) {
-            if (textPositionRef.current) textPositionRef.current.selectedIndex = Object.values(TextPosition).indexOf(position)
-        }
-    }))
+export type PositionSelectProps<TFieldValues extends FieldValues> = UseControllerProps<TFieldValues>
+
+const PositionSelect = <TFieldValues extends FieldValues>(props: PositionSelectProps<TFieldValues>) => {
+    const { field: { onChange, value, ...rest } } = useController(props)
+
+    function onSelect(e: React.ChangeEvent<HTMLSelectElement>): void {
+        onChange({
+            ...e,
+            currentTarget: {
+                ...e.currentTarget,
+                value: TextPosition[e.currentTarget.value as keyof typeof TextPosition]
+            }
+        })
+    }
+
+    function toEnumValue(v: string): string | undefined {
+        const enumValue = Object.entries(TextPosition).find(e => e[1] === v)
+        return enumValue && enumValue[0]
+    }
 
     return (
-        <Form.Select ref={textPositionRef}>
-            {
-                Object.entries(TextPosition)
-                    .map(p => (<option key={p[0]} value={p[0]}>{p[1]}</option>))
-            }
-        </Form.Select>
+        <Form.Select {...rest} value={toEnumValue(value)} onChange={onSelect}>{
+            Object.entries(TextPosition).map(p => (<option key={p[0]} value={p[0]}>{p[1]}</option>))
+        }</Form.Select>
     )
 }
 
-export default forwardRef(PositionSelect)
+export default PositionSelect

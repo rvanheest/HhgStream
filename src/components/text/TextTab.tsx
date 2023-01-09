@@ -4,6 +4,7 @@ import { loadTextStore, saveTextStore, TextStore, TextStoreError } from "../../c
 import { openFile } from "../../core/utils";
 import CardTabPane from "../util/CardTabPane"
 import KerkdienstTeksten from "./KerkdienstTeksten";
+import BijbellezingTeksten from "./BijbellezingTeksten";
 import TextErrorPage from "./TextErrorPage";
 import { TextsConfig } from "../../core/config";
 
@@ -46,8 +47,22 @@ const TextTab = ({ config }: TextTabProps) => {
         },
         {
             title: "Bijbellezing",
+            element: <BijbellezingTeksten teksten={textStore.bijbellezing}
+                                          tekstTemplate={config.templates.find(t => t.name === 'bijbellezing')}
+                                          saveTeksten={teksten => saveTexts({ bijbellezing: teksten})} />
+        },
+        {
+            title: "Cursus Geestelijke Vorming",
             element: <WIP />
         },
+        {
+            title: "Huwelijksdienst",
+            element: <WIP />
+        },
+        {
+            title: "Begrafenisdienst",
+            element: <WIP />
+        }
     ]
 
     return (
