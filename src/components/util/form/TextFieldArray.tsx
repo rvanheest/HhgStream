@@ -4,6 +4,20 @@ import { faCircleMinus, faCirclePlus } from "@fortawesome/free-solid-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { FieldValues, useFieldArray, UseFieldArrayProps, FieldArrayPath, Path, UseFormRegister, FieldArray } from "react-hook-form"
 
+export type TextArrayElement = { value: string }
+
+export function emptyTextArrayElement(): TextArrayElement {
+    return ({ value: '' })
+}
+
+export function mapTextArray(array: string[]): TextArrayElement[] {
+    return !!array.filter(s => s).length ? array.map(v => ({ value: v })) : [emptyTextArrayElement()]
+}
+
+export function mapTextArrayToStore(array: TextArrayElement[]): string[] {
+    return !!array.filter(o => o.value).length ? array.map(o => o.value) : []
+}
+
 export type TextFieldArrayProps<TFieldValues extends FieldValues, TFieldArrayName extends FieldArrayPath<TFieldValues>> = UseFieldArrayProps<TFieldValues, TFieldArrayName> & {
     placeholder: string
     type?: string

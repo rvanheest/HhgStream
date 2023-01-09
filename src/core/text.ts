@@ -44,6 +44,13 @@ export type KerkdienstTextStore = {
 }
 
 export type BijbellezingTextStore = {
+    voorganger: Text & Position
+    datum: Text
+    datumVolgendeKeer: Text
+    zingen: TextArray & Position
+    schriftlezingen: TextArray & Position
+    meditatieBijbeltekst: Text & Position
+    meditatieBijbeltekstVolgendeKeer: Text
 }
 
 export type TextStore = {
@@ -72,6 +79,13 @@ export const defaultKerkdienst: KerkdienstTextStore = {
 }
 
 export const defaultBijbellezing: BijbellezingTextStore = {
+    voorganger: { value: "", position: TextPosition.TopRight },
+    datum: { value: "" },
+    datumVolgendeKeer: { value: "" },
+    zingen: { values: [], position: TextPosition.TopLeft },
+    schriftlezingen: { values: [], position: TextPosition.BottomLeft },
+    meditatieBijbeltekst: { value: "", position: TextPosition.BottomLeft },
+    meditatieBijbeltekstVolgendeKeer: { value: "" },
 }
 
 export function loadTextStore(textPath: string): TextStore | TextStoreError {
@@ -86,7 +100,20 @@ export function loadTextStore(textPath: string): TextStore | TextStoreError {
     }
     else {
         try {
-            return readJsonFile(textPath)
+            const store = readJsonFile<TextStore>(textPath)
+
+            let needSave = false
+            if (!store.kerkdienst || !Object.keys(store.kerkdienst).length) {
+                store.kerkdienst = defaultKerkdienst
+                needSave = true
+            }
+            if (!store.bijbellezing || !Object.keys(store.bijbellezing).length) {
+                store.bijbellezing = defaultBijbellezing
+                needSave = true
+            }
+            if (needSave) saveTextStore(store, textPath)
+
+            return store
         }
         catch (e) {
             return ({

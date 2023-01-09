@@ -7,10 +7,8 @@ import InputGroup from "../util/form/InputGroup";
 import TextField from "../util/form/TextField";
 import CheckboxExtension from "../util/form/CheckboxExtension";
 import PositionSelect from "../util/form/PositionSelect";
-import TextFieldArray from "../util/form/TextFieldArray";
-import TextArea from "../util/form/TextArea";
-
-type TextArrayElement = { value: string }
+import TextFieldArray, { emptyTextArrayElement, mapTextArray, mapTextArrayToStore, TextArrayElement } from "../util/form/TextFieldArray";
+import TextArea, { mapTextArea, mapTextAreaToStore } from "../util/form/TextArea";
 
 type FormInput = {
     voorzang: string
@@ -31,27 +29,6 @@ type FormInput = {
     doopKinderenPosition : TextPosition
     mededelingen : string
     mededelingenPosition : TextPosition
-}
-
-function emptyTextArrayElement(): TextArrayElement {
-    return ({ value: '' })
-}
-
-function mapTextArray(array: string[]): TextArrayElement[] {
-    return !!array.filter(s => s).length ? array.map(v => ({ value: v })) : [emptyTextArrayElement()]
-}
-
-function mapTextArrayToStore(array: TextArrayElement[]): string[] {
-    return !!array.filter(o => o.value).length ? array.map(o => o.value) : []
-}
-
-function mapTextArea(lines: string[]): string {
-    return lines.join("\n")
-}
-
-function mapTextAreaToStore(lines: string): string[] {
-    const split = lines.split("\n")
-    return !!split.filter(s => s).length ? split : []
 }
 
 function mapFormToTextStore(data: FormInput): KerkdienstTextStore {
