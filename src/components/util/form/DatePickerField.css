@@ -6,3 +6,20 @@
 .react-date-picker__calendar--closed {
     position: absolute;
 }
+
+.custom-calendar {
+    border-radius: 0.375rem;
+    box-shadow: 3px 3px 10px 0 #888888;
+}
+
+.custom-calendar .react-calendar__month-view__weekdays__weekday abbr {
+    text-decoration: none;
+}
+
+.custom-calendar .react-calendar__tile--now {
+    background: none;
+}
+
+.custom-calendar .react-calendar__month-view__days__day--weekend:not(.react-calendar__month-view__days__day--neighboringMonth) {
+    color: unset;
+}
