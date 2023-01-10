@@ -1,6 +1,6 @@
 import React from "react"
 import { TextTemplate } from "../../core/config"
-import { defaultKerkdienst, fillTemplates, formatSongs, KerkdienstTextStore, TextPosition } from "../../core/text"
+import { defaultKerkdienst, fillTemplates, KerkdienstTextStore, TextPosition } from "../../core/text"
 import { useForm } from "react-hook-form";
 import TextForm from "../util/form/TextForm";
 import InputGroup from "../util/form/InputGroup";
@@ -9,6 +9,8 @@ import CheckboxExtension from "../util/form/CheckboxExtension";
 import PositionSelect from "../util/form/PositionSelect";
 import TextFieldArray, { emptyTextArrayElement, mapTextArray, mapTextArrayToStore, TextArrayElement } from "../util/form/TextFieldArray";
 import TextArea, { mapTextArea, mapTextAreaToStore } from "../util/form/TextArea";
+import { formatSong, formatSongs } from "../../core/formatting/songFormatting";
+import { formatScripture } from "../../core/formatting/scriptureFormatting";
 
 type FormInput = {
     voorzang: string
@@ -100,9 +102,21 @@ function mapTextStoreToForm(data: KerkdienstTextStore): FormInput {
 function formatTekstenForTemplates(teksten: KerkdienstTextStore): KerkdienstTextStore {
     return {
         ...teksten,
+        voorzang: {
+            ...teksten.voorzang,
+            value: formatSong(teksten.voorzang.value),
+        },
         zingen: {
             ...teksten.zingen,
             values: formatSongs(teksten.zingen.values),
+        },
+        schriftlezingen: {
+            ...teksten.schriftlezingen,
+            values: teksten.schriftlezingen.values.map(formatScripture),
+        },
+        preekBijbeltekst: {
+            ...teksten.preekBijbeltekst,
+            value: formatScripture(teksten.preekBijbeltekst.value),
         },
     }
 }

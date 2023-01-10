@@ -1,7 +1,10 @@
 import React from "react"
 import { useForm } from "react-hook-form"
 import { TextTemplate } from "../../core/config"
-import { BijbellezingTextStore, defaultBijbellezing, fillTemplates, formatSongs, TextPosition } from "../../core/text"
+import { formatScripture } from "../../core/formatting/scriptureFormatting";
+import { formatSongs } from "../../core/formatting/songFormatting";
+import { formatDate } from "../../core/formatting/dateFormatting";
+import { BijbellezingTextStore, defaultBijbellezing, fillTemplates, TextPosition } from "../../core/text"
 import DatePickerField from "../util/form/DatePickerField";
 import InputGroup from "../util/form/InputGroup";
 import PositionSelect from "../util/form/PositionSelect";
@@ -77,11 +80,22 @@ function formatTekstenForTemplates(teksten: BijbellezingTextStore): Bijbellezing
             ...teksten.zingen,
             values: formatSongs(teksten.zingen.values),
         },
+        schriftlezingen: {
+            ...teksten.schriftlezingen,
+            values: teksten.schriftlezingen.values.map(formatScripture),
+        },
+        meditatieBijbeltekst: {
+            ...teksten.meditatieBijbeltekst,
+            value: formatScripture(teksten.meditatieBijbeltekst.value),
+        },
+        meditatieBijbeltekstVolgendeKeer: {
+            value: formatScripture(teksten.meditatieBijbeltekstVolgendeKeer.value),
+        },
         datum: {
-            value: new Date(teksten.datum.value).toLocaleString('nl-NL', { dateStyle: 'long' }),
+            value: formatDate(new Date(teksten.datum.value)),
         },
         datumVolgendeKeer: {
-            value: new Date(teksten.datumVolgendeKeer.value).toLocaleString('nl-NL', { dateStyle: 'long' }),
+            value: formatDate(new Date(teksten.datumVolgendeKeer.value)),
         },
     }
 }
