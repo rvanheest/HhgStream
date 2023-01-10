@@ -129,36 +129,6 @@ export function saveTextStore(textStore: TextStore, textPath: string): void {
     saveJsonFile(textStore, textPath)
 }
 
-export function formatSongs(songs: string[]): string[] {
-    type Song = {
-        type: string
-        space: number
-        nummer: string
-        rest: string
-    }
-
-    function parseSong(song: string): Song | string {
-        const match = song.match(/^(Psalm|Gezang)\s+(\d+)\s+:\s+(.+)$/)
-        return match ? { type: match[1], space: 0, nummer: match[2], rest: match[3] } : song
-    }
-
-    function isSong(song: Song | string): song is Song {
-        return typeof song !== "string" && "type" in song && "nummer" in song && "rest" in song
-    }
-
-    function calculateMaxSpace(songs: Song[]): number {
-        return Math.max(...songs.map(song => (song.type === "Gezang" ? 1 : 0) + song.nummer.length))
-    }
-
-    function formatSong(song: Song, maxLength: number): string {
-        return `${song.type} ${' '.repeat(Math.max(0, 2 * (maxLength - song.nummer.length + (song.type === "Gezang" ? -1 : 0))))}${song.nummer} : ${song.rest}`;
-    }
-
-    const parsedSongs = songs.map(parseSong)
-    const nummerMaxLength = calculateMaxSpace(parsedSongs.filter(isSong))
-    return parsedSongs.map(song => isSong(song) ? formatSong(song, nummerMaxLength) : song)
-}
-
 // voor meer karakters, zie https://www.webmasterresources.nl/webdesign/utf-html-code-speciale-karakters/
 const htmlCharacterEncode = {
     "à": "&agrave;",
