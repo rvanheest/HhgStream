@@ -17,9 +17,10 @@ const WIP = () => (
 
 type TextTabProps = {
     config: TextsConfig
+    updateConfig: (c: TextsConfig) => void
 }
 
-const TextTab = ({ config }: TextTabProps) => {
+const TextTab = ({ config, updateConfig }: TextTabProps) => {
     const [textStore, setTextStore] = useState<TextStore | TextStoreError>(loadTextStore(config.textsPath))
 
     if (!textStore) {
@@ -35,6 +36,12 @@ const TextTab = ({ config }: TextTabProps) => {
             const newTextStore = { ...textStore, ...partialTextStore }
             setTextStore(newTextStore)
             saveTextStore(newTextStore, config.textsPath)
+        }
+    }
+
+    function saveSelectedTab(index: number): void {
+        if (config.lastOpenedTab !== index) {
+            updateConfig({ ...config, lastOpenedTab: index })
         }
     }
 
@@ -71,7 +78,7 @@ const TextTab = ({ config }: TextTabProps) => {
                 <h3>Teksten</h3>
                 <Button className="position-absolute translate-middle-y top-50 end-0" onClick={async () => await openFile(config.textsPath)}>Open JSON</Button>
             </div>
-            <CardTabPane tabs={tabs} defaultOpenIndex={0} />
+            <CardTabPane tabs={tabs} defaultOpenIndex={config.lastOpenedTab} onSelectTab={saveSelectedTab} />
         </div>
     )
 }
