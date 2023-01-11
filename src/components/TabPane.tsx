@@ -30,9 +30,10 @@ const MemoedNavItem = memo(NavItem)
 
 type TabPaneProps = {
     config: AppConfig
+    updateConfig: (c: Partial<AppConfig>) => void
 }
 
-const TabPane = ({ config }: TabPaneProps) => {
+const TabPane = ({ config, updateConfig }: TabPaneProps) => {
     const [activeTab, setActiveTab] = useState<string>(camerasKey);
     const cameraActiveOnClick = useCallback(() => setActiveTab(camerasKey), [])
     const textActiveOnClick = useCallback(() => setActiveTab(textKey), [])
@@ -45,7 +46,7 @@ const TabPane = ({ config }: TabPaneProps) => {
     function renderTab(): JSX.Element | undefined {
         switch (activeTab) {
             case camerasKey: return <CameraTab cameras={config.cameras} />
-            case textKey: return <TextTab config={config.texts} />
+            case textKey: return <TextTab config={config.texts} updateConfig={c => updateConfig({ texts: c })} />
             case configurationKey: return <WIP config={config} />
             default: return undefined
         }

@@ -44,6 +44,7 @@ export type TextTemplate = {
 
 export type TextsConfig = {
     textsPath: string
+    lastOpenedTab: number
     templates: TextTemplate[]
 }
 
@@ -79,7 +80,10 @@ export function loadConfig(): AppConfig | ConfigError {
   if (fileExists(configPath)) {
     try {
       const config = readJsonFile<AppConfig>(configPath)
-      return migrateConfig(config, configPath);
+      const [migratedConfig, needsSaving] = migrateConfig(config)
+
+      if (needsSaving) saveConfigInternal(migratedConfig, configPath)
+      return migratedConfig
     }
     catch (e) {
       return ({
@@ -95,22 +99,29 @@ export function loadConfig(): AppConfig | ConfigError {
   })
 }
 
-function saveConfig(newConfig: AppConfig, configPath: string): void {
+function saveConfigInternal(newConfig: AppConfig, configPath: string): void {
     saveJsonFile(newConfig, configPath)
 }
 
-function migrateConfig(config: any, configPath: string): AppConfig {
-  config = migrateCameraPositionGroups(config, configPath)
-  config = migrateTexts(config, configPath)
+export function saveConfig(newConfig: AppConfig): void {
+    saveConfigInternal(newConfig, getConfigPath())
+}
 
-  return ({ ...config, isError: false})
+function migrateConfig(config: any): [AppConfig, boolean] {
+  const [migratedConfig1, needsSaving1] = migrateCameraPositionGroups(config)
+  const [migratedConfig2, needsSaving2] = migrateTexts(migratedConfig1)
+
+  return [
+    ({ ...migratedConfig2, isError: false}),
+    needsSaving1 || needsSaving2,
+  ]
 }
 
 /*
  * Migration from a config which has no version.
  * Move config.cameras[x].positions to config.cameras[x].positionGroups[y].positions with config.cameras[x].positionGroups[y].title = "default"
  */
-function migrateCameraPositionGroups(config: any, configPath: string): any {
+function migrateCameraPositionGroups(config: any): [any, boolean] {
   if (config.version === undefined) {
     const newConfig = ({
       ...config,
@@ -125,15 +136,15 @@ function migrateCameraPositionGroups(config: any, configPath: string): any {
       })),
       version: 1,
     })
-    saveConfig(newConfig, configPath)
 
-    return newConfig
+    return [newConfig, true]
   }
-  else return config
+  else return [config, false]
 }
 
-function migrateTexts(config: any, configPath: string): any {
+function migrateTexts(config: any): [any, boolean] {
     let newConfig = config
+    let needsSaving = false
     if (!config.texts) {
         const kerkdienstTemplateDir = resolve(getDefaultTextTemplateDir(), 'kerkdienst')
         const kerkdienstOutputDir = resolve(getDefaultTextTemplateOutputDir(), 'kerkdienst')
@@ -145,6 +156,7 @@ function migrateTexts(config: any, configPath: string): any {
             ...config,
             texts: {
                 textsPath: getDefaultTextPath(),
+                lastOpenedTab: 0,
                 templates: [
                     {
                         name: "kerkdienst",
@@ -156,7 +168,18 @@ function migrateTexts(config: any, configPath: string): any {
             version: 2,
         })
 
-        saveConfig(newConfig, configPath)
+        needsSaving = true
+    }
+    else if (!config.texts.lastOpenedTab) {
+        newConfig = {
+            ...config,
+            texts: {
+                ...config.texts,
+                lastOpenedTab: 0,
+            },
+        }
+
+        needsSaving = true
     }
 
     newConfig.texts.templates.forEach((template: any) => {
@@ -164,5 +187,5 @@ function migrateTexts(config: any, configPath: string): any {
         createDirectoryIfNotExists(template.outputDir)
     })
 
-    return newConfig
+    return [newConfig, needsSaving]
 }

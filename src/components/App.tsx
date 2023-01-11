@@ -1,10 +1,10 @@
 import React, { useState } from "react"
 import ConfigErrorPage from "./ConfigErrorPage"
-import { AppConfig, ConfigError, loadConfig } from "../core/config"
+import { AppConfig, ConfigError, loadConfig, saveConfig } from "../core/config"
 import TabPane from "./TabPane"
 
 const App = () => {
-  const [config] = useState<AppConfig | ConfigError>(loadConfig())
+  const [config, setConfig] = useState<AppConfig | ConfigError>(loadConfig())
 
   if (!config) {
     return (<div>Loading...</div>)
@@ -14,7 +14,15 @@ const App = () => {
     return (<ConfigErrorPage error={config} />)
   }
 
-  return (<TabPane config={config} />)
+  function updateConfig(partialConfig: Partial<AppConfig>): void {
+    if (!config.isError) {
+      const newConfig = { ...config, ...partialConfig }
+      setConfig(newConfig)
+      saveConfig(newConfig)
+    }
+  }
+
+  return <TabPane config={config} updateConfig={updateConfig} />
 }
 
 export default App
