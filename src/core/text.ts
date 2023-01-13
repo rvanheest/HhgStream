@@ -53,9 +53,19 @@ export type BijbellezingTextStore = {
     meditatieBijbeltekstVolgendeKeer: Text
 }
 
+export type CursusGeestelijkeVormingTextStore = {
+    spreker: Text & Position
+    sprekerAfkomst: Text
+    thema: Text & Position
+    openingSpreker: Text & Position
+    openingZingen: Text
+    schriftlezingen: TextArray
+}
+
 export type TextStore = {
     kerkdienst: KerkdienstTextStore
     bijbellezing: BijbellezingTextStore
+    cursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore
     isError: false
 }
 
@@ -88,11 +98,21 @@ export const defaultBijbellezing: BijbellezingTextStore = {
     meditatieBijbeltekstVolgendeKeer: { value: "" },
 }
 
+export const defaultCursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore = {
+    spreker: { value: "", position: TextPosition.TopRight },
+    sprekerAfkomst: { value: "" },
+    thema: { value: "", position: TextPosition.TopLeft },
+    openingSpreker: { value: "", position: TextPosition.BottomLeft },
+    openingZingen: { value: "" },
+    schriftlezingen: { values: [] },
+}
+
 export function loadTextStore(textPath: string): TextStore | TextStoreError {
     if (!fileExists(textPath)) {
         const initialTextStore: TextStore = {
             kerkdienst: defaultKerkdienst,
             bijbellezing: defaultBijbellezing,
+            cursusGeestelijkeVorming: defaultCursusGeestelijkeVorming,
             isError: false,
         }
         saveTextStore(initialTextStore, textPath)
@@ -109,6 +129,10 @@ export function loadTextStore(textPath: string): TextStore | TextStoreError {
             }
             if (!store.bijbellezing || !Object.keys(store.bijbellezing).length) {
                 store.bijbellezing = defaultBijbellezing
+                needSave = true
+            }
+            if (!store.cursusGeestelijkeVorming || !Object.keys(store.cursusGeestelijkeVorming).length) {
+                store.cursusGeestelijkeVorming = defaultCursusGeestelijkeVorming
                 needSave = true
             }
             if (needSave) saveTextStore(store, textPath)

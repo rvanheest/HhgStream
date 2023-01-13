@@ -5,6 +5,7 @@ import { openFile } from "../../core/utils";
 import CardTabPane from "../util/CardTabPane"
 import KerkdienstTeksten from "./KerkdienstTeksten";
 import BijbellezingTeksten from "./BijbellezingTeksten";
+import CursusGeestelijkeVormingTeksten from "./CursusGeestelijkeVormingTeksten";
 import TextErrorPage from "./TextErrorPage";
 import { TextsConfig } from "../../core/config";
 
@@ -60,7 +61,9 @@ const TextTab = ({ config, updateConfig }: TextTabProps) => {
         },
         {
             title: "Cursus Geestelijke Vorming",
-            element: <WIP />
+            element: <CursusGeestelijkeVormingTeksten teksten={textStore.cursusGeestelijkeVorming}
+                                                      tekstTemplate={config.templates.find(t => t.name === 'cursus geestelijke vorming')}
+                                                      saveTeksten={teksten => saveTexts({ cursusGeestelijkeVorming: teksten})} />
         },
         {
             title: "Huwelijksdienst",
