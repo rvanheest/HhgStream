@@ -62,6 +62,15 @@ export type CursusGeestelijkeVormingTextStore = {
     schriftlezingen: TextArray
 }
 
+export type RouwdienstTextStore = {
+    inleidendOrgelspel: Text & Position
+    zingen: TextArray & Position
+    schriftlezingen: TextArray & Position
+    preekBijbeltekst: Text & Position
+    preekBijbelcitaat: Text & Citaat
+    uitleidendOrgelspel: Text & Position
+}
+
 export type TrouwdienstTextStore = {
     inleidendOrgelspel: Text & Position
     zingen: TextArray & Position
@@ -75,6 +84,7 @@ export type TextStore = {
     kerkdienst: KerkdienstTextStore
     bijbellezing: BijbellezingTextStore
     cursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore
+    rouwdienst: RouwdienstTextStore
     trouwdienst: TrouwdienstTextStore
     isError: false
 }
@@ -117,6 +127,15 @@ export const defaultCursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore 
     schriftlezingen: { values: [] },
 }
 
+export const defaultRouwdienst: RouwdienstTextStore = {
+    inleidendOrgelspel: { value: "", position: TextPosition.TopRight },
+    zingen: { values: [], position: TextPosition.TopLeft },
+    schriftlezingen: { values: [], position: TextPosition.TopLeft },
+    preekBijbeltekst: { value: "", position: TextPosition.TopLeft },
+    preekBijbelcitaat: { value: "", isCitaat: false },
+    uitleidendOrgelspel: { value: "", position: TextPosition.TopRight },
+}
+
 export const defaultTrouwdienst: TrouwdienstTextStore = {
     inleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
     zingen: { values: [], position: TextPosition.TopLeft },
@@ -132,6 +151,7 @@ export function loadTextStore(textPath: string): TextStore | TextStoreError {
             kerkdienst: defaultKerkdienst,
             bijbellezing: defaultBijbellezing,
             cursusGeestelijkeVorming: defaultCursusGeestelijkeVorming,
+            rouwdienst: defaultRouwdienst,
             trouwdienst: defaultTrouwdienst,
             isError: false,
         }
@@ -153,6 +173,10 @@ export function loadTextStore(textPath: string): TextStore | TextStoreError {
             }
             if (!store.cursusGeestelijkeVorming || !Object.keys(store.cursusGeestelijkeVorming).length) {
                 store.cursusGeestelijkeVorming = defaultCursusGeestelijkeVorming
+                needSave = true
+            }
+            if (!store.rouwdienst || !Object.keys(store.rouwdienst).length) {
+                store.rouwdienst = defaultRouwdienst
                 needSave = true
             }
             if (!store.trouwdienst || !Object.keys(store.trouwdienst).length) {
