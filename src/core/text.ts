@@ -72,6 +72,8 @@ export type RouwdienstTextStore = {
 }
 
 export type TrouwdienstTextStore = {
+    naamBruidegom: Text
+    naamBruid: Text
     inleidendOrgelspel: Text & Position
     zingen: TextArray & Position
     schriftlezingen: TextArray & Position
@@ -137,6 +139,8 @@ export const defaultRouwdienst: RouwdienstTextStore = {
 }
 
 export const defaultTrouwdienst: TrouwdienstTextStore = {
+    naamBruidegom: { value: "" },
+    naamBruid: { value: "" },
     inleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
     zingen: { values: [], position: TextPosition.TopLeft },
     schriftlezingen: { values: [], position: TextPosition.TopLeft },
