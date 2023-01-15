@@ -53,9 +53,42 @@ export type BijbellezingTextStore = {
     meditatieBijbeltekstVolgendeKeer: Text
 }
 
+export type CursusGeestelijkeVormingTextStore = {
+    spreker: Text & Position
+    sprekerAfkomst: Text
+    thema: Text & Position
+    openingSpreker: Text & Position
+    openingZingen: Text
+    schriftlezingen: TextArray
+}
+
+export type RouwdienstTextStore = {
+    naamOverledene: Text
+    inleidendOrgelspel: Text & Position
+    zingen: TextArray & Position
+    schriftlezingen: TextArray & Position
+    preekBijbeltekst: Text & Position
+    preekBijbelcitaat: Text & Citaat
+    uitleidendOrgelspel: Text & Position
+}
+
+export type TrouwdienstTextStore = {
+    naamBruidegom: Text
+    naamBruid: Text
+    inleidendOrgelspel: Text & Position
+    zingen: TextArray & Position
+    schriftlezingen: TextArray & Position
+    preekBijbeltekst: Text & Position
+    preekBijbelcitaat: Text & Citaat
+    uitleidendOrgelspel: Text & Position
+}
+
 export type TextStore = {
     kerkdienst: KerkdienstTextStore
     bijbellezing: BijbellezingTextStore
+    cursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore
+    rouwdienst: RouwdienstTextStore
+    trouwdienst: TrouwdienstTextStore
     isError: false
 }
 
@@ -88,11 +121,44 @@ export const defaultBijbellezing: BijbellezingTextStore = {
     meditatieBijbeltekstVolgendeKeer: { value: "" },
 }
 
+export const defaultCursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore = {
+    spreker: { value: "", position: TextPosition.TopRight },
+    sprekerAfkomst: { value: "" },
+    thema: { value: "", position: TextPosition.TopLeft },
+    openingSpreker: { value: "", position: TextPosition.BottomLeft },
+    openingZingen: { value: "" },
+    schriftlezingen: { values: [] },
+}
+
+export const defaultRouwdienst: RouwdienstTextStore = {
+    naamOverledene: { value: "" },
+    inleidendOrgelspel: { value: "", position: TextPosition.TopRight },
+    zingen: { values: [], position: TextPosition.TopLeft },
+    schriftlezingen: { values: [], position: TextPosition.TopLeft },
+    preekBijbeltekst: { value: "", position: TextPosition.TopLeft },
+    preekBijbelcitaat: { value: "", isCitaat: false },
+    uitleidendOrgelspel: { value: "", position: TextPosition.TopRight },
+}
+
+export const defaultTrouwdienst: TrouwdienstTextStore = {
+    naamBruidegom: { value: "" },
+    naamBruid: { value: "" },
+    inleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
+    zingen: { values: [], position: TextPosition.TopLeft },
+    schriftlezingen: { values: [], position: TextPosition.TopLeft },
+    preekBijbeltekst: { value: "", position: TextPosition.TopLeft },
+    preekBijbelcitaat: { value: "", isCitaat: false },
+    uitleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
+}
+
 export function loadTextStore(textPath: string): TextStore | TextStoreError {
     if (!fileExists(textPath)) {
         const initialTextStore: TextStore = {
             kerkdienst: defaultKerkdienst,
             bijbellezing: defaultBijbellezing,
+            cursusGeestelijkeVorming: defaultCursusGeestelijkeVorming,
+            rouwdienst: defaultRouwdienst,
+            trouwdienst: defaultTrouwdienst,
             isError: false,
         }
         saveTextStore(initialTextStore, textPath)
@@ -109,6 +175,18 @@ export function loadTextStore(textPath: string): TextStore | TextStoreError {
             }
             if (!store.bijbellezing || !Object.keys(store.bijbellezing).length) {
                 store.bijbellezing = defaultBijbellezing
+                needSave = true
+            }
+            if (!store.cursusGeestelijkeVorming || !Object.keys(store.cursusGeestelijkeVorming).length) {
+                store.cursusGeestelijkeVorming = defaultCursusGeestelijkeVorming
+                needSave = true
+            }
+            if (!store.rouwdienst || !Object.keys(store.rouwdienst).length) {
+                store.rouwdienst = defaultRouwdienst
+                needSave = true
+            }
+            if (!store.trouwdienst || !Object.keys(store.trouwdienst).length) {
+                store.trouwdienst = defaultTrouwdienst
                 needSave = true
             }
             if (needSave) saveTextStore(store, textPath)

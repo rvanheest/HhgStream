@@ -5,15 +5,11 @@ import { openFile } from "../../core/utils";
 import CardTabPane from "../util/CardTabPane"
 import KerkdienstTeksten from "./KerkdienstTeksten";
 import BijbellezingTeksten from "./BijbellezingTeksten";
+import CursusGeestelijkeVormingTeksten from "./CursusGeestelijkeVormingTeksten";
+import RouwdienstTeksten from "./RouwdienstTeksten";
+import TrouwdienstTeksten from "./TrouwdienstTeksten";
 import TextErrorPage from "./TextErrorPage";
 import { TextsConfig } from "../../core/config";
-
-const WIP = () => (
-    <div className="text-center">
-        <h3>WORK IN PROGRESS</h3>
-        <p className="fst-italic">Hier kunnen de teksten worden ingesteld</p>
-    </div>
-)
 
 type TextTabProps = {
     config: TextsConfig
@@ -60,15 +56,21 @@ const TextTab = ({ config, updateConfig }: TextTabProps) => {
         },
         {
             title: "Cursus Geestelijke Vorming",
-            element: <WIP />
+            element: <CursusGeestelijkeVormingTeksten teksten={textStore.cursusGeestelijkeVorming}
+                                                      tekstTemplate={config.templates.find(t => t.name === 'cursus geestelijke vorming')}
+                                                      saveTeksten={teksten => saveTexts({ cursusGeestelijkeVorming: teksten})} />
         },
         {
             title: "Huwelijksdienst",
-            element: <WIP />
+            element: <TrouwdienstTeksten teksten={textStore.trouwdienst}
+                                         tekstTemplate={config.templates.find(t => t.name === 'trouwdienst')}
+                                         saveTeksten={teksten => saveTexts({ trouwdienst: teksten })} />
         },
         {
             title: "Begrafenisdienst",
-            element: <WIP />
+            element: <RouwdienstTeksten teksten={textStore.rouwdienst}
+                                        tekstTemplate={config.templates.find(t => t.name === 'rouwdienst')}
+                                        saveTeksten={teksten => saveTexts({ rouwdienst: teksten })} />
         }
     ]
 
