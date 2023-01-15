@@ -6,6 +6,7 @@ import CardTabPane from "../util/CardTabPane"
 import KerkdienstTeksten from "./KerkdienstTeksten";
 import BijbellezingTeksten from "./BijbellezingTeksten";
 import CursusGeestelijkeVormingTeksten from "./CursusGeestelijkeVormingTeksten";
+import TrouwdienstTeksten from "./TrouwdienstTeksten";
 import TextErrorPage from "./TextErrorPage";
 import { TextsConfig } from "../../core/config";
 
@@ -67,7 +68,9 @@ const TextTab = ({ config, updateConfig }: TextTabProps) => {
         },
         {
             title: "Huwelijksdienst",
-            element: <WIP />
+            element: <TrouwdienstTeksten teksten={textStore.trouwdienst}
+                                         tekstTemplate={config.templates.find(t => t.name === 'trouwdienst')}
+                                         saveTeksten={teksten => saveTexts({ trouwdienst: teksten })} />
         },
         {
             title: "Begrafenisdienst",

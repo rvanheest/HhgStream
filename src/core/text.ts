@@ -62,10 +62,20 @@ export type CursusGeestelijkeVormingTextStore = {
     schriftlezingen: TextArray
 }
 
+export type TrouwdienstTextStore = {
+    inleidendOrgelspel: Text & Position
+    zingen: TextArray & Position
+    schriftlezingen: TextArray & Position
+    preekBijbeltekst: Text & Position
+    preekBijbelcitaat: Text & Citaat
+    uitleidendOrgelspel: Text & Position
+}
+
 export type TextStore = {
     kerkdienst: KerkdienstTextStore
     bijbellezing: BijbellezingTextStore
     cursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore
+    trouwdienst: TrouwdienstTextStore
     isError: false
 }
 
@@ -107,12 +117,22 @@ export const defaultCursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore 
     schriftlezingen: { values: [] },
 }
 
+export const defaultTrouwdienst: TrouwdienstTextStore = {
+    inleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
+    zingen: { values: [], position: TextPosition.TopLeft },
+    schriftlezingen: { values: [], position: TextPosition.TopLeft },
+    preekBijbeltekst: { value: "", position: TextPosition.TopLeft },
+    preekBijbelcitaat: { value: "", isCitaat: false },
+    uitleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
+}
+
 export function loadTextStore(textPath: string): TextStore | TextStoreError {
     if (!fileExists(textPath)) {
         const initialTextStore: TextStore = {
             kerkdienst: defaultKerkdienst,
             bijbellezing: defaultBijbellezing,
             cursusGeestelijkeVorming: defaultCursusGeestelijkeVorming,
+            trouwdienst: defaultTrouwdienst,
             isError: false,
         }
         saveTextStore(initialTextStore, textPath)
@@ -133,6 +153,10 @@ export function loadTextStore(textPath: string): TextStore | TextStoreError {
             }
             if (!store.cursusGeestelijkeVorming || !Object.keys(store.cursusGeestelijkeVorming).length) {
                 store.cursusGeestelijkeVorming = defaultCursusGeestelijkeVorming
+                needSave = true
+            }
+            if (!store.trouwdienst || !Object.keys(store.trouwdienst).length) {
+                store.trouwdienst = defaultTrouwdienst
                 needSave = true
             }
             if (needSave) saveTextStore(store, textPath)
