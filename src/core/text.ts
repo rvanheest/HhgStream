@@ -63,6 +63,7 @@ export type CursusGeestelijkeVormingTextStore = {
 }
 
 export type RouwdienstTextStore = {
+    naamOverledene: Text
     inleidendOrgelspel: Text & Position
     zingen: TextArray & Position
     schriftlezingen: TextArray & Position
@@ -130,6 +131,7 @@ export const defaultCursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore 
 }
 
 export const defaultRouwdienst: RouwdienstTextStore = {
+    naamOverledene: { value: "" },
     inleidendOrgelspel: { value: "", position: TextPosition.TopRight },
     zingen: { values: [], position: TextPosition.TopLeft },
     schriftlezingen: { values: [], position: TextPosition.TopLeft },

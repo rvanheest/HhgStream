@@ -12,6 +12,7 @@ import { formatSongs } from "../../core/formatting/songFormatting";
 import { formatScripture } from "../../core/formatting/scriptureFormatting";
 
 type FormInput = {
+    naamOverledene: string
     inleidendOrgelspel: string
     inleidendOrgelspelPosition: TextPosition
     zingen: TextArrayElement[]
@@ -28,6 +29,9 @@ type FormInput = {
 
 function mapFormToTextStore(data: FormInput): RouwdienstTextStore {
     return {
+        naamOverledene: {
+            value: data.naamOverledene,
+        },
         inleidendOrgelspel: {
             value: data.inleidendOrgelspel,
             position: data.inleidendOrgelspelPosition,
@@ -57,6 +61,7 @@ function mapFormToTextStore(data: FormInput): RouwdienstTextStore {
 
 function mapTextStoreToForm(data: RouwdienstTextStore): FormInput {
     return {
+        naamOverledene: data.naamOverledene.value,
         inleidendOrgelspel: data.inleidendOrgelspel.value,
         inleidendOrgelspelPosition: data.inleidendOrgelspel.position,
         zingen: mapTextArray(data.zingen.values),
@@ -115,6 +120,10 @@ const RouwdienstTeksten = ({ teksten, tekstTemplate, saveTeksten }: RouwdienstTe
 
     return (
         <TextForm onClear={onClear} onSubmit={handleSubmit(onSubmit)}>
+            <InputGroup controlId="rouwdienstNaamOverledene" label="Overledene">
+                <TextField placeholder="Naam" control={control} name="naamOverledene" />
+            </InputGroup>
+
             <InputGroup controlId="rouwdienstInleidendOrgelspel"
                         label="Inleidend orgelspel"
                         renderPosition={() => <PositionSelect control={control} name="inleidendOrgelspelPosition" />}>
