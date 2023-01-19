@@ -11,9 +11,9 @@ const PositionSelect = <TFieldValues extends FieldValues>(props: PositionSelectP
     function onSelect(e: React.ChangeEvent<HTMLSelectElement>): void {
         onChange({
             ...e,
-            currentTarget: {
-                ...e.currentTarget,
-                value: TextPosition[e.currentTarget.value as keyof typeof TextPosition]
+            target: {
+                ...e.target,
+                value: TextPosition[e.target.value as keyof typeof TextPosition]
             }
         })
     }
