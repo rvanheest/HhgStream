@@ -61,19 +61,19 @@ const TextFieldArray = <TFieldValues extends FieldValues, TFieldArrayName extend
                 return (
                     <div key={field.id} className={`input-group ${!lastElement ? "mb-1" : ""}`.trim()}>
                         <Form.Control type={type} placeholder={placeholder} onKeyDown={e => onKeyPress(e, index)} {...register(fieldName(index))} />
-                        {!lastElement ? undefined :
-                            <Button variant="dark"
+                        <Button variant="dark"
                                 className="bg-gradient"
                                 type="button"
                                 tabIndex={-1}
+                                hidden={!lastElement}
                                 onClick={() => appendField()}>
-                                <FontAwesomeIcon icon={faCirclePlus} />
-                            </Button>}
+                            <FontAwesomeIcon icon={faCirclePlus} />
+                        </Button>
                         <Button variant="dark"
-                            className="bg-gradient"
-                            type="button"
-                            tabIndex={-1}
-                            onClick={() => deleteField(index)}>
+                                className="bg-gradient"
+                                type="button"
+                                tabIndex={-1}
+                                onClick={() => deleteField(index)}>
                             <FontAwesomeIcon icon={faCircleMinus} />
                         </Button>
                     </div>

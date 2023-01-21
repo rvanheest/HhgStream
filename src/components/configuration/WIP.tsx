@@ -1,13 +1,11 @@
 import React from "react"
 import { Button } from "react-bootstrap"
-import { AppConfig } from "../../core/config"
+import { useConfig } from "../../core/config"
 import { getConfigPath, openFile } from "../../core/utils"
 
-type WipProps = {
-    config: AppConfig
-}
+const WIP = () => {
+    const config = useConfig()
 
-const WIP = ({ config }: WipProps) => {
     return (
         <div>
             <h3 className="text-center">WORK IN PROGRESS</h3>

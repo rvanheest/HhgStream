@@ -1,10 +1,9 @@
 import React from "react"
-import { TextTemplate } from "../../core/config"
-import { defaultTrouwdienst, fillTemplates, TrouwdienstTextStore, TextPosition } from "../../core/text"
-import { useForm } from "react-hook-form";
+import { TrouwdienstTextStore, TextPosition } from "../../core/text"
 import TextForm from "../util/form/TextForm";
 import InputGroup from "../util/form/InputGroup";
 import TextField from "../util/form/TextField";
+import useTextForm from "../util/form/TextFormHook"
 import CheckboxExtension from "../util/form/CheckboxExtension";
 import PositionSelect from "../util/form/PositionSelect";
 import TextFieldArray, { emptyTextArrayElement, mapTextArray, mapTextArrayToStore, TextArrayElement } from "../util/form/TextFieldArray";
@@ -100,31 +99,16 @@ function formatTekstenForTemplates(teksten: TrouwdienstTextStore): TrouwdienstTe
     }
 }
 
-type TrouwdienstTekstenProps = {
-    teksten: TrouwdienstTextStore
-    tekstTemplate: TextTemplate | undefined
-    saveTeksten: (teksten: TrouwdienstTextStore) => void
-}
-
-const TrouwdienstTeksten = ({ teksten, tekstTemplate, saveTeksten }: TrouwdienstTekstenProps) => {
-    const { control, handleSubmit, register, reset } = useForm<FormInput>({ defaultValues: mapTextStoreToForm(teksten) })
-
-    function onSubmit(data: FormInput) {
-        const tekstStore = mapFormToTextStore(data)
-        const tekstenVoorTemplates = formatTekstenForTemplates(tekstStore)
-
-        reset(mapTextStoreToForm(tekstStore))
-        if (!!tekstTemplate) fillTemplates(tekstTemplate, tekstenVoorTemplates)
-        saveTeksten(tekstStore)
-    }
-
-    function onClear() {
-        reset(mapTextStoreToForm(defaultTrouwdienst))
-        saveTeksten(defaultTrouwdienst)
-    }
+const TrouwdienstTeksten = () => {
+    const { onSubmit, onClear, control, register } = useTextForm({
+        textFormConfigName: 'trouwdienst',
+        mapTextStoreToForm,
+        mapFormToTextStore,
+        formatTekstenForTemplates,
+    })
 
     return (
-        <TextForm onClear={onClear} onSubmit={handleSubmit(onSubmit)}>
+        <TextForm onClear={onClear} onSubmit={onSubmit}>
             <InputGroup controlId="trouwdienstNaamBruidegom" label="Bruidegom">
                 <TextField placeholder="Naam" control={control} name="naamBruidegom" />
             </InputGroup>

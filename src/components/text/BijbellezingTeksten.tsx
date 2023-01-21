@@ -1,10 +1,8 @@
 import React from "react"
-import { useForm } from "react-hook-form"
-import { TextTemplate } from "../../core/config"
 import { formatScripture } from "../../core/formatting/scriptureFormatting";
 import { formatSongs } from "../../core/formatting/songFormatting";
 import { formatDate } from "../../core/formatting/dateFormatting";
-import { BijbellezingTextStore, defaultBijbellezing, fillTemplates, TextPosition } from "../../core/text"
+import { BijbellezingTextStore, TextPosition } from "../../core/text"
 import DatePickerField from "../util/form/DatePickerField";
 import InputGroup from "../util/form/InputGroup";
 import PositionSelect from "../util/form/PositionSelect";
@@ -12,6 +10,7 @@ import SectionHeader from "../util/form/SectionHeader";
 import TextField from "../util/form/TextField";
 import TextFieldArray, { emptyTextArrayElement, mapTextArray, mapTextArrayToStore, TextArrayElement } from "../util/form/TextFieldArray";
 import TextForm from "../util/form/TextForm";
+import useTextForm from "../util/form/TextFormHook"
 
 type FormInput = {
     voorganger: string
@@ -100,31 +99,16 @@ function formatTekstenForTemplates(teksten: BijbellezingTextStore): Bijbellezing
     }
 }
 
-type BijbellezingTekstenProps = {
-    teksten: BijbellezingTextStore
-    tekstTemplate: TextTemplate | undefined
-    saveTeksten: (teksten: BijbellezingTextStore) => void
-}
-
-const BijbellezingTeksten = ({ teksten, tekstTemplate, saveTeksten }: BijbellezingTekstenProps) => {
-    const { control, handleSubmit, register, reset } = useForm<FormInput>({ defaultValues: mapTextStoreToForm(teksten) })
-
-    function onSubmit(data: FormInput) {
-        const tekstStore = mapFormToTextStore(data)
-        const tekstenVoorTemplates = formatTekstenForTemplates(tekstStore)
-
-        reset(mapTextStoreToForm(tekstStore))
-        if (!!tekstTemplate) fillTemplates(tekstTemplate, tekstenVoorTemplates)
-        saveTeksten(tekstStore)
-    }
-
-    function onClear() {
-        reset(mapTextStoreToForm(defaultBijbellezing))
-        saveTeksten(defaultBijbellezing)
-    }
+const BijbellezingTeksten = () => {
+    const { onSubmit, onClear, control, register } = useTextForm({
+        textFormConfigName: 'bijbellezing',
+        mapTextStoreToForm,
+        mapFormToTextStore,
+        formatTekstenForTemplates,
+    })
 
     return (
-        <TextForm onClear={onClear} onSubmit={handleSubmit(onSubmit)}>
+        <TextForm onClear={onClear} onSubmit={onSubmit}>
             <InputGroup controlId="bijbellezingVoorganger"
                         label="Voorganger"
                         renderPosition={() => <PositionSelect control={control} name="voorgangerPosition" />}>

@@ -43,7 +43,7 @@ export function resolve(...paths: string[]): string {
 }
 
 export function createDirectoryIfNotExists(path: string): void {
-    if (!fs.existsSync(path)) fs.mkdirSync(path)
+    if (!fs.existsSync(path)) fs.mkdirSync(path, { recursive: true })
 }
 
 export function listFiles(path: string): string[] {

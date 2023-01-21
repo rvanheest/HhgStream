@@ -11,6 +11,9 @@ import {
     resolve,
     saveJsonFile
 } from "./utils";
+import { create } from "zustand"
+import { shallow } from "zustand/shallow"
+import { useEffect } from "react";
 
 export type WhiteBalanceOverride = {
   blue: number
@@ -36,32 +39,29 @@ export type Camera = {
   positionGroups: PositionGroup[]
 }
 
-export type TextTemplate = {
-    name: string
+export type TextFormConfig = {
     templateDir: string
     outputDir: string
 }
 
 export type TextsConfig = {
-    textsPath: string
+    textStore: string
     lastOpenedTab: number
-    templates: TextTemplate[]
+    forms: { [key: string]: TextFormConfig }
 }
 
 export type AppConfig = {
   version: number
   cameras: Camera[]
   texts: TextsConfig
-  isError: false
 }
 
 export type ConfigError = {
   message: string
   error?: string | undefined
-  isError: true
 }
 
-export function loadConfig(): AppConfig | ConfigError {
+function loadConfig(): AppConfig & { isError: false } | ConfigError & { isError: true } {
   const configPath = getConfigPath()
 
   if (!fileExists(configPath)) {
@@ -82,7 +82,7 @@ export function loadConfig(): AppConfig | ConfigError {
       const config = readJsonFile<AppConfig>(configPath)
       const [migratedConfig, needsSaving] = migrateConfig(config)
 
-      if (needsSaving) saveConfigInternal(migratedConfig, configPath)
+      if (needsSaving) saveConfig(migratedConfig, configPath)
       return migratedConfig
     }
     catch (e) {
@@ -99,22 +99,18 @@ export function loadConfig(): AppConfig | ConfigError {
   })
 }
 
-function saveConfigInternal(newConfig: AppConfig, configPath: string): void {
+function saveConfig(newConfig: AppConfig, configPath: string): void {
     saveJsonFile(newConfig, configPath)
 }
+function migrateConfig(config: any): [AppConfig & { isError: false }, boolean] {
+    const [migratedConfig1, needsSaving1] = migrateCameraPositionGroups(config)
+    const [migratedConfig2, needsSaving2] = migrateTexts(migratedConfig1)
+    const [migratedConfig3, needsSaving3] = migrateTextTemplates(migratedConfig2)
 
-export function saveConfig(newConfig: AppConfig): void {
-    saveConfigInternal(newConfig, getConfigPath())
-}
-
-function migrateConfig(config: any): [AppConfig, boolean] {
-  const [migratedConfig1, needsSaving1] = migrateCameraPositionGroups(config)
-  const [migratedConfig2, needsSaving2] = migrateTexts(migratedConfig1)
-
-  return [
-    ({ ...migratedConfig2, isError: false}),
-    needsSaving1 || needsSaving2,
-  ]
+    return [
+        ({ ...migratedConfig3, isError: false}),
+        needsSaving1 || needsSaving2 || needsSaving3,
+    ]
 }
 
 /*
@@ -182,10 +178,130 @@ function migrateTexts(config: any): [any, boolean] {
         needsSaving = true
     }
 
-    newConfig.texts.templates.forEach((template: any) => {
-        createDirectoryIfNotExists(template.templateDir)
-        createDirectoryIfNotExists(template.outputDir)
-    })
+    if (newConfig.version === 2) { // starting in config version 3, these templates are moved to a different place
+        newConfig.texts.templates.forEach((template: any) => {
+            createDirectoryIfNotExists(template.templateDir)
+            createDirectoryIfNotExists(template.outputDir)
+        })
+    }
 
     return [newConfig, needsSaving]
+}
+
+/*
+ * Migration from config version 2 to version 3
+ * Move config.texts.textsPath to config.texts.textStore
+ * Move config.texts.templates[] to config.texts.forms objects with template.name as key and the other fields as values in the new objects
+ */
+function migrateTextTemplates(config: any): [any, boolean] {
+    let newConfig = config
+    let needsSaving = false
+    if (config.version <= 2 && !!config.texts.templates) {
+        newConfig = {
+            ...config,
+            texts: {
+                textStore: config.texts.textsPath,
+                lastOpenedTab: config.texts.lastOpenedTab,
+                forms: config.texts.templates.reduce((obj: any, template: any) => ({
+                    ...obj,
+                    [template.name]: {
+                        templateDir: template.templateDir,
+                        outputDir: template.outputDir
+                    }
+                }), {})
+            },
+            version: 3,
+        }
+
+        needsSaving = true
+    }
+
+    if (newConfig.version >= 3) {
+        if (!!newConfig.texts.forms["cursus geestelijke vorming"]) {
+            newConfig = {
+                ...newConfig,
+                texts: {
+                    ...newConfig.texts,
+                    forms: {
+                        ...newConfig.texts.forms,
+                        cursusGeestelijkeVorming: newConfig.texts.forms["cursus geestelijke vorming"],
+                    },
+                },
+            }
+            delete newConfig.texts.forms["cursus geestelijke vorming"]
+            needsSaving = true
+        }
+
+        Object.values(newConfig.texts.forms).forEach(({ templateDir, outputDir }: any) => {
+            createDirectoryIfNotExists(templateDir)
+            createDirectoryIfNotExists(outputDir)
+        })
+    }
+
+    return [newConfig, needsSaving]
+}
+
+type ZustandConfigStore = {
+    config: AppConfig | undefined
+    error: ConfigError | undefined
+    loaded: boolean
+    loadConfig: () => void
+    setLastOpenedTextTab: (index: number) => void
+}
+
+const useConfigStore = create<ZustandConfigStore>()(setState => ({
+    loaded: false,
+    config: undefined,
+    error: undefined,
+    loadConfig: () => {
+        const config = loadConfig()
+        if (config.isError) {
+            const { isError, ...error } = config
+            setState({ loaded: true, config: undefined, error: error, })
+        }
+        else {
+            const { isError, ...c } = config
+            setState({ loaded: true, config: c, error: undefined })
+        }
+    },
+    setLastOpenedTextTab: index => setState(s => {
+        if (!s.config) return s
+        const newConfig = ({ ...s.config, texts: { ...s.config.texts, lastOpenedTab: index }})
+        saveConfig(newConfig, getConfigPath())
+        return ({ ...s, config: newConfig })
+    })
+}))
+
+export function useConfig(): AppConfig {
+    return useConfigStore(s => s.config!)
+}
+
+export function useCamerasConfig(): Camera[] {
+    return useConfigStore(s => s.config!.cameras)
+}
+
+export function useTextStorePath(): string {
+    return useConfigStore(s => s.config!.texts.textStore)
+}
+
+export function useTextStoreLastOpenedTab(): number {
+    return useConfigStore(s => s.config!.texts.lastOpenedTab)
+}
+
+export function useTextFormConfig(formName: string): TextFormConfig | undefined {
+    return useConfigStore(s => s.config!.texts.forms[formName])
+}
+
+export function useLoadConfig(): Pick<ZustandConfigStore, "loaded" | "error"> {
+    const { loadConfig, ...store } = useConfigStore(s => ({ loadConfig: s.loadConfig, loaded: s.loaded, error: s.error }), shallow)
+
+    useEffect(() => {
+        loadConfig()
+    }, [loadConfig])
+
+    return store
+}
+
+export function useSetLastOpenedTextTab(): (index: number) => void {
+    return useConfigStore(s => s.setLastOpenedTextTab)
 }
