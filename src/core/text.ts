@@ -1,6 +1,9 @@
 import { extension, fileExists, filename, listFiles, readFile, readJsonFile, resolve, saveFile, saveJsonFile } from "./utils";
-import { TextTemplate } from "./config";
+import { TextFormConfig, useTextStorePath } from "./config"
 import Mustache from "mustache";
+import { create } from "zustand"
+import { shallow } from "zustand/shallow"
+import {useEffect} from "react";
 
 export enum TextPosition {
     TopLeft = "Links boven",
@@ -89,16 +92,14 @@ export type TextStore = {
     cursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore
     rouwdienst: RouwdienstTextStore
     trouwdienst: TrouwdienstTextStore
-    isError: false
 }
 
 export type TextStoreError = {
     message: string
     error?: string | undefined
-    isError: true
 }
 
-export const defaultKerkdienst: KerkdienstTextStore = {
+const defaultKerkdienst: KerkdienstTextStore = {
     voorzang: { value: "", position: TextPosition.TopRight },
     zingen: { values: [], position: TextPosition.TopLeft },
     schriftlezingen: { values: [], position: TextPosition.TopLeft },
@@ -111,7 +112,7 @@ export const defaultKerkdienst: KerkdienstTextStore = {
     mededelingen: { lines: [], position: TextPosition.BottomLeft },
 }
 
-export const defaultBijbellezing: BijbellezingTextStore = {
+const defaultBijbellezing: BijbellezingTextStore = {
     voorganger: { value: "", position: TextPosition.TopRight },
     datum: { value: new Date().toDateString() },
     datumVolgendeKeer: { value: new Date().toDateString() },
@@ -121,7 +122,7 @@ export const defaultBijbellezing: BijbellezingTextStore = {
     meditatieBijbeltekstVolgendeKeer: { value: "" },
 }
 
-export const defaultCursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore = {
+const defaultCursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore = {
     spreker: { value: "", position: TextPosition.TopRight },
     sprekerAfkomst: { value: "" },
     thema: { value: "", position: TextPosition.TopLeft },
@@ -130,7 +131,7 @@ export const defaultCursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore 
     schriftlezingen: { values: [] },
 }
 
-export const defaultRouwdienst: RouwdienstTextStore = {
+const defaultRouwdienst: RouwdienstTextStore = {
     naamOverledene: { value: "" },
     inleidendOrgelspel: { value: "", position: TextPosition.TopRight },
     zingen: { values: [], position: TextPosition.TopLeft },
@@ -140,7 +141,7 @@ export const defaultRouwdienst: RouwdienstTextStore = {
     uitleidendOrgelspel: { value: "", position: TextPosition.TopRight },
 }
 
-export const defaultTrouwdienst: TrouwdienstTextStore = {
+const defaultTrouwdienst: TrouwdienstTextStore = {
     naamBruidegom: { value: "" },
     naamBruid: { value: "" },
     inleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
@@ -151,18 +152,28 @@ export const defaultTrouwdienst: TrouwdienstTextStore = {
     uitleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
 }
 
-export function loadTextStore(textPath: string): TextStore | TextStoreError {
+function getDefaultTekstStore<TName extends keyof Omit<TextStore, 'isError'>>(name: TName): any {
+    switch (name) {
+        case "kerkdienst": return defaultKerkdienst
+        case "bijbellezing": return defaultBijbellezing
+        case "cursusGeestelijkeVorming": return defaultCursusGeestelijkeVorming
+        case "trouwdienst": return defaultTrouwdienst
+        case "rouwdienst": return defaultRouwdienst
+        default: return defaultKerkdienst
+    }
+}
+
+function loadTextStore(textPath: string): TextStore & { isError: false } | TextStoreError & { isError: true } {
     if (!fileExists(textPath)) {
-        const initialTextStore: TextStore = {
+        const initialTextStore = {
             kerkdienst: defaultKerkdienst,
             bijbellezing: defaultBijbellezing,
             cursusGeestelijkeVorming: defaultCursusGeestelijkeVorming,
             rouwdienst: defaultRouwdienst,
             trouwdienst: defaultTrouwdienst,
-            isError: false,
         }
         saveTextStore(initialTextStore, textPath)
-        return initialTextStore
+        return { ...initialTextStore, isError: false }
     }
     else {
         try {
@@ -191,7 +202,7 @@ export function loadTextStore(textPath: string): TextStore | TextStoreError {
             }
             if (needSave) saveTextStore(store, textPath)
 
-            return store
+            return { ...store, isError: false }
         }
         catch (e) {
             return ({
@@ -203,7 +214,7 @@ export function loadTextStore(textPath: string): TextStore | TextStoreError {
     }
 }
 
-export function saveTextStore(textStore: TextStore, textPath: string): void {
+function saveTextStore(textStore: TextStore, textPath: string): void {
     saveJsonFile(textStore, textPath)
 }
 
@@ -222,7 +233,7 @@ const htmlCharacterEncode = {
 }
 
 // Mustache documentation: https://github.com/janl/mustache.js
-export function fillTemplates(templateConfig: TextTemplate, teksten: any): void {
+export function fillTemplates(templateConfig: TextFormConfig, teksten: any): void {
     const augmentedTeksten = {
         ...teksten,
         "positionF": () => (s: string, render: (s: string) => TextPosition) => {
@@ -253,4 +264,67 @@ function fillTemplate(templateFile: string, outputDir: string, teksten: any): vo
     const outputPath = resolve(outputDir, `${fileName}.html`)
 
     saveFile(output, outputPath)
+}
+
+type ZustandTextStore = {
+    texts: TextStore | undefined
+    error: TextStoreError | undefined
+    loaded: boolean
+    loadTextStore: (path: string) => void
+    saveTextStore: (path: string) => (partialTextStore: Partial<TextStore>) => void
+}
+
+const useTextStore = create<ZustandTextStore>()(setState => ({
+    loaded: false,
+    texts: undefined,
+    error: undefined,
+    loadTextStore: path => {
+        const textStore = loadTextStore(path)
+        if (textStore.isError) {
+            const { isError, ...error } = textStore
+            setState({ loaded: true, texts: undefined, error: error })
+        }
+        else {
+            const { isError, ...texts } = textStore
+            setState({ loaded: true, texts: texts, error: undefined })
+        }
+    },
+    saveTextStore: path => partialTextStore => setState(s => {
+        if (!s.texts) return s
+        const newTexts = { ...s.texts, ...partialTextStore }
+        saveTextStore(newTexts, path)
+        return ({ ...s, texts: newTexts })
+    })
+}))
+
+export function useLoadTextStore(): Pick<ZustandTextStore, "loaded" | "error"> {
+    const path = useTextStorePath()
+    const { loadTextStore, ...store } = useTextStore(s => ({ loadTextStore: s.loadTextStore, loaded: s.loaded, error: s.error }), shallow)
+
+    useEffect(() => {
+        loadTextStore(path)
+    }, [loadTextStore, path])
+
+    return store
+}
+
+export function useSaveTextStore(): (partialTextStore: Partial<TextStore>) => void {
+    const path = useTextStorePath()
+    const save = useTextStore(s => s.saveTextStore)
+    return save(path)
+}
+
+export type UseTekstenReturn<TName extends keyof Omit<TextStore, 'isError'>> = {
+    defaultTextStore: TextStore[TName]
+    teksten: TextStore[TName]
+    setTeksten: (t: TextStore[TName]) => void
+}
+
+export function useTeksten<TName extends keyof Omit<TextStore, 'isError'>>(name: TName): UseTekstenReturn<TName> {
+    const teksten = useTextStore(s => s.texts![name])
+    const save = useSaveTextStore()
+    const setTeksten = (teksten: TextStore[TName]) => save({ [name]: teksten })
+    const defaultTextStore = getDefaultTekstStore(name)
+
+    return { teksten, setTeksten, defaultTextStore }
 }

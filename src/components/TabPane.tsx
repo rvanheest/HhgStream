@@ -3,10 +3,10 @@ import { Col, Container, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faVideoCamera, faGear, faFileLines, IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import styles from "./TabPane.module.css"
-import { AppConfig } from "../core/config";
 import WIP from "./configuration/WIP";
 import CameraTab from "./camera/CameraTab";
 import TextTab from "./text/TextTab";
+import LoadTextStore from "./text/LoadTextStore"
 
 const camerasKey = "cameras"
 const textKey = "text"
@@ -28,12 +28,7 @@ const NavItem = ({ icon, active, onClick }: NavItemProps) => (
 
 const MemoedNavItem = memo(NavItem)
 
-type TabPaneProps = {
-    config: AppConfig
-    updateConfig: (c: Partial<AppConfig>) => void
-}
-
-const TabPane = ({ config, updateConfig }: TabPaneProps) => {
+const TabPane = () => {
     const [activeTab, setActiveTab] = useState<string>(camerasKey);
     const cameraActiveOnClick = useCallback(() => setActiveTab(camerasKey), [])
     const textActiveOnClick = useCallback(() => setActiveTab(textKey), [])
@@ -45,9 +40,9 @@ const TabPane = ({ config, updateConfig }: TabPaneProps) => {
 
     function renderTab(): JSX.Element | undefined {
         switch (activeTab) {
-            case camerasKey: return <CameraTab cameras={config.cameras} />
-            case textKey: return <TextTab config={config.texts} updateConfig={c => updateConfig({ texts: c })} />
-            case configurationKey: return <WIP config={config} />
+            case camerasKey: return <CameraTab />
+            case textKey: return <LoadTextStore><TextTab /></LoadTextStore>
+            case configurationKey: return <WIP />
             default: return undefined
         }
     }

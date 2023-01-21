@@ -4,11 +4,14 @@ import ReactDOM from 'react-dom/client';
 import 'bootstrap/dist/css/bootstrap.min.css'
 import './index.css';
 
-import App from './components/App';
+import LoadConfig from './components/LoadConfig';
+import TabPane from "./components/TabPane"
 
 const root = ReactDOM.createRoot(document.getElementById('root') as HTMLElement);
 root.render(
   <React.StrictMode>
-    <App />
+    <LoadConfig>
+        <TabPane />
+    </LoadConfig>
   </React.StrictMode>
 );

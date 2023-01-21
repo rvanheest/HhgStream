@@ -1,14 +1,13 @@
 import React from "react"
-import { useForm } from "react-hook-form"
-import { TextTemplate } from "../../core/config"
 import { formatScripture } from "../../core/formatting/scriptureFormatting";
 import { formatSong } from "../../core/formatting/songFormatting";
-import { CursusGeestelijkeVormingTextStore, defaultCursusGeestelijkeVorming, fillTemplates, TextPosition } from "../../core/text"
+import { CursusGeestelijkeVormingTextStore, TextPosition } from "../../core/text"
 import InputGroup from "../util/form/InputGroup";
 import PositionSelect from "../util/form/PositionSelect";
 import TextField from "../util/form/TextField";
 import TextFieldArray, { emptyTextArrayElement, mapTextArray, mapTextArrayToStore, TextArrayElement } from "../util/form/TextFieldArray";
 import TextForm from "../util/form/TextForm";
+import useTextForm from "../util/form/TextFormHook"
 
 type FormInput = {
     spreker: string
@@ -76,31 +75,16 @@ function formatTekstenForTemplates(teksten: CursusGeestelijkeVormingTextStore): 
     }
 }
 
-type CursusGeestelijkeVormingTekstenProps = {
-    teksten: CursusGeestelijkeVormingTextStore
-    tekstTemplate: TextTemplate | undefined
-    saveTeksten: (teksten: CursusGeestelijkeVormingTextStore) => void
-}
-
-const CursusGeestelijkeVormingTeksten = ({ teksten, tekstTemplate, saveTeksten }: CursusGeestelijkeVormingTekstenProps) => {
-    const { control, handleSubmit, register, reset } = useForm<FormInput>({ defaultValues: mapTextStoreToForm(teksten) })
-
-    function onSubmit(data: FormInput) {
-        const tekstStore = mapFormToTextStore(data)
-        const tekstenVoorTemplates = formatTekstenForTemplates(tekstStore)
-
-        reset(mapTextStoreToForm(tekstStore))
-        if (!!tekstTemplate) fillTemplates(tekstTemplate, tekstenVoorTemplates)
-        saveTeksten(tekstStore)
-    }
-
-    function onClear() {
-        reset(mapTextStoreToForm(defaultCursusGeestelijkeVorming))
-        saveTeksten(defaultCursusGeestelijkeVorming)
-    }
+const CursusGeestelijkeVormingTeksten = () => {
+    const { onSubmit, onClear, control, register } = useTextForm({
+        textFormConfigName: 'cursusGeestelijkeVorming',
+        mapTextStoreToForm,
+        mapFormToTextStore,
+        formatTekstenForTemplates,
+    })
 
     return (
-        <TextForm onClear={onClear} onSubmit={handleSubmit(onSubmit)}>
+        <TextForm onClear={onClear} onSubmit={onSubmit}>
             <InputGroup controlId="cursusGeestelijkeVormingSpreker"
                         label="Spreker"
                         renderPosition={() => <PositionSelect control={control} name="sprekerPosition" />}>

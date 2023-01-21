@@ -1,10 +1,9 @@
 import React from "react"
-import { TextTemplate } from "../../core/config"
-import { defaultRouwdienst, fillTemplates, RouwdienstTextStore, TextPosition } from "../../core/text"
-import { useForm } from "react-hook-form";
+import { RouwdienstTextStore, TextPosition } from "../../core/text"
 import TextForm from "../util/form/TextForm";
 import InputGroup from "../util/form/InputGroup";
 import TextField from "../util/form/TextField";
+import useTextForm from "../util/form/TextFormHook"
 import CheckboxExtension from "../util/form/CheckboxExtension";
 import PositionSelect from "../util/form/PositionSelect";
 import TextFieldArray, { emptyTextArrayElement, mapTextArray, mapTextArrayToStore, TextArrayElement } from "../util/form/TextFieldArray";
@@ -95,31 +94,16 @@ function formatTekstenForTemplates(teksten: RouwdienstTextStore): RouwdienstText
     }
 }
 
-type RouwdienstTekstenProps = {
-    teksten: RouwdienstTextStore
-    tekstTemplate: TextTemplate | undefined
-    saveTeksten: (teksten: RouwdienstTextStore) => void
-}
-
-const RouwdienstTeksten = ({ teksten, tekstTemplate, saveTeksten }: RouwdienstTekstenProps) => {
-    const { control, handleSubmit, register, reset } = useForm<FormInput>({ defaultValues: mapTextStoreToForm(teksten) })
-
-    function onSubmit(data: FormInput) {
-        const tekstStore = mapFormToTextStore(data)
-        const tekstenVoorTemplates = formatTekstenForTemplates(tekstStore)
-
-        reset(mapTextStoreToForm(tekstStore))
-        if (!!tekstTemplate) fillTemplates(tekstTemplate, tekstenVoorTemplates)
-        saveTeksten(tekstStore)
-    }
-
-    function onClear() {
-        reset(mapTextStoreToForm(defaultRouwdienst))
-        saveTeksten(defaultRouwdienst)
-    }
+const RouwdienstTeksten = () => {
+    const { onSubmit, onClear, control, register } = useTextForm({
+        textFormConfigName: 'rouwdienst',
+        mapTextStoreToForm,
+        mapFormToTextStore,
+        formatTekstenForTemplates,
+    })
 
     return (
-        <TextForm onClear={onClear} onSubmit={handleSubmit(onSubmit)}>
+        <TextForm onClear={onClear} onSubmit={onSubmit}>
             <InputGroup controlId="rouwdienstNaamOverledene" label="Overledene">
                 <TextField placeholder="Naam" control={control} name="naamOverledene" />
             </InputGroup>
