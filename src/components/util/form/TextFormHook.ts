@@ -5,7 +5,7 @@ import { DefaultValues } from "react-hook-form/dist/types/form"
 import { useTextFormConfig } from "../../../core/config"
 import { fillTemplates, TextStore, useTeksten } from "../../../core/text"
 
-type UseTextFormInput<TFieldValues extends FieldValues, TTextStoreName extends keyof Omit<TextStore, 'isError'>> = {
+type UseTextFormInput<TFieldValues extends FieldValues, TTextStoreName extends keyof TextStore> = {
     textFormConfigName: TTextStoreName
     mapTextStoreToForm: (store: TextStore[TTextStoreName]) => TFieldValues
     mapFormToTextStore: (data: TFieldValues) => TextStore[TTextStoreName]
@@ -19,7 +19,7 @@ type UseTextFormReturn<TFieldValues extends FieldValues> = {
     register: <TFieldName extends FieldPath<TFieldValues>>(name: TFieldName, options?: RegisterOptions<TFieldValues, TFieldName>) => UseFormRegisterReturn<TFieldName>
 }
 
-export default function useTextForm<TFieldValues extends FieldValues, TTextStoreName extends keyof Omit<TextStore, 'isError'>>(input: UseTextFormInput<TFieldValues, TTextStoreName>): UseTextFormReturn<TFieldValues> {
+export default function useTextForm<TFieldValues extends FieldValues, TTextStoreName extends keyof TextStore>(input: UseTextFormInput<TFieldValues, TTextStoreName>): UseTextFormReturn<TFieldValues> {
     const { teksten, setTeksten, defaultTextStore } = useTeksten(input.textFormConfigName)
     const formConfig = useTextFormConfig(input.textFormConfigName)
     const { control, handleSubmit, register, reset } = useForm<TFieldValues>({ defaultValues: input.mapTextStoreToForm(teksten) as DefaultValues<TFieldValues> })

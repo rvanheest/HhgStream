@@ -8,6 +8,7 @@ import CheckboxExtension from "../util/form/CheckboxExtension";
 import PositionSelect from "../util/form/PositionSelect";
 import TextFieldArray, { emptyTextArrayElement, mapTextArray, mapTextArrayToStore, TextArrayElement } from "../util/form/TextFieldArray";
 import TextArea, { mapTextArea, mapTextAreaToStore } from "../util/form/TextArea";
+import SelectField from "../util/form/SelectField";
 import { formatSong, formatSongs } from "../../core/formatting/songFormatting";
 import { formatScripture } from "../../core/formatting/scriptureFormatting";
 
@@ -18,6 +19,7 @@ type FormInput = {
     zingenPosition: TextPosition
     schriftlezingen : TextArrayElement[]
     schriftlezingenPosition : TextPosition
+    preekBijbeltekstType: string
     preekBijbeltekst : string
     preekBijbeltekstPosition : TextPosition
     preekBijbelcitaat : string
@@ -47,6 +49,7 @@ function mapFormToTextStore(data: FormInput): KerkdienstTextStore {
             position: data.schriftlezingenPosition,
         },
         preekBijbeltekst: {
+            type: data.preekBijbeltekstType,
             value: data.preekBijbeltekst,
             position: data.preekBijbeltekstPosition,
         },
@@ -83,6 +86,7 @@ function mapTextStoreToForm(data: KerkdienstTextStore): FormInput {
         zingenPosition: data.zingen.position,
         schriftlezingen: mapTextArray(data.schriftlezingen.values),
         schriftlezingenPosition: data.schriftlezingen.position,
+        preekBijbeltekstType: data.preekBijbeltekst.type,
         preekBijbeltekst: data.preekBijbeltekst.value,
         preekBijbeltekstPosition: data.preekBijbeltekst.position,
         preekBijbelcitaat: data.preekBijbelcitaat.value,
@@ -158,6 +162,14 @@ const KerkdienstTeksten = () => {
 
             <InputGroup controlId="kerkdienstPreekBijbeltekst"
                         label="Preek - Bijbeltekst"
+                        renderLabelInput={() => <SelectField control={control}
+                                                             name="preekBijbeltekstType"
+                                                             selectOptions={[
+                                                                 "Tekst voor de preek",
+                                                                 "Heidelbergse Catechismus",
+                                                                 "Nederlandse Geloofsbelijdenis",
+                                                                 "Dordtse Leerregels",
+                                                             ]} />}
                         renderPosition={() => <PositionSelect control={control} name="preekBijbeltekstPosition" />}>
                 <TextField placeholder="Bijbeltekst" control={control} name="preekBijbeltekst" />
             </InputGroup>

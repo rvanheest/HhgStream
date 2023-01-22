@@ -33,11 +33,15 @@ type TextArray = {
     values: string[]
 }
 
+type Type = {
+    type: string
+}
+
 export type KerkdienstTextStore = {
     voorzang: Text & Position
     zingen: TextArray & Position
     schriftlezingen: TextArray & Position
-    preekBijbeltekst: Text & Position
+    preekBijbeltekst: Text & Position & Type
     preekBijbelcitaat: Text & Citaat
     preekThema: Text & Position
     preekThemaOndertitel: Text
@@ -103,7 +107,7 @@ const defaultKerkdienst: KerkdienstTextStore = {
     voorzang: { value: "", position: TextPosition.TopRight },
     zingen: { values: [], position: TextPosition.TopLeft },
     schriftlezingen: { values: [], position: TextPosition.TopLeft },
-    preekBijbeltekst: { value: "", position: TextPosition.TopLeft },
+    preekBijbeltekst: { type: "", value: "", position: TextPosition.TopLeft },
     preekBijbelcitaat: { value: "", isCitaat: false },
     preekThema: { value: "", position: TextPosition.TopLeft },
     preekThemaOndertitel: { value: "" },
@@ -152,7 +156,7 @@ const defaultTrouwdienst: TrouwdienstTextStore = {
     uitleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
 }
 
-function getDefaultTekstStore<TName extends keyof Omit<TextStore, 'isError'>>(name: TName): any {
+function getDefaultTekstStore<TName extends keyof TextStore>(name: TName): any {
     switch (name) {
         case "kerkdienst": return defaultKerkdienst
         case "bijbellezing": return defaultBijbellezing
@@ -314,13 +318,13 @@ export function useSaveTextStore(): (partialTextStore: Partial<TextStore>) => vo
     return save(path)
 }
 
-export type UseTekstenReturn<TName extends keyof Omit<TextStore, 'isError'>> = {
+export type UseTekstenReturn<TName extends keyof TextStore> = {
     defaultTextStore: TextStore[TName]
     teksten: TextStore[TName]
     setTeksten: (t: TextStore[TName]) => void
 }
 
-export function useTeksten<TName extends keyof Omit<TextStore, 'isError'>>(name: TName): UseTekstenReturn<TName> {
+export function useTeksten<TName extends keyof TextStore>(name: TName): UseTekstenReturn<TName> {
     const teksten = useTextStore(s => s.texts![name])
     const save = useSaveTextStore()
     const setTeksten = (teksten: TextStore[TName]) => save({ [name]: teksten })

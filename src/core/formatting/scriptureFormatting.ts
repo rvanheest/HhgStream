@@ -1,22 +1,43 @@
+type Book = {
+    bookNumber: string | undefined
+    bookName: string
+}
+
 type ScriptureVerseRange = {
     start: string
     end: string
 }
 
-type Scripture = {
-    bookNumber: string | undefined
-    bookName: string
+type ChapterAndVerse = {
     chapter: string | undefined
-    verses: ScriptureVerseRange | string[] | string | undefined
+    verses: ScriptureVerseRange[] | string[] | string | undefined
 }
+
+type ChapterAndVerseRange = {
+    start: {
+        chapter: string | undefined
+        verse: string
+    }
+    end: {
+        chapter: string | undefined
+        verse: string
+    }
+}
+
+type Scripture = Book & (ChapterAndVerse | ChapterAndVerseRange)
 
 function undefinedOnFalsy<T>(t: T): T | undefined {
     return !!t ? t : undefined
 }
 
 function parseVerses(verses: string) {
-    const verseRange = verses.match(/^(\d+\w*)\s*-\s*(\d+\w*)$/)
-    if (verseRange) return { start: verseRange[1], end: verseRange[2] }
+    const verseRanges = verses.match(/(\d+\w*)\s*-\s*(\d+\w*)/gi)
+    if (verseRanges) {
+        const ranges = verseRanges
+            .map(rangeString => rangeString.match(/^(\d+\w*)\s*-\s*(\d+\w*)$/))
+            .flatMap(range => range ? [{ start: range[1], end: range[2] }] : [])
+        if (!!ranges.length) return ranges
+    }
 
     const coupleOfVerses = verses.match(/(\d+\w*)+/gi)
     if (coupleOfVerses && coupleOfVerses.length) return coupleOfVerses
@@ -25,7 +46,21 @@ function parseVerses(verses: string) {
 }
 
 function parseScripture(scripture: string): Scripture | string {
-    const parsedScripture = scripture.match(/^(\d*)\s*(\w+)\s*(\d*)\s*:\s*(.*)$/)
+    let parsedScripture = scripture.match(/^(\d*)\s*(\w+)\s*(\d*)\s*:\s*(\S*)\s*-\s*(\d*)\s*:\s*(\S*)$/)
+    if (parsedScripture) return {
+        bookNumber: undefinedOnFalsy(parsedScripture[1]),
+        bookName: parsedScripture[2],
+        start: {
+            chapter: parsedScripture[3],
+            verse: parsedScripture[4],
+        },
+        end: {
+            chapter: parsedScripture[5],
+            verse: parsedScripture[6],
+        }
+    }
+
+    parsedScripture = scripture.match(/^(\d*)\s*(\w+)\s*(\d*)\s*:\s*(.*)$/)
     if (parsedScripture) return {
         bookNumber: undefinedOnFalsy(parsedScripture[1]),
         bookName: parsedScripture[2],
@@ -40,8 +75,12 @@ function isScripture(scripture: Scripture | string): scripture is Scripture {
     return typeof scripture === "object" && "bookName" in scripture
 }
 
-function isScriptureVerseRange(range: any): range is ScriptureVerseRange {
-    return typeof range === "object" && "start" in range && "end" in range
+function isScriptureVerseRangeArray(range: unknown): range is ScriptureVerseRange[] {
+    return Array.isArray(range) && range.every(isScriptureVerseRange)
+}
+
+function isScriptureVerseRange(range: unknown): range is ScriptureVerseRange {
+    return range !== null && typeof range === "object" && "start" in range && "end" in range
 }
 
 function formatVerseArray(verses: string[]): string {
@@ -52,18 +91,26 @@ function formatVerseArray(verses: string[]): string {
     return `${init.reverse().join(', ')} en ${lastElement}`
 }
 
-function formatScriptureVerses(verses: ScriptureVerseRange | string[] | string): string {
-    if (isScriptureVerseRange(verses)) return `${verses.start} - ${verses.end}`
+function formatScriptureVerses(verses: ScriptureVerseRange[] | string[] | string): string {
+    if (isScriptureVerseRangeArray(verses)) return formatVerseArray(verses.map(v => `${v.start} - ${v.end}`))
     if (Array.isArray(verses)) return formatVerseArray(verses)
     return verses
 }
 
-function formatScriptureInternal({ bookNumber, bookName, chapter, verses }: Scripture): string {
+function formatScriptureInternal(scripture: Scripture): string {
     let result = ""
-    if (bookNumber) result += bookNumber + " "
-    result += bookName
-    if (chapter) result += " " + chapter
-    if (verses) result += " : " + formatScriptureVerses(verses)
+    if (scripture.bookNumber) result += scripture.bookNumber + " "
+    result += scripture.bookName
+    if ("chapter" in scripture && "verses" in scripture) {
+        if (scripture.chapter) result += " " + scripture.chapter
+        if (scripture.verses) result += " : " + formatScriptureVerses(scripture.verses)
+    }
+    else {
+        if (scripture.start.chapter) result += " " + scripture.start.chapter
+        if (scripture.start.verse) result += " : " + scripture.start.verse
+        if (scripture.end.chapter) result += " - " + scripture.end.chapter
+        if (scripture.end.verse) result += " : " + scripture.end.verse
+    }
     return result
 }
 

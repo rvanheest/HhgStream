@@ -5,16 +5,17 @@ import Label from "./Label";
 type InputGroupProps = {
     controlId: string
     label: string
+    renderLabelInput?: () => JSX.Element
     renderPosition?: () => JSX.Element
     children: ReactNode
 }
 
-const InputGroup = ({ controlId, label, renderPosition, children }: InputGroupProps) => {
+const InputGroup = ({ controlId, label, renderLabelInput, renderPosition, children }: InputGroupProps) => {
     return (
         <Form.Group controlId={controlId}>
             <Row className="mb-2">
                 <Col sm={{offset: 1, span: 2}}>
-                    <Label>{label}</Label>
+                    {!!renderLabelInput ? renderLabelInput() : <Label>{label}</Label>}
                 </Col>
                 <Col sm={{span: 5}}>
                     {children}

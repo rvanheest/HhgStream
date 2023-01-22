@@ -41,6 +41,21 @@ describe('formatScripture', () => {
             const scripture = 'Judas : 3 - 5'
             expect(formatScripture(scripture)).toBe(scripture)
         })
+
+        test('two verse ranges within the same chapter', () => {
+            const scripture = 'Johannes 7 : 1 - 9 en 37 - 39'
+            expect(formatScripture(scripture)).toBe(scripture)
+        })
+
+        test('multiple verse ranges within the same chapter', () => {
+            const scripture = 'Johannes 7 : 1 - 9, 21 - 23 en 37 - 39'
+            expect(formatScripture(scripture)).toBe(scripture)
+        })
+
+        test('scripture passage across chapter boundaries', () => {
+            const scripture = 'Johannes 6 : 10b - 7 : 9a'
+            expect(formatScripture(scripture)).toBe(scripture)
+        })
     })
 
     describe('space formatting', () => {
@@ -66,6 +81,18 @@ describe('formatScripture', () => {
 
         test('scripture multiple verses, only commas', () => {
             expect(formatScripture('Johannes 1:1,3,5')).toBe('Johannes 1 : 1, 3 en 5')
+        })
+
+        test('two verse ranges within one chapter', () => {
+            expect(formatScripture('Johannes 7: 1-9 en 37-39')).toBe('Johannes 7 : 1 - 9 en 37 - 39')
+        })
+
+        test('multiple verse ranges within one chapter', () => {
+            expect(formatScripture('Johannes 7:1-9,21-23,37-39')).toBe('Johannes 7 : 1 - 9, 21 - 23 en 37 - 39')
+        })
+
+        test('scripture passage across chapter boundaries', () => {
+            expect(formatScripture('Johannes 6:10b-7:9a')).toBe('Johannes 6 : 10b - 7 : 9a')
         })
     })
 })
