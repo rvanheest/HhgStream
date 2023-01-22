@@ -1,5 +1,5 @@
 import React from "react"
-import { KerkdienstTextStore, TextPosition } from "../../core/text"
+import { KerkdienstTextStore, schriftTypes, TextPosition } from "../../core/text"
 import TextForm from "../util/form/TextForm";
 import useTextForm from "../util/form/TextFormHook"
 import InputGroup from "../util/form/InputGroup";
@@ -102,7 +102,7 @@ function mapTextStoreToForm(data: KerkdienstTextStore): FormInput {
     }
 }
 
-function formatTekstenForTemplates(teksten: KerkdienstTextStore): KerkdienstTextStore {
+function formatTekstenForTemplates(teksten: KerkdienstTextStore): any {
     return {
         ...teksten,
         voorzang: {
@@ -120,6 +120,7 @@ function formatTekstenForTemplates(teksten: KerkdienstTextStore): KerkdienstText
         preekBijbeltekst: {
             ...teksten.preekBijbeltekst,
             value: formatScripture(teksten.preekBijbeltekst.value),
+            kortType: schriftTypes.find(t => t.type === teksten.preekBijbeltekst.type)!.kortType,
         },
     }
 }
@@ -164,12 +165,7 @@ const KerkdienstTeksten = () => {
                         label="Preek - Bijbeltekst"
                         renderLabelInput={() => <SelectField control={control}
                                                              name="preekBijbeltekstType"
-                                                             selectOptions={[
-                                                                 "Tekst voor de preek",
-                                                                 "Heidelbergse Catechismus",
-                                                                 "Nederlandse Geloofsbelijdenis",
-                                                                 "Dordtse Leerregels",
-                                                             ]} />}
+                                                             selectOptions={schriftTypes.map(value => value.type)} />}
                         renderPosition={() => <PositionSelect control={control} name="preekBijbeltekstPosition" />}>
                 <TextField placeholder="Bijbeltekst" control={control} name="preekBijbeltekst" />
             </InputGroup>
