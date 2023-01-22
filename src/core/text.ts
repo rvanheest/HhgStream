@@ -33,11 +33,15 @@ type TextArray = {
     values: string[]
 }
 
+type Type = {
+    type: string
+}
+
 export type KerkdienstTextStore = {
     voorzang: Text & Position
     zingen: TextArray & Position
     schriftlezingen: TextArray & Position
-    preekBijbeltekst: Text & Position
+    preekBijbeltekst: Text & Position & Type
     preekBijbelcitaat: Text & Citaat
     preekThema: Text & Position
     preekThemaOndertitel: Text
@@ -103,7 +107,7 @@ const defaultKerkdienst: KerkdienstTextStore = {
     voorzang: { value: "", position: TextPosition.TopRight },
     zingen: { values: [], position: TextPosition.TopLeft },
     schriftlezingen: { values: [], position: TextPosition.TopLeft },
-    preekBijbeltekst: { value: "", position: TextPosition.TopLeft },
+    preekBijbeltekst: { type: "", value: "", position: TextPosition.TopLeft },
     preekBijbelcitaat: { value: "", isCitaat: false },
     preekThema: { value: "", position: TextPosition.TopLeft },
     preekThemaOndertitel: { value: "" },

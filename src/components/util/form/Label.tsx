@@ -6,7 +6,7 @@ type LabelProps = {
 }
 
 const Label = ({ children }: LabelProps) => (
-    <Form.Label style={{marginTop: 6}}>{children}</Form.Label>
+    <Form.Label style={{marginTop: 6, paddingLeft: 13}}>{children}</Form.Label>
 )
 
 export default Label
