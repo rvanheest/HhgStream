@@ -7,7 +7,7 @@ type Scripture = {
     bookNumber: string | undefined
     bookName: string
     chapter: string | undefined
-    verses: ScriptureVerseRange | string[] | string | undefined
+    verses: ScriptureVerseRange[] | string[] | string | undefined
 }
 
 function undefinedOnFalsy<T>(t: T): T | undefined {
@@ -15,8 +15,13 @@ function undefinedOnFalsy<T>(t: T): T | undefined {
 }
 
 function parseVerses(verses: string) {
-    const verseRange = verses.match(/^(\d+\w*)\s*-\s*(\d+\w*)$/)
-    if (verseRange) return { start: verseRange[1], end: verseRange[2] }
+    const verseRanges = verses.match(/(\d+\w*)\s*-\s*(\d+\w*)/gi)
+    if (verseRanges) {
+        const ranges = verseRanges
+            .map(rangeString => rangeString.match(/^(\d+\w*)\s*-\s*(\d+\w*)$/))
+            .flatMap(range => range ? [{ start: range[1], end: range[2] }] : [])
+        if (!!ranges.length) return ranges
+    }
 
     const coupleOfVerses = verses.match(/(\d+\w*)+/gi)
     if (coupleOfVerses && coupleOfVerses.length) return coupleOfVerses
@@ -40,8 +45,12 @@ function isScripture(scripture: Scripture | string): scripture is Scripture {
     return typeof scripture === "object" && "bookName" in scripture
 }
 
-function isScriptureVerseRange(range: any): range is ScriptureVerseRange {
-    return typeof range === "object" && "start" in range && "end" in range
+function isScriptureVerseRangeArray(range: unknown): range is ScriptureVerseRange[] {
+    return Array.isArray(range) && range.every(isScriptureVerseRange)
+}
+
+function isScriptureVerseRange(range: unknown): range is ScriptureVerseRange {
+    return range !== null && typeof range === "object" && "start" in range && "end" in range
 }
 
 function formatVerseArray(verses: string[]): string {
@@ -52,8 +61,8 @@ function formatVerseArray(verses: string[]): string {
     return `${init.reverse().join(', ')} en ${lastElement}`
 }
 
-function formatScriptureVerses(verses: ScriptureVerseRange | string[] | string): string {
-    if (isScriptureVerseRange(verses)) return `${verses.start} - ${verses.end}`
+function formatScriptureVerses(verses: ScriptureVerseRange[] | string[] | string): string {
+    if (isScriptureVerseRangeArray(verses)) return formatVerseArray(verses.map(v => `${v.start} - ${v.end}`))
     if (Array.isArray(verses)) return formatVerseArray(verses)
     return verses
 }
