@@ -152,7 +152,7 @@ const defaultTrouwdienst: TrouwdienstTextStore = {
     uitleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
 }
 
-function getDefaultTekstStore<TName extends keyof Omit<TextStore, 'isError'>>(name: TName): any {
+function getDefaultTekstStore<TName extends keyof TextStore>(name: TName): any {
     switch (name) {
         case "kerkdienst": return defaultKerkdienst
         case "bijbellezing": return defaultBijbellezing
@@ -314,13 +314,13 @@ export function useSaveTextStore(): (partialTextStore: Partial<TextStore>) => vo
     return save(path)
 }
 
-export type UseTekstenReturn<TName extends keyof Omit<TextStore, 'isError'>> = {
+export type UseTekstenReturn<TName extends keyof TextStore> = {
     defaultTextStore: TextStore[TName]
     teksten: TextStore[TName]
     setTeksten: (t: TextStore[TName]) => void
 }
 
-export function useTeksten<TName extends keyof Omit<TextStore, 'isError'>>(name: TName): UseTekstenReturn<TName> {
+export function useTeksten<TName extends keyof TextStore>(name: TName): UseTekstenReturn<TName> {
     const teksten = useTextStore(s => s.texts![name])
     const save = useSaveTextStore()
     const setTeksten = (teksten: TextStore[TName]) => save({ [name]: teksten })
