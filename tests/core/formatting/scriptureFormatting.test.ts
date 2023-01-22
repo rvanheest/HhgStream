@@ -51,6 +51,11 @@ describe('formatScripture', () => {
             const scripture = 'Johannes 7 : 1 - 9, 21 - 23 en 37 - 39'
             expect(formatScripture(scripture)).toBe(scripture)
         })
+
+        test('scripture passage across chapter boundaries', () => {
+            const scripture = 'Johannes 6 : 10b - 7 : 9a'
+            expect(formatScripture(scripture)).toBe(scripture)
+        })
     })
 
     describe('space formatting', () => {
@@ -84,6 +89,10 @@ describe('formatScripture', () => {
 
         test('multiple verse ranges within one chapter', () => {
             expect(formatScripture('Johannes 7:1-9,21-23,37-39')).toBe('Johannes 7 : 1 - 9, 21 - 23 en 37 - 39')
+        })
+
+        test('scripture passage across chapter boundaries', () => {
+            expect(formatScripture('Johannes 6:10b-7:9a')).toBe('Johannes 6 : 10b - 7 : 9a')
         })
     })
 })
