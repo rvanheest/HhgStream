@@ -13,6 +13,13 @@ export enum TextPosition {
     Center = "Midden",
 }
 
+export const schriftTypes = [
+    { kortType: "Tekst", type: "Tekst voor de preek" },
+    { kortType: "HC", type: "Heidelbergse Catechismus" },
+    { kortType: "NGB", type: "Nederlandse Geloofsbelijdenis" },
+    { kortType: "DL", type: "Dordtse Leerregels" },
+]
+
 type Position = {
     position: TextPosition
 }
