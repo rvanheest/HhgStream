@@ -4,6 +4,7 @@ import { useSetLastOpenedTextTab, useTextStoreLastOpenedTab, useTextStorePath } 
 import { openFile } from "../../core/utils";
 import CardTabPane from "../util/CardTabPane"
 import KerkdienstTeksten from "./KerkdienstTeksten";
+import BezinningsmomentTeksten from "./Bezinningsmoment";
 import BijbellezingTeksten from "./BijbellezingTeksten";
 import CursusGeestelijkeVormingTeksten from "./CursusGeestelijkeVormingTeksten";
 import RouwdienstTeksten from "./RouwdienstTeksten";
@@ -16,6 +17,7 @@ const tabs = {
     "Cursus Geestelijke Vorming": CursusGeestelijkeVormingTeksten,
     "Huwelijksdienst": TrouwdienstTeksten,
     "Begrafenisdienst": RouwdienstTeksten,
+    "Bezinningsmoment": BezinningsmomentTeksten,
 }
 const tabsKeys = Object.keys(tabs)
 

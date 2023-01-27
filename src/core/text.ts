@@ -97,12 +97,22 @@ export type TrouwdienstTextStore = {
     uitleidendOrgelspel: Text & Position
 }
 
+export type BezinningsmomentTextStore = {
+    voorganger: Text & Position
+    datum: Text
+    zingen: TextArray & Position
+    schriftlezingen: TextArray & Position
+    meditatieBijbeltekst: Text & Position
+    meditatieBijbelcitaat: Text & Citaat
+}
+
 export type TextStore = {
     kerkdienst: KerkdienstTextStore
     bijbellezing: BijbellezingTextStore
     cursusGeestelijkeVorming: CursusGeestelijkeVormingTextStore
     rouwdienst: RouwdienstTextStore
     trouwdienst: TrouwdienstTextStore
+    bezinningsmoment: BezinningsmomentTextStore
 }
 
 export type TextStoreError = {
@@ -163,6 +173,15 @@ const defaultTrouwdienst: TrouwdienstTextStore = {
     uitleidendOrgelspel: { value: "", position: TextPosition.BottomLeft },
 }
 
+const defaultBezinningsmoment: BezinningsmomentTextStore = {
+    voorganger: { value: "", position: TextPosition.TopRight },
+    datum: { value: new Date().toDateString() },
+    zingen: { values: [], position: TextPosition.TopRight },
+    schriftlezingen: { values: [], position: TextPosition.TopRight },
+    meditatieBijbeltekst: { value: "", position: TextPosition.BottomLeft },
+    meditatieBijbelcitaat: { value: "", isCitaat: false },
+}
+
 function getDefaultTekstStore<TName extends keyof TextStore>(name: TName): any {
     switch (name) {
         case "kerkdienst": return defaultKerkdienst
@@ -170,6 +189,7 @@ function getDefaultTekstStore<TName extends keyof TextStore>(name: TName): any {
         case "cursusGeestelijkeVorming": return defaultCursusGeestelijkeVorming
         case "trouwdienst": return defaultTrouwdienst
         case "rouwdienst": return defaultRouwdienst
+        case "bezinningsmoment": return defaultBezinningsmoment
         default: return defaultKerkdienst
     }
 }
@@ -182,6 +202,7 @@ function loadTextStore(textPath: string): TextStore & { isError: false } | TextS
             cursusGeestelijkeVorming: defaultCursusGeestelijkeVorming,
             rouwdienst: defaultRouwdienst,
             trouwdienst: defaultTrouwdienst,
+            bezinningsmoment: defaultBezinningsmoment,
         }
         saveTextStore(initialTextStore, textPath)
         return { ...initialTextStore, isError: false }
@@ -209,6 +230,10 @@ function loadTextStore(textPath: string): TextStore & { isError: false } | TextS
             }
             if (!store.trouwdienst || !Object.keys(store.trouwdienst).length) {
                 store.trouwdienst = defaultTrouwdienst
+                needSave = true
+            }
+            if (!store.bezinningsmoment || !Object.keys(store.bezinningsmoment).length) {
+                store.bezinningsmoment = defaultBezinningsmoment
                 needSave = true
             }
             if (needSave) saveTextStore(store, textPath)

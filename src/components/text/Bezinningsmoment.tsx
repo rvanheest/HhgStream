@@ -1,12 +1,12 @@
 import React from "react"
+import { formatDate } from "../../core/formatting/dateFormatting";
 import { formatScripture } from "../../core/formatting/scriptureFormatting";
 import { formatSongs } from "../../core/formatting/songFormatting";
-import { formatDate } from "../../core/formatting/dateFormatting";
-import { BijbellezingTextStore, TextPosition } from "../../core/text"
+import { BezinningsmomentTextStore, TextPosition } from "../../core/text"
+import CheckboxExtension from "../util/form/CheckboxExtension";
 import DatePickerField from "../util/form/DatePickerField";
 import InputGroup from "../util/form/InputGroup";
 import PositionSelect from "../util/form/PositionSelect";
-import SectionHeader from "../util/form/SectionHeader";
 import TextField from "../util/form/TextField";
 import TextFieldArray, { emptyTextArrayElement, mapTextArray, mapTextArrayToStore, TextArrayElement } from "../util/form/TextFieldArray";
 import TextForm from "../util/form/TextForm";
@@ -16,17 +16,17 @@ type FormInput = {
     voorganger: string
     voorgangerPosition: TextPosition
     datum: Date
-    datumVolgendeKeer: Date
     zingen: TextArrayElement[]
     zingenPosition: TextPosition
     schriftlezingen : TextArrayElement[]
     schriftlezingenPosition : TextPosition
     meditatieBijbeltekst: string
     meditatieBijbeltekstPosition: TextPosition
-    meditatieBijbeltekstVolgendeKeer: string
+    meditatieBijbelcitaat : string
+    meditatieBijbelcitaatCheckbox : boolean
 }
 
-function mapFormToTextStore(data: FormInput): BijbellezingTextStore {
+function mapFormToTextStore(data: FormInput): BezinningsmomentTextStore {
     return {
         voorganger: {
             value: data.voorganger,
@@ -34,9 +34,6 @@ function mapFormToTextStore(data: FormInput): BijbellezingTextStore {
         },
         datum: {
             value: data.datum.toDateString(),
-        },
-        datumVolgendeKeer: {
-            value: data.datumVolgendeKeer.toDateString(),
         },
         zingen: {
             values: mapTextArrayToStore(data.zingen),
@@ -50,29 +47,30 @@ function mapFormToTextStore(data: FormInput): BijbellezingTextStore {
             value: data.meditatieBijbeltekst,
             position: data.meditatieBijbeltekstPosition,
         },
-        meditatieBijbeltekstVolgendeKeer: {
-            value: data.meditatieBijbeltekstVolgendeKeer,
-        }
+        meditatieBijbelcitaat: {
+            value: data.meditatieBijbelcitaat,
+            isCitaat: data.meditatieBijbelcitaatCheckbox,
+        },
     }
 }
 
-function mapTextStoreToForm(data: BijbellezingTextStore): FormInput {
+function mapTextStoreToForm(data: BezinningsmomentTextStore): FormInput {
     return {
         voorganger: data.voorganger.value,
         voorgangerPosition: data.voorganger.position,
         datum: new Date(data.datum.value),
-        datumVolgendeKeer: new Date(data.datumVolgendeKeer.value),
         zingen: mapTextArray(data.zingen.values),
         zingenPosition: data.zingen.position,
         schriftlezingen: mapTextArray(data.schriftlezingen.values),
         schriftlezingenPosition: data.schriftlezingen.position,
         meditatieBijbeltekst: data.meditatieBijbeltekst.value,
         meditatieBijbeltekstPosition: data.meditatieBijbeltekst.position,
-        meditatieBijbeltekstVolgendeKeer: data.meditatieBijbeltekstVolgendeKeer.value,
+        meditatieBijbelcitaat: data.meditatieBijbelcitaat.value,
+        meditatieBijbelcitaatCheckbox: data.meditatieBijbelcitaat.isCitaat,
     }
 }
 
-function formatTekstenForTemplates(teksten: BijbellezingTextStore): BijbellezingTextStore {
+function formatTekstenForTemplates(teksten: BezinningsmomentTextStore): BezinningsmomentTextStore {
     return {
         ...teksten,
         zingen: {
@@ -87,21 +85,15 @@ function formatTekstenForTemplates(teksten: BijbellezingTextStore): Bijbellezing
             ...teksten.meditatieBijbeltekst,
             value: formatScripture(teksten.meditatieBijbeltekst.value),
         },
-        meditatieBijbeltekstVolgendeKeer: {
-            value: formatScripture(teksten.meditatieBijbeltekstVolgendeKeer.value),
-        },
         datum: {
             value: formatDate(new Date(teksten.datum.value)),
-        },
-        datumVolgendeKeer: {
-            value: formatDate(new Date(teksten.datumVolgendeKeer.value)),
         },
     }
 }
 
-const BijbellezingTeksten = () => {
+const BezinningsmomentTeksten = () => {
     const { onSubmit, onClear, control, register } = useTextForm({
-        textFormConfigName: 'bijbellezing',
+        textFormConfigName: 'bezinningsmoment',
         mapTextStoreToForm,
         mapFormToTextStore,
         formatTekstenForTemplates,
@@ -109,17 +101,17 @@ const BijbellezingTeksten = () => {
 
     return (
         <TextForm onClear={onClear} onSubmit={onSubmit}>
-            <InputGroup controlId="bijbellezingVoorganger"
+            <InputGroup controlId="bezinningsmomentVoorganger"
                         label="Voorganger"
                         renderPosition={() => <PositionSelect control={control} name="voorgangerPosition" />}>
                 <TextField placeholder="Voorganger" control={control} name="voorganger" />
             </InputGroup>
 
-            <InputGroup controlId="bijbellezingDatum" label="Datum">
+            <InputGroup controlId="bezinningsmomentDatum" label="Datum">
                 <DatePickerField placeholder="Datum" control={control} name="datum" />
             </InputGroup>
 
-            <InputGroup controlId="bijbellezingZingen"
+            <InputGroup controlId="bezinningsmomentZingen"
                         label="Zingen"
                         renderPosition={() => <PositionSelect control={control} name="zingenPosition" />}>
                 <TextFieldArray placeholder="Psalm/Gezang"
@@ -129,7 +121,7 @@ const BijbellezingTeksten = () => {
                                 generateElement={emptyTextArrayElement} />
             </InputGroup>
 
-            <InputGroup controlId="bijbellezingSchriftlezingen"
+            <InputGroup controlId="bezinningsmomentSchriftlezingen"
                         label="Schriftlezing"
                         renderPosition={() => <PositionSelect control={control} name="schriftlezingenPosition" />}>
                 <TextFieldArray placeholder="Bijbelgedeelte"
@@ -139,23 +131,22 @@ const BijbellezingTeksten = () => {
                                 generateElement={emptyTextArrayElement} />
             </InputGroup>
 
-            <InputGroup controlId="bijbellezingMeditatieBijbeltekst"
+            <InputGroup controlId="bezinningsmomentMeditatieBijbeltekst"
                         label="Meditatie - Bijbeltekst"
                         renderPosition={() => <PositionSelect control={control} name="meditatieBijbeltekstPosition" />}>
                 <TextField placeholder="Bijbeltekst" control={control} name="meditatieBijbeltekst" />
             </InputGroup>
 
-            <SectionHeader label="Volgende keer" />
-
-            <InputGroup controlId="bijbellezingDatumVolgendeKeer" label="Datum">
-                <DatePickerField placeholder="Datum" control={control} name="datumVolgendeKeer" />
-            </InputGroup>
-
-            <InputGroup controlId="bijbellezingMeditatieBijbeltekstVolgendeKeer" label="Meditatie - Bijbeltekst">
-                <TextField placeholder="Bijbeltekst" control={control} name="meditatieBijbeltekstVolgendeKeer" />
+            <InputGroup controlId="bezinningsmomentPreekBijbelcitaat" label="Meditatie - Bijbelcitaat">
+                <TextField placeholder="Meditatie - Bijbelcitaat" control={control} name="meditatieBijbelcitaat">
+                    <CheckboxExtension controlId="bezinningsmomentPreekBijbelcitaat_checkbox"
+                                       checkboxLabel="Citaat"
+                                       control={control}
+                        name="meditatieBijbelcitaatCheckbox" />
+                </TextField>
             </InputGroup>
         </TextForm>
     )
 }
 
-export default BijbellezingTeksten
+export default BezinningsmomentTeksten
