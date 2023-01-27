@@ -4,53 +4,43 @@ import { useSetLastOpenedTextTab, useTextStoreLastOpenedTab, useTextStorePath } 
 import { openFile } from "../../core/utils";
 import CardTabPane from "../util/CardTabPane"
 import KerkdienstTeksten from "./KerkdienstTeksten";
+import BezinningsmomentTeksten from "./Bezinningsmoment";
 import BijbellezingTeksten from "./BijbellezingTeksten";
 import CursusGeestelijkeVormingTeksten from "./CursusGeestelijkeVormingTeksten";
 import RouwdienstTeksten from "./RouwdienstTeksten";
 import TrouwdienstTeksten from "./TrouwdienstTeksten";
+import LoadTextStore from "./LoadTextStore";
+
+const tabs = {
+    "Kerkdienst": KerkdienstTeksten,
+    "Bijbellezing": BijbellezingTeksten,
+    "Cursus Geestelijke Vorming": CursusGeestelijkeVormingTeksten,
+    "Huwelijksdienst": TrouwdienstTeksten,
+    "Begrafenisdienst": RouwdienstTeksten,
+    "Bezinningsmoment": BezinningsmomentTeksten,
+}
+const tabsKeys = Object.keys(tabs)
+
+function isNumber(o: unknown): o is Number {
+    return typeof o === "number"
+}
 
 const TextTab = () => {
     const textStorePath = useTextStorePath()
     const lastOpenedTab = useTextStoreLastOpenedTab()
+    const lastOpenedTabString = isNumber(lastOpenedTab) ? tabsKeys[lastOpenedTab] : lastOpenedTab
     const setLastOpenedTextTab = useSetLastOpenedTextTab()
 
-    function saveSelectedTab(index: number): void {
-        if (lastOpenedTab !== index) { // if we update always, we get infinite render recursion
-            setLastOpenedTextTab(index)
-        }
-    }
-
-    const tabs = [
-        {
-            title: "Kerkdienst",
-            element: <KerkdienstTeksten />
-        },
-        {
-            title: "Bijbellezing",
-            element: <BijbellezingTeksten />
-        },
-        {
-            title: "Cursus Geestelijke Vorming",
-            element: <CursusGeestelijkeVormingTeksten />
-        },
-        {
-            title: "Huwelijksdienst",
-            element: <TrouwdienstTeksten />
-        },
-        {
-            title: "Begrafenisdienst",
-            element: <RouwdienstTeksten />
-        }
-    ]
-
     return (
-        <div className="border border-dark border-3 rounded-3 overflow-hidden">
-            <div className="d-flex justify-content-center position-relative">
-                <h3>Teksten</h3>
-                <Button className="position-absolute translate-middle-y top-50 end-0" onClick={async () => await openFile(textStorePath)}>Open JSON</Button>
+        <LoadTextStore>
+            <div className="border border-dark border-3 rounded-3 overflow-hidden">
+                <div className="d-flex justify-content-center position-relative">
+                    <h3>Teksten</h3>
+                    <Button className="position-absolute translate-middle-y top-50 end-0" onClick={async () => await openFile(textStorePath)}>Open JSON</Button>
+                </div>
+                <CardTabPane tabs={tabs} defaultOpen={lastOpenedTabString} onSelectTab={setLastOpenedTextTab} />
             </div>
-            <CardTabPane tabs={tabs} defaultOpenIndex={lastOpenedTab} onSelectTab={saveSelectedTab} />
-        </div>
+        </LoadTextStore>
     )
 }
 

@@ -12,19 +12,13 @@ type CameraPositionTabPaneProps = {
 }
 
 const CameraPositionTabPane = ({ cameraInteraction, groups, onPositionClick }: CameraPositionTabPaneProps) => {
-    const tabs =[
-        {
-            title: "Besturing",
-            element: <CameraManualControl cameraInteraction={cameraInteraction} onPositionClick={onPositionClick} />
-        },
-        ...groups.map(group => ({
-            title: group.title,
-            element: <CameraPositionGroup positions={group.positions} onPositionClick={onPositionClick} />
-        }))
-    ]
+    const tabs = {
+        "Besturing": () => <CameraManualControl cameraInteraction={cameraInteraction} onPositionClick={onPositionClick} />,
+        ...groups.reduce((obj, group) => ({ ...obj, [group.title]: () => <CameraPositionGroup positions={group.positions} onPositionClick={onPositionClick} /> }), {})
+    }
 
     return (
-        <CardTabPane defaultOpenIndex={1} tabs={tabs} />
+        <CardTabPane defaultOpen={groups[0].title} tabs={tabs} />
     )
 }
 

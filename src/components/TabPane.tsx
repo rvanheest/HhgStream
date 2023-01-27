@@ -6,7 +6,6 @@ import styles from "./TabPane.module.css"
 import WIP from "./configuration/WIP";
 import CameraTab from "./camera/CameraTab";
 import TextTab from "./text/TextTab";
-import LoadTextStore from "./text/LoadTextStore"
 
 const camerasKey = "cameras"
 const textKey = "text"
@@ -28,37 +27,35 @@ const NavItem = ({ icon, active, onClick }: NavItemProps) => (
 
 const MemoedNavItem = memo(NavItem)
 
+function renderTab(activeTab: string): () => JSX.Element {
+    switch (activeTab) {
+        case camerasKey: return CameraTab
+        case textKey: return TextTab
+        case configurationKey: return WIP
+        default: return WIP
+    }
+}
+
 const TabPane = () => {
     const [activeTab, setActiveTab] = useState<string>(camerasKey);
     const cameraActiveOnClick = useCallback(() => setActiveTab(camerasKey), [])
     const textActiveOnClick = useCallback(() => setActiveTab(textKey), [])
     const configurationActiveOnClick = useCallback(() => setActiveTab(configurationKey), [])
 
-    function isActive(key: string): boolean {
-        return activeTab === key;
-    }
-
-    function renderTab(): JSX.Element | undefined {
-        switch (activeTab) {
-            case camerasKey: return <CameraTab />
-            case textKey: return <LoadTextStore><TextTab /></LoadTextStore>
-            case configurationKey: return <WIP />
-            default: return undefined
-        }
-    }
+    const Body = renderTab(activeTab)
 
     return (
         <Container fluid className="ps-0">
             <Row className="vh-100">
                 <Col sm={1} className="pe-0 bg-dark">
                     <div className={`position-fixed ${styles.navItems}`}>
-                        <MemoedNavItem icon={faVideoCamera} active={isActive(camerasKey)} onClick={cameraActiveOnClick} />
-                        <MemoedNavItem icon={faFileLines} active={isActive(textKey)} onClick={textActiveOnClick} />
-                        <MemoedNavItem icon={faGear} active={isActive(configurationKey)} onClick={configurationActiveOnClick} />
+                        <MemoedNavItem icon={faVideoCamera} active={activeTab === camerasKey} onClick={cameraActiveOnClick} />
+                        <MemoedNavItem icon={faFileLines} active={activeTab === textKey} onClick={textActiveOnClick} />
+                        <MemoedNavItem icon={faGear} active={activeTab === configurationKey} onClick={configurationActiveOnClick} />
                     </div>
                 </Col>
                 <Col sm={11} className="gx-3 bg-light py-2">
-                    {renderTab()}
+                    <Body />
                 </Col>
             </Row>
         </Container>

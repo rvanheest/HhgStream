@@ -46,7 +46,7 @@ export type TextFormConfig = {
 
 export type TextsConfig = {
     textStore: string
-    lastOpenedTab: number
+    lastOpenedTab: number | string
     forms: { [key: string]: TextFormConfig }
 }
 
@@ -246,7 +246,7 @@ type ZustandConfigStore = {
     error: ConfigError | undefined
     loaded: boolean
     loadConfig: () => void
-    setLastOpenedTextTab: (index: number) => void
+    setLastOpenedTextTab: (tabName: string) => void
 }
 
 const useConfigStore = create<ZustandConfigStore>()(setState => ({
@@ -264,9 +264,9 @@ const useConfigStore = create<ZustandConfigStore>()(setState => ({
             setState({ loaded: true, config: c, error: undefined })
         }
     },
-    setLastOpenedTextTab: index => setState(s => {
+    setLastOpenedTextTab: tabName => setState(s => {
         if (!s.config) return s
-        const newConfig = ({ ...s.config, texts: { ...s.config.texts, lastOpenedTab: index }})
+        const newConfig = ({ ...s.config, texts: { ...s.config.texts, lastOpenedTab: tabName }})
         saveConfig(newConfig, getConfigPath())
         return ({ ...s, config: newConfig })
     })
@@ -284,7 +284,7 @@ export function useTextStorePath(): string {
     return useConfigStore(s => s.config!.texts.textStore)
 }
 
-export function useTextStoreLastOpenedTab(): number {
+export function useTextStoreLastOpenedTab(): number | string {
     return useConfigStore(s => s.config!.texts.lastOpenedTab)
 }
 
@@ -302,6 +302,6 @@ export function useLoadConfig(): Pick<ZustandConfigStore, "loaded" | "error"> {
     return store
 }
 
-export function useSetLastOpenedTextTab(): (index: number) => void {
+export function useSetLastOpenedTextTab(): (tabName: string) => void {
     return useConfigStore(s => s.setLastOpenedTextTab)
 }
