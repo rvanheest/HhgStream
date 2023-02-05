@@ -30,6 +30,10 @@ describe('formatSong', () => {
         expect(formatSong('Psalm 110:1,2 en 3')).toBe('Psalm 110 : 1, 2 en 3')
     })
 
+    test('two verses with comma and "en"', () => {
+        expect(formatSong('Psalm 110 : 1, en 2')).toBe('Psalm 110 : 1 en 2')
+    })
+
     test('special case with Voorzang Psalm 18 - spaces', () => {
         expect(formatSong('Psalm 18:VZ')).toBe('Psalm 18 : VZ')
     })

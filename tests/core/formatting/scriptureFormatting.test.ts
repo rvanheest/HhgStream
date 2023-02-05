@@ -75,6 +75,10 @@ describe('formatScripture', () => {
             expect(formatScripture('Johannes 1:1,3')).toBe('Johannes 1 : 1 en 3')
         })
 
+        test('scripture two verses with comma and "en"', () => {
+            expect(formatScripture('Johannes 9 : 4, en 5')).toBe('Johannes 9 : 4 en 5')
+        })
+
         test('scripture multiple verses', () => {
             expect(formatScripture('Johannes 1:1,3 en 5')).toBe('Johannes 1 : 1, 3 en 5')
         })
@@ -89,6 +93,10 @@ describe('formatScripture', () => {
 
         test('multiple verse ranges within one chapter', () => {
             expect(formatScripture('Johannes 7:1-9,21-23,37-39')).toBe('Johannes 7 : 1 - 9, 21 - 23 en 37 - 39')
+        })
+
+        test('multiple verse ranges within one chapter with comma and "en"', () => {
+            expect(formatScripture('Johannes 9 : 1 - 12, en35-41')).toBe('Johannes 9 : 1 - 12 en 35 - 41')
         })
 
         test('scripture passage across chapter boundaries', () => {
