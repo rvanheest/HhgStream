@@ -31,6 +31,7 @@ function undefinedOnFalsy<T>(t: T): T | undefined {
 }
 
 function parseVerses(verses: string) {
+    const word = '[A-Za-zÀ-ÿ]'
     const verseRanges = verses.match(/(\d+\w*)\s*-\s*(\d+\w*)/gi)
     if (verseRanges) {
         const ranges = verseRanges
@@ -46,7 +47,7 @@ function parseVerses(verses: string) {
 }
 
 function parseScripture(scripture: string): Scripture | string {
-    let parsedScripture = scripture.match(/^(\d*)\s*(\w+)\s*(\d*)\s*:\s*(\S*)\s*-\s*(\d*)\s*:\s*(\S*)$/)
+    let parsedScripture = scripture.match(/^(\d*)\s*([A-Za-zÀ-ÿ]+)\s*(\d*)\s*:\s*(\S*)\s*-\s*(\d*)\s*:\s*(\S*)$/)
     if (parsedScripture) return {
         bookNumber: undefinedOnFalsy(parsedScripture[1]),
         bookName: parsedScripture[2],
@@ -60,7 +61,7 @@ function parseScripture(scripture: string): Scripture | string {
         }
     }
 
-    parsedScripture = scripture.match(/^(\d*)\s*(\w+)\s*(\d*)\s*:\s*(.*)$/)
+    parsedScripture = scripture.match(/^(\d*)\s*([A-Za-zÀ-ÿ]+)\s*(\d*)\s*:\s*(.*)$/)
     if (parsedScripture) return {
         bookNumber: undefinedOnFalsy(parsedScripture[1]),
         bookName: parsedScripture[2],
