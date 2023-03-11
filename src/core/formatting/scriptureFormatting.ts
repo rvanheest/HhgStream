@@ -31,7 +31,6 @@ function undefinedOnFalsy<T>(t: T): T | undefined {
 }
 
 function parseVerses(verses: string) {
-    const word = '[A-Za-zÀ-ÿ]'
     const verseRanges = verses.match(/(\d+\w*)\s*-\s*(\d+\w*)/gi)
     if (verseRanges) {
         const ranges = verseRanges
