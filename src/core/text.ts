@@ -1,24 +1,17 @@
 import { extension, fileExists, filename, listFiles, readFile, readJsonFile, resolve, saveFile, saveJsonFile } from "./utils";
 import { TextFormConfig, useTextStorePath } from "./config"
+import { htmlEncode, positionCssClass, TextPosition } from "./template";
 import Mustache from "mustache";
 import { create } from "zustand"
 import { shallow } from "zustand/shallow"
-import {useEffect} from "react";
+import { useEffect } from "react";
 
-export enum TextPosition {
-    TopLeft = "Links boven",
-    BottomLeft = "Links onder",
-    TopRight = "Rechts boven",
-    BottomRight = "Rechts onder",
-    Center = "Midden",
+export const schriftTypes = {
+    Tekst: "Tekst voor de preek",
+    HC: "Heidelbergse Catechismus",
+    NGB: "Nederlandse Geloofsbelijdenis",
+    DL: "Dordtse Leerregels",
 }
-
-export const schriftTypes = [
-    { kortType: "Tekst", type: "Tekst voor de preek" },
-    { kortType: "HC", type: "Heidelbergse Catechismus" },
-    { kortType: "NGB", type: "Nederlandse Geloofsbelijdenis" },
-    { kortType: "DL", type: "Dordtse Leerregels" },
-]
 
 type Position = {
     position: TextPosition
@@ -124,7 +117,7 @@ const defaultKerkdienst: KerkdienstTextStore = {
     voorzang: { value: "", position: TextPosition.TopRight },
     zingen: { values: [], position: TextPosition.TopLeft },
     schriftlezingen: { values: [], position: TextPosition.TopLeft },
-    preekBijbeltekst: { type: "", value: "", position: TextPosition.TopLeft },
+    preekBijbeltekst: { type: schriftTypes.Tekst, value: "", position: TextPosition.TopLeft },
     preekBijbelcitaat: { value: "", isCitaat: false },
     preekThema: { value: "", position: TextPosition.TopLeft },
     preekThemaOndertitel: { value: "" },
@@ -254,37 +247,12 @@ function saveTextStore(textStore: TextStore, textPath: string): void {
     saveJsonFile(textStore, textPath)
 }
 
-// voor meer karakters, zie https://www.webmasterresources.nl/webdesign/utf-html-code-speciale-karakters/
-const htmlCharacterEncode = {
-    "à": "&agrave;",
-    "á": "&aacute;",
-    "ä": "&auml;",
-    "è": "&egrave;",
-    "é": "&eacute;",
-    "ë": "&euml;",
-    "ï": "&iuml;",
-    "ó": "&oacute;",
-    "ö": "&ouml;",
-    "ü": "&uuml;",
-}
-
 // Mustache documentation: https://github.com/janl/mustache.js
 export function fillTemplates(templateConfig: TextFormConfig, teksten: any): void {
     const augmentedTeksten = {
         ...teksten,
-        "positionF": () => (s: string, render: (s: string) => TextPosition) => {
-            switch (render(s)) {
-                case TextPosition.TopLeft: return 'top-left'
-                case TextPosition.BottomLeft: return 'bottom-left'
-                case TextPosition.TopRight: return 'top-right'
-                case TextPosition.BottomRight: return 'bottom-right'
-                case TextPosition.Center: return 'center'
-                default: return ''
-            }
-        },
-        "htmlEncodeF": () => (s: string, render: (s: string) => string) => {
-            return Object.entries(htmlCharacterEncode).reduce((x, [key, value]) => x.replace(key, value), render(s))
-        },
+        "positionF": () => (s: string, render: (s: string) => TextPosition) => positionCssClass(render(s)),
+        "htmlEncodeF": () => (s: string, render: (s: string) => string) => htmlEncode(render(s)),
     }
 
     listFiles(templateConfig.templateDir)

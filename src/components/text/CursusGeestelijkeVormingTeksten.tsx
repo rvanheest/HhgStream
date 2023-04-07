@@ -1,7 +1,8 @@
 import React from "react"
 import { formatScripture } from "../../core/formatting/scriptureFormatting";
 import { formatSong } from "../../core/formatting/songFormatting";
-import { CursusGeestelijkeVormingTextStore, TextPosition } from "../../core/text"
+import { TextPosition } from "../../core/template";
+import { CursusGeestelijkeVormingTextStore } from "../../core/text"
 import InputGroup from "../util/form/InputGroup";
 import PositionSelect from "../util/form/PositionSelect";
 import TextField from "../util/form/TextField";

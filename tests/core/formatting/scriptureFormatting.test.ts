@@ -35,8 +35,9 @@ describe('formatScripture', () => {
             ['Johannes 7:1-9,21-23,37-39', 'Johannes 7 : 1 - 9, 21 - 23 en 37 - 39'],
             ['Johannes 9 : 1 - 12, en35-41', 'Johannes 9 : 1 - 12 en 35 - 41'],
             ['Johannes 6:10b-7:9a', 'Johannes 6 : 10b - 7 : 9a'],
-            ['Hebreeën 4:14-5:10', 'Hebreeën 4 : 14 - 5 : 10']
+            ['Hebreeën 4:14-5:10', 'Hebreeën 4 : 14 - 5 : 10'],
         ]
+
         test.each(cases)('formatScripture(%s) === %s', (input, expectedOutput) => {
             expect(formatScripture(input)).toBe(expectedOutput)
         })

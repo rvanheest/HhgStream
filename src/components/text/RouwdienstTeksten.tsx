@@ -1,5 +1,6 @@
 import React from "react"
-import { RouwdienstTextStore, TextPosition } from "../../core/text"
+import { TextPosition } from "../../core/template";
+import { RouwdienstTextStore } from "../../core/text"
 import TextForm from "../util/form/TextForm";
 import InputGroup from "../util/form/InputGroup";
 import TextField from "../util/form/TextField";
