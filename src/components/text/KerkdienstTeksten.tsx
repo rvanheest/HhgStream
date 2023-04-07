@@ -1,5 +1,6 @@
 import React from "react"
-import { KerkdienstTextStore, schriftTypes, TextPosition } from "../../core/text"
+import { TextPosition } from "../../core/template";
+import { KerkdienstTextStore, schriftTypes } from "../../core/text"
 import TextForm from "../util/form/TextForm";
 import useTextForm from "../util/form/TextFormHook"
 import InputGroup from "../util/form/InputGroup";
@@ -120,7 +121,7 @@ function formatTekstenForTemplates(teksten: KerkdienstTextStore): any {
         preekBijbeltekst: {
             ...teksten.preekBijbeltekst,
             value: formatScripture(teksten.preekBijbeltekst.value),
-            kortType: schriftTypes.find(t => t.type === teksten.preekBijbeltekst.type)!.kortType,
+            kortType: Object.entries(schriftTypes).find(entry => teksten.preekBijbeltekst.type === entry[1])![0]
         },
     }
 }
@@ -165,7 +166,7 @@ const KerkdienstTeksten = () => {
                         label="Preek - Bijbeltekst"
                         renderLabelInput={() => <SelectField control={control}
                                                              name="preekBijbeltekstType"
-                                                             selectOptions={schriftTypes.map(value => value.type)} />}
+                                                             selectOptions={Object.values(schriftTypes)} />}
                         renderPosition={() => <PositionSelect control={control} name="preekBijbeltekstPosition" />}>
                 <TextField placeholder="Bijbeltekst" control={control} name="preekBijbeltekst" />
             </InputGroup>

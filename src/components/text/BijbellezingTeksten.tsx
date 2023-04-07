@@ -2,7 +2,8 @@ import React from "react"
 import { formatScripture } from "../../core/formatting/scriptureFormatting";
 import { formatSongs } from "../../core/formatting/songFormatting";
 import { formatDate } from "../../core/formatting/dateFormatting";
-import { BijbellezingTextStore, TextPosition } from "../../core/text"
+import { TextPosition } from "../../core/template";
+import { BijbellezingTextStore } from "../../core/text"
 import DatePickerField from "../util/form/DatePickerField";
 import InputGroup from "../util/form/InputGroup";
 import PositionSelect from "../util/form/PositionSelect";

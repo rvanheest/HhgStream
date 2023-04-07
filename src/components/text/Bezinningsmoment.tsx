@@ -2,7 +2,8 @@ import React from "react"
 import { formatDate } from "../../core/formatting/dateFormatting";
 import { formatScripture } from "../../core/formatting/scriptureFormatting";
 import { formatSongs } from "../../core/formatting/songFormatting";
-import { BezinningsmomentTextStore, TextPosition } from "../../core/text"
+import { TextPosition } from "../../core/template";
+import { BezinningsmomentTextStore } from "../../core/text"
 import CheckboxExtension from "../util/form/CheckboxExtension";
 import DatePickerField from "../util/form/DatePickerField";
 import InputGroup from "../util/form/InputGroup";
