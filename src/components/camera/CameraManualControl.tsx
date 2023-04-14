@@ -3,8 +3,7 @@ import { Button, ButtonGroup, Col, Form, Row } from "react-bootstrap"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faHome, faAnglesRight, faAngleRight, faAnglesLeft, faAngleLeft, IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import styling from "./CameraManualControl.module.css"
-import { ICameraInteraction } from "../../core/camera"
-import { Position } from "../../core/config"
+import {useCameraInteraction, useSetCameraPosition} from "../../core/cameraStore";
 
 type ControlButtonProps = {
     children: JSX.Element | string
@@ -24,55 +23,55 @@ const ControlButton = ({ children, onClick, onPress, onRelease }: ControlButtonP
     </Button>
 )
 
-type ManualControlProps = {
-    cameraInteraction: ICameraInteraction
-}
+const ManualControl = () => {
+    const cameraInteraction = useCameraInteraction()
 
-const ManualControl = ({ cameraInteraction }: ManualControlProps) => (
-    <div className="d-flex flex-column">
-        <ButtonGroup className={`${styling.motionGroup}`}>
-            <ControlButton onPress={() => cameraInteraction.startCameraMove("Left", "Up")}
-                           onRelease={() => cameraInteraction.stopCameraMove()}>
-                <FontAwesomeIcon icon={faArrowUp} style={{transform: "rotate(-45deg)"}} />
-            </ControlButton>
-            <ControlButton onPress={() => cameraInteraction.startCameraMove("Stop", "Up")}
-                           onRelease={() => cameraInteraction.stopCameraMove()}>
-                <FontAwesomeIcon icon={faArrowUp} />
-            </ControlButton>
-            <ControlButton onPress={() => cameraInteraction.startCameraMove("Right", "Up")}
-                           onRelease={() => cameraInteraction.stopCameraMove()}>
-                <FontAwesomeIcon icon={faArrowUp} style={{transform: "rotate(45deg)"}} />
-            </ControlButton>
-        </ButtonGroup>
-        <ButtonGroup className={`${styling.motionGroup}`}>
-            <ControlButton onPress={() => cameraInteraction.startCameraMove("Left", "Stop")}
-                           onRelease={() => cameraInteraction.stopCameraMove()}>
-                <FontAwesomeIcon icon={faArrowLeft} />
-            </ControlButton>
-            <ControlButton onClick={() => cameraInteraction.moveCameraHome()}>
-                <FontAwesomeIcon icon={faHome} />
-            </ControlButton>
-            <ControlButton onPress={() => cameraInteraction.startCameraMove("Right", "Stop")}
-                           onRelease={() => cameraInteraction.stopCameraMove()}>
-                <FontAwesomeIcon icon={faArrowRight} />
-            </ControlButton>
-        </ButtonGroup>
-        <ButtonGroup className={`${styling.motionGroup}`}>
-            <ControlButton onPress={() => cameraInteraction.startCameraMove("Left", "Down")}
-                           onRelease={() => cameraInteraction.stopCameraMove()}>
-                <FontAwesomeIcon icon={faArrowDown} style={{transform: "rotate(45deg)"}} />
-            </ControlButton>
-            <ControlButton onPress={() => cameraInteraction.startCameraMove("Stop", "Down")}
-                           onRelease={() => cameraInteraction.stopCameraMove()}>
-                <FontAwesomeIcon icon={faArrowDown} />
-            </ControlButton>
-            <ControlButton onPress={() => cameraInteraction.startCameraMove("Right", "Down")}
-                           onRelease={() => cameraInteraction.stopCameraMove()}>
-                <FontAwesomeIcon icon={faArrowDown} style={{transform: "rotate(-45deg)"}} />
-            </ControlButton>
-        </ButtonGroup>
-    </div>
-)
+    return (
+        <div className="d-flex flex-column">
+            <ButtonGroup className={`${styling.motionGroup}`}>
+                <ControlButton onPress={() => cameraInteraction.startCameraMove("Left", "Up")}
+                               onRelease={() => cameraInteraction.stopCameraMove()}>
+                    <FontAwesomeIcon icon={faArrowUp} style={{transform: "rotate(-45deg)"}} />
+                </ControlButton>
+                <ControlButton onPress={() => cameraInteraction.startCameraMove("Stop", "Up")}
+                               onRelease={() => cameraInteraction.stopCameraMove()}>
+                    <FontAwesomeIcon icon={faArrowUp} />
+                </ControlButton>
+                <ControlButton onPress={() => cameraInteraction.startCameraMove("Right", "Up")}
+                               onRelease={() => cameraInteraction.stopCameraMove()}>
+                    <FontAwesomeIcon icon={faArrowUp} style={{transform: "rotate(45deg)"}} />
+                </ControlButton>
+            </ButtonGroup>
+            <ButtonGroup className={`${styling.motionGroup}`}>
+                <ControlButton onPress={() => cameraInteraction.startCameraMove("Left", "Stop")}
+                               onRelease={() => cameraInteraction.stopCameraMove()}>
+                    <FontAwesomeIcon icon={faArrowLeft} />
+                </ControlButton>
+                <ControlButton onClick={() => cameraInteraction.moveCameraHome()}>
+                    <FontAwesomeIcon icon={faHome} />
+                </ControlButton>
+                <ControlButton onPress={() => cameraInteraction.startCameraMove("Right", "Stop")}
+                               onRelease={() => cameraInteraction.stopCameraMove()}>
+                    <FontAwesomeIcon icon={faArrowRight} />
+                </ControlButton>
+            </ButtonGroup>
+            <ButtonGroup className={`${styling.motionGroup}`}>
+                <ControlButton onPress={() => cameraInteraction.startCameraMove("Left", "Down")}
+                               onRelease={() => cameraInteraction.stopCameraMove()}>
+                    <FontAwesomeIcon icon={faArrowDown} style={{transform: "rotate(45deg)"}} />
+                </ControlButton>
+                <ControlButton onPress={() => cameraInteraction.startCameraMove("Stop", "Down")}
+                               onRelease={() => cameraInteraction.stopCameraMove()}>
+                    <FontAwesomeIcon icon={faArrowDown} />
+                </ControlButton>
+                <ControlButton onPress={() => cameraInteraction.startCameraMove("Right", "Down")}
+                               onRelease={() => cameraInteraction.stopCameraMove()}>
+                    <FontAwesomeIcon icon={faArrowDown} style={{transform: "rotate(-45deg)"}} />
+                </ControlButton>
+            </ButtonGroup>
+        </div>
+    )
+}
 const MemoedManualControl = memo(ManualControl)
 
 const faAngles3Right: IconDefinition = {
@@ -81,42 +80,43 @@ const faAngles3Right: IconDefinition = {
     icon: [704, 512, ["171", "angle-triple-left"], "f100", "M 662.6 278.6 c 12.5 -12.5 12.5 -32.8 0 -45.3 l -160 -160 c -12.5 -12.5 -32.8 -12.5 -45.3 0 s -12.5 32.8 0 45.3 L 594.7 256 L 457.4 393.4 c -12.5 12.5 -12.5 32.8 0 45.3 s 32.8 12.5 45.3 0 l 160 -160 z M 470.6 278.6 c 12.5 -12.5 12.5 -32.8 0 -45.3 l -160 -160 c -12.5 -12.5 -32.8 -12.5 -45.3 0 s -12.5 32.8 0 45.3 L 402.7 256 L 265.4 393.4 c -12.5 12.5 -12.5 32.8 0 45.3 s 32.8 12.5 45.3 0 l 160 -160 z m -352 160 l 160 -160 c 12.5 -12.5 12.5 -32.8 0 -45.3 l -160 -160 c -12.5 -12.5 -32.8 -12.5 -45.3 0 s -12.5 32.8 0 45.3 L 210.7 256 L 73.4 393.4 c -12.5 12.5 -12.5 32.8 0 45.3 s 32.8 12.5 45.3 0 z"]
 }
 
-type ZoomControlProps = {
-    cameraInteraction: ICameraInteraction
+const ZoomControl = () => {
+    const cameraInteraction = useCameraInteraction()
+
+    return (
+        <div className="d-flex flex-column">
+            <ButtonGroup className={`${styling.zoomGroup}`}>
+                <ControlButton onPress={() => cameraInteraction.startCameraZoom(1)}
+                               onRelease={() => cameraInteraction.stopCameraZoom()}>
+                    <FontAwesomeIcon icon={faAngleRight} />
+                </ControlButton>
+                <ControlButton onPress={() => cameraInteraction.startCameraZoom(2)}
+                               onRelease={() => cameraInteraction.stopCameraZoom()}>
+                    <FontAwesomeIcon icon={faAnglesRight} />
+                </ControlButton>
+                <ControlButton onPress={() => cameraInteraction.startCameraZoom(3)}
+                               onRelease={() => cameraInteraction.stopCameraZoom()}>
+                    <FontAwesomeIcon icon={faAngles3Right} />
+                </ControlButton>
+            </ButtonGroup>
+            <ButtonGroup className={`${styling.zoomGroup}`}>
+                <ControlButton onPress={() => cameraInteraction.startCameraZoom(-1)}
+                               onRelease={() => cameraInteraction.stopCameraZoom()}>
+                    <FontAwesomeIcon icon={faAngleLeft} />
+                </ControlButton>
+                <ControlButton onPress={() => cameraInteraction.startCameraZoom(-2)}
+                               onRelease={() => cameraInteraction.stopCameraZoom()}>
+                    <FontAwesomeIcon icon={faAnglesLeft} />
+                </ControlButton>
+                <ControlButton onPress={() => cameraInteraction.startCameraZoom(-3)}
+                               onRelease={() => cameraInteraction.stopCameraZoom()}>
+                    <FontAwesomeIcon icon={faAngles3Right} style={{transform: "scale(-1, 1)"}} />
+                </ControlButton>
+            </ButtonGroup>
+        </div>
+    )
 }
 
-const ZoomControl = ({ cameraInteraction }: ZoomControlProps) => (
-    <div className="d-flex flex-column">
-        <ButtonGroup className={`${styling.zoomGroup}`}>
-            <ControlButton onPress={() => cameraInteraction.startCameraZoom(1)}
-                           onRelease={() => cameraInteraction.stopCameraZoom()}>
-                <FontAwesomeIcon icon={faAngleRight} />
-            </ControlButton>
-            <ControlButton onPress={() => cameraInteraction.startCameraZoom(2)}
-                           onRelease={() => cameraInteraction.stopCameraZoom()}>
-                <FontAwesomeIcon icon={faAnglesRight} />
-            </ControlButton>
-            <ControlButton onPress={() => cameraInteraction.startCameraZoom(3)}
-                           onRelease={() => cameraInteraction.stopCameraZoom()}>
-                <FontAwesomeIcon icon={faAngles3Right} />
-            </ControlButton>
-        </ButtonGroup>
-        <ButtonGroup className={`${styling.zoomGroup}`}>
-            <ControlButton onPress={() => cameraInteraction.startCameraZoom(-1)}
-                           onRelease={() => cameraInteraction.stopCameraZoom()}>
-                <FontAwesomeIcon icon={faAngleLeft} />
-            </ControlButton>
-            <ControlButton onPress={() => cameraInteraction.startCameraZoom(-2)}
-                           onRelease={() => cameraInteraction.stopCameraZoom()}>
-                <FontAwesomeIcon icon={faAnglesLeft} />
-            </ControlButton>
-            <ControlButton onPress={() => cameraInteraction.startCameraZoom(-3)}
-                           onRelease={() => cameraInteraction.stopCameraZoom()}>
-                <FontAwesomeIcon icon={faAngles3Right} style={{transform: "scale(-1, 1)"}} />
-            </ControlButton>
-        </ButtonGroup>
-    </div>
-)
 const MemoedZoomControl = memo(ZoomControl)
 
 type PresetControlProps = {
@@ -175,14 +175,11 @@ const PresetActionButtons = ({ preset, onMove }: PresetActionButtonsProps) => (
 )
 const MemoedPresetActionButtons = memo(PresetActionButtons)
 
-type CameraManualControlProps = {
-    cameraInteraction: ICameraInteraction
-    onPositionClick: (p: Position) => Promise<void>
-}
-
-const CameraManualControl = ({ cameraInteraction, onPositionClick }: CameraManualControlProps) => {
+const CameraManualControl = () => {
     const [preset, setPreset] = useState("")
     const [moved, setMoved] = useState(true)
+
+    const onPositionClick = useSetCameraPosition()
 
     const memoedAppendPreset = useCallback(appendPreset, [moved])
     const memoedCleanPreset = useCallback(cleanPreset, [])
@@ -212,11 +209,11 @@ const CameraManualControl = ({ cameraInteraction, onPositionClick }: CameraManua
         <div className="p-2">
             <Row>
                 <Col className="d-flex justify-content-center">
-                    <MemoedManualControl cameraInteraction={cameraInteraction} />
+                    <MemoedManualControl />
                 </Col>
 
                 <Col className="d-flex justify-content-center">
-                    <MemoedZoomControl cameraInteraction={cameraInteraction} />
+                    <MemoedZoomControl />
                 </Col>
 
                 <Col className="d-flex justify-content-center">

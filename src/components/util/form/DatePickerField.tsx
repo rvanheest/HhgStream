@@ -3,6 +3,9 @@ import { FieldValues, useController, UseControllerProps } from "react-hook-form"
 import { faCalendar } from "@fortawesome/free-regular-svg-icons"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import DatePicker from "react-date-picker"
+
+import 'react-date-picker/dist/DatePicker.css';
+import 'react-calendar/dist/Calendar.css';
 import "./DatePickerField.css"
 
 type DatePickerFieldProps<TFieldValues extends FieldValues> = UseControllerProps<TFieldValues> & {
@@ -10,7 +13,7 @@ type DatePickerFieldProps<TFieldValues extends FieldValues> = UseControllerProps
 }
 
 const DatePickerField = <TFieldValues extends FieldValues>({ placeholder, ...rest }: DatePickerFieldProps<TFieldValues>) => {
-    const { field } = useController(rest)
+    const { field: { ref, ...tail  } } = useController(rest)
 
     return (
         <div className="input-group">
@@ -23,7 +26,8 @@ const DatePickerField = <TFieldValues extends FieldValues>({ placeholder, ...res
                         className="noBorder form-control"
                         calendarIcon={<FontAwesomeIcon icon={faCalendar} />}
                         calendarClassName="custom-calendar"
-                        { ...field } />
+                        inputRef={ref}
+                        { ...tail } />
         </div>
     )
 }

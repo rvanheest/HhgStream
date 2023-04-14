@@ -1,4 +1,5 @@
 import { Camera, Position, WhiteBalanceOverride } from "./config"
+import { from, interval, switchMap, Observable, distinctUntilChanged, startWith } from "rxjs";
 
 type CameraCommand = {
     Command: string,
@@ -23,6 +24,23 @@ export type CameraStatus = {
     whiteBalance: WhiteBalance
 }
 
+function equalsAeLevels(self: AeLevels, other: AeLevels): boolean {
+    return self.changeAllowed === other.changeAllowed
+        && self.value === other.value
+}
+
+function equalsWhiteBalance(self: WhiteBalance, other: WhiteBalance): boolean {
+    return self.changeAllowed === other.changeAllowed
+        && self.blue === other.blue
+        && self.red === other.red
+}
+
+function equalsCameraStatus(self: CameraStatus, other: CameraStatus): boolean {
+    return self.name === other.name
+        && equalsAeLevels(self.aeLevels, other.aeLevels)
+        && equalsWhiteBalance(self.whiteBalance, other.whiteBalance)
+}
+
 export function getCameraInteraction(camera: Camera, isDev: boolean): ICameraInteraction {
     console.log(`getCameraInteraction for ${camera.title}; isDev = ${isDev}`)
     return isDev
@@ -34,7 +52,18 @@ type Pan = "Left" | "Right" | "Stop"
 type Tilt = "Up" | "Down" | "Stop"
 type ZoomSpeed = -3 | -2 | -1 | 1 | 2 | 3
 
+function liveCameraStatus$(cameraInteraction: ICameraInteraction): Observable<CameraStatus | undefined> {
+    return interval(1000).pipe(
+        startWith(0),
+        switchMap(() => from(cameraInteraction.getCameraStatus())),
+        startWith(undefined),
+        distinctUntilChanged((last, current) => !last ? !current : !!current && equalsCameraStatus(last, current)),
+    )
+}
+
 export interface ICameraInteraction {
+    getLiveCameraStatus$(): Observable<CameraStatus | undefined>
+
     getCameraStatus(): Promise<CameraStatus | undefined>
 
     moveCamera(position: Position): Promise<void>
@@ -71,6 +100,10 @@ class DummyCameraInteraction implements ICameraInteraction {
     whbRedValue: number = 0
 
     constructor(private camera: Camera) {}
+
+    getLiveCameraStatus$(): Observable<CameraStatus | undefined> {
+        return liveCameraStatus$(this)
+    }
 
     async getCameraStatus(): Promise<CameraStatus | undefined> {
         console.log(`[DEV] check status for ${this.camera.title}`)
@@ -166,6 +199,10 @@ class DummyCameraInteraction implements ICameraInteraction {
 
 class CameraInteraction implements ICameraInteraction {
     constructor(private camera: Camera) {}
+
+    getLiveCameraStatus$(): Observable<CameraStatus | undefined> {
+        return liveCameraStatus$(this)
+    }
 
     private async runRequest<T>(baseUrl: string,
                                 requestBody: CameraCommand,

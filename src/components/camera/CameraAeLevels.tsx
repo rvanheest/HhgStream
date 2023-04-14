@@ -1,28 +1,19 @@
-import React, { useEffect, useState } from "react"
+import React from "react"
 import { Button, ButtonGroup } from "react-bootstrap"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faChevronCircleUp, faChevronCircleDown } from "@fortawesome/free-solid-svg-icons"
-import { AeLevels, ICameraInteraction } from "../../core/camera"
+import { faChevronCircleDown, faChevronCircleUp } from "@fortawesome/free-solid-svg-icons"
 import CircleValueIndicator from "../util/CircleValueIndicator"
+import { useCurrentAeLevels } from "../../core/cameraStore";
 
-type CameraAeLevelsProps = {
-    aeLevels: AeLevels
-    cameraInteraction: ICameraInteraction
-}
-
-const CameraAeLevels = ({ aeLevels, cameraInteraction }: CameraAeLevelsProps) => {
-    const [value, setValue] = useState<number>(aeLevels.value)
-
-    useEffect(() => {
-        setValue(aeLevels.value)
-    }, [aeLevels.value])
+const CameraAeLevels = () => {
+    const [aeLevels, setAeLevels] = useCurrentAeLevels()
 
     async function onButtonClick(change: number) {
-        setValue(v => v + change)
-        await cameraInteraction.changeAeLevel(change)
+        await setAeLevels(change)
     }
 
-    if (!aeLevels.changeAllowed) return (<div />)
+    if (!aeLevels || !aeLevels.changeAllowed) return (<div />)
+    const { value } = aeLevels
 
     return (
         <>

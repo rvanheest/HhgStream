@@ -1,13 +1,15 @@
 import React from "react"
 import styling from "./CameraPosition.module.css"
 import { Position } from "../../core/config"
+import { useSetCameraPosition } from "../../core/cameraStore";
 
 type CameraPositionProps = {
     position: Position
-    onSelect: (position: Position) => Promise<void>
 }
 
-const CameraPosition = ({ position, onSelect }: CameraPositionProps) => {
+const CameraPosition = ({ position }: CameraPositionProps) => {
+    const onSelect = useSetCameraPosition()
+
     async function onClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>): Promise<void> {
         event.stopPropagation();
         await onSelect(position)
