@@ -20,6 +20,7 @@ export type WhiteBalance = {
 
 export type CameraStatus = {
     name: string
+    colorScheme: ColorScheme
     aeLevels: AeLevels
     whiteBalance: WhiteBalance
 }
@@ -37,6 +38,7 @@ function equalsWhiteBalance(self: WhiteBalance, other: WhiteBalance): boolean {
 
 function equalsCameraStatus(self: CameraStatus, other: CameraStatus): boolean {
     return self.name === other.name
+        && self.colorScheme === other.colorScheme
         && equalsAeLevels(self.aeLevels, other.aeLevels)
         && equalsWhiteBalance(self.whiteBalance, other.whiteBalance)
 }
@@ -48,6 +50,7 @@ export function getCameraInteraction(camera: Camera, isDev: boolean): ICameraInt
         : new CameraInteraction(camera)
 }
 
+export type ColorScheme = "Awb" | "Faw"
 type Pan = "Left" | "Right" | "Stop"
 type Tilt = "Up" | "Down" | "Stop"
 type ZoomSpeed = -3 | -2 | -1 | 1 | 2 | 3
@@ -78,6 +81,8 @@ export interface ICameraInteraction {
 
     stopCameraZoom(): Promise<void>
 
+    changeColorScheme(scheme: ColorScheme): Promise<void>
+
     changeAeLevel(levelChange: number): Promise<void>
 
     correctWhiteBalence(): Promise<void>
@@ -91,6 +96,8 @@ export interface ICameraInteraction {
 
 class DummyCameraInteraction implements ICameraInteraction {
     selectedPosition: Position | undefined = undefined
+
+    colorScheme: ColorScheme = 'Faw'
 
     aeLevelsChangeAllowed: boolean = false
     aeLevelsValue: number = 0
@@ -110,6 +117,7 @@ class DummyCameraInteraction implements ICameraInteraction {
 
         return ({
             name: this.camera.title,
+            colorScheme: this.colorScheme,
             aeLevels: {
                 changeAllowed: this.aeLevelsChangeAllowed,
                 value: this.aeLevelsValue,
@@ -127,6 +135,7 @@ class DummyCameraInteraction implements ICameraInteraction {
         this.selectedPosition = position
 
         const isPreekstoelPositie = position.index === 1 || position.index === 8
+        this.colorScheme = isPreekstoelPositie ? 'Awb' : 'Faw'
         this.aeLevelsChangeAllowed = position.index !== 5
         this.aeLevelsValue = isPreekstoelPositie ? 4 : 2
         this.whbChangeAllowed = isPreekstoelPositie
@@ -152,6 +161,12 @@ class DummyCameraInteraction implements ICameraInteraction {
 
     async stopCameraZoom(): Promise<void> {
         console.log(`[DEV] stop zoom on camera ${this.camera.title}`)
+    }
+
+    async changeColorScheme(scheme: ColorScheme): Promise<void> {
+        console.log(`[DEV] change color scheme for ${this.camera.title} to ${scheme}`)
+        this.colorScheme = scheme
+        this.whbChangeAllowed = scheme === 'Awb'
     }
 
     async changeAeLevel(levelChange: number): Promise<void> {
@@ -246,6 +261,7 @@ class CameraInteraction implements ICameraInteraction {
                 console.log('status succesful', data)
                 return ({
                     name: this.camera.title,
+                    colorScheme: data.Whb.Status,
                     aeLevels: {
                         changeAllowed: data.Enable.AeLevel.Up && data.Enable.AeLevel.Down,
                         value: this.parseLetter(data.AeLevel.Letter) ?? 0,
@@ -382,6 +398,24 @@ class CameraInteraction implements ICameraInteraction {
             },
             () => console.log(`stopped zoom on camera ${this.camera.title}`),
             error => console.error(`failed to stop zoom on camera ${this.camera.title}`, error),
+        )
+    }
+
+    async changeColorScheme(scheme: ColorScheme): Promise<void> {
+        console.log(`change color scheme for ${this.camera.title} to ${scheme}`)
+
+        return await this.runRequest(
+            this.camera.baseUrl,
+            {
+                Command: "SetWebKeyEvent",
+                SessionID: this.camera.sessionId,
+                Params: {
+                    Kind: "Whb",
+                    Key: scheme,
+                },
+            },
+            () => console.log(`changed color scheme for camera ${this.camera.title} to ${scheme}`),
+            error => console.error(`failed to change color scheme for camera ${this.camera.title} to ${scheme}`, error),
         )
     }
 

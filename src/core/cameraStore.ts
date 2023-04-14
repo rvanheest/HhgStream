@@ -1,7 +1,7 @@
 import { createContext, useContext } from "react"
 import { createStore, StoreApi, useStore } from "zustand"
 import { Camera, Position } from "./config"
-import { AeLevels, CameraStatus, getCameraInteraction, ICameraInteraction, WhiteBalance } from "./camera";
+import { AeLevels, CameraStatus, ColorScheme, getCameraInteraction, ICameraInteraction, WhiteBalance } from "./camera";
 import { sleep } from "./utils"
 import { shallow } from "zustand/shallow";
 
@@ -12,6 +12,7 @@ type ZustandCameraStore = {
     cameraStatus: CameraStatus | undefined
     setCameraPosition: (position: Position) => Promise<void>
     setCameraStatus: (cameraStatus: CameraStatus | undefined) => void
+    setColorScheme: (scheme: ColorScheme) => Promise<void>
     setAeLevel: (change: number) => Promise<void>
     setWhiteBalanceRed: (change: number) => Promise<void>
     setWhiteBalanceBlue: (change: number) => Promise<void>
@@ -30,6 +31,9 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
         },
         setCameraStatus: cameraStatus => {
             setState(s => ({ ...s, cameraStatus: cameraStatus }))
+        },
+        setColorScheme: async scheme => {
+            await getState().cameraInteraction.changeColorScheme(scheme)
         },
         setAeLevel: async change => {
             await getState().cameraInteraction.changeAeLevel(change)
@@ -96,16 +100,19 @@ function useCameraStore<T>(selector: (store: ZustandCameraStore) => T, equalityF
     return useStore(ctx!, selector, equalityFn)
 }
 
-export function useCameraPositionTitle(): string | undefined {
-    return useCameraStore(s => s.position?.title)
-}
-
 export function useCamera(): Camera {
     return useCameraStore(s => s.camera)
 }
 
 export function useCameraInteraction(): ICameraInteraction {
     return useCameraStore(s => s.cameraInteraction)
+}
+
+export function useCurrentColorScheme(): [ColorScheme | undefined, (scheme: ColorScheme) => Promise<void>] {
+    const get = useCameraStore(s => s.cameraStatus?.colorScheme)
+    const set = useCameraStore(s => s.setColorScheme)
+
+    return [get, set]
 }
 
 export function useCurrentAeLevels(): [AeLevels | undefined, (change: number) => Promise<void>] {
@@ -137,4 +144,8 @@ export function useSetCameraPosition(): (position: Position) => Promise<void> {
 
 export function useSetCameraStatus(): (cameraStatus: CameraStatus | undefined) => void {
     return useCameraStore(s => s.setCameraStatus)
+}
+
+export function useIsPositionActive(index: number): boolean {
+    return useCameraStore(s => s.position?.index === index)
 }

@@ -1,7 +1,7 @@
 import React from "react"
 import styling from "./CameraPosition.module.css"
 import { Position } from "../../core/config"
-import { useSetCameraPosition } from "../../core/cameraStore";
+import { useIsPositionActive, useSetCameraPosition } from "../../core/cameraStore";
 
 type CameraPositionProps = {
     position: Position
@@ -9,6 +9,7 @@ type CameraPositionProps = {
 
 const CameraPosition = ({ position }: CameraPositionProps) => {
     const onSelect = useSetCameraPosition()
+    const isCurrentActivePosition = useIsPositionActive(position.index)
 
     async function onClick(event: React.MouseEvent<HTMLDivElement, MouseEvent>): Promise<void> {
         event.stopPropagation();
@@ -16,7 +17,7 @@ const CameraPosition = ({ position }: CameraPositionProps) => {
     }
 
     return (
-        <div className={`py-2 border border-light border-2 rounded-3 bg-dark bg-gradient text-light text-center ${styling.button}`}
+        <div className={`py-2 border ${isCurrentActivePosition ? 'border-danger' : 'border-light'} border-3 rounded-3 bg-dark bg-gradient text-light text-center ${styling.button}`}
              onClick={event => onClick(event)}>
             {position.thumbnail ? <img style={{width: 100}}
                                        src={position.thumbnail}
