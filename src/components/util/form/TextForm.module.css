@@ -1,4 +1,5 @@
 .scrollable {
-    height: calc(100vh - 115px);
+    height: calc(100vh - 163px);
+    overflow-x: clip;
     overflow-y: auto;
 }

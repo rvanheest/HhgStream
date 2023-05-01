@@ -36,7 +36,7 @@ const TextTab = () => {
             <div className="border border-dark border-3 rounded-3 overflow-hidden">
                 <div className="d-flex justify-content-center position-relative">
                     <h3>Teksten</h3>
-                    <Button className="position-absolute translate-middle-y top-50 end-0" onClick={async () => await openFile(textStorePath)}>Open JSON</Button>
+                    <Button className="position-absolute translate-middle-y top-50 end-0 me-1" onClick={async () => await openFile(textStorePath)}>Open JSON</Button>
                 </div>
                 <CardTabPane tabs={tabs} defaultOpen={lastOpenedTabString} onSelectTab={setLastOpenedTextTab} />
             </div>

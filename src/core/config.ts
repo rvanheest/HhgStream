@@ -29,6 +29,7 @@ export type Position = {
 
 export type PositionGroup = {
   title: string
+  hidden: boolean
   positions: Position[]
 }
 
@@ -82,7 +83,10 @@ function loadConfig(): AppConfig & { isError: false } | ConfigError & { isError:
       const config = readJsonFile<AppConfig>(configPath)
       const [migratedConfig, needsSaving] = migrateConfig(config)
 
-      if (needsSaving) saveConfig(migratedConfig, configPath)
+      if (needsSaving) {
+        const { isError, ...config } = migratedConfig
+        saveConfig(config, configPath)
+      }
       return migratedConfig
     }
     catch (e) {
@@ -102,14 +106,16 @@ function loadConfig(): AppConfig & { isError: false } | ConfigError & { isError:
 function saveConfig(newConfig: AppConfig, configPath: string): void {
     saveJsonFile(newConfig, configPath)
 }
+
 function migrateConfig(config: any): [AppConfig & { isError: false }, boolean] {
     const [migratedConfig1, needsSaving1] = migrateCameraPositionGroups(config)
     const [migratedConfig2, needsSaving2] = migrateTexts(migratedConfig1)
     const [migratedConfig3, needsSaving3] = migrateTextTemplates(migratedConfig2)
+    const [migratedConfig4, needsSaving4] = migratePositionGroupsAddHiddenField(migratedConfig3)
 
     return [
-        ({ ...migratedConfig3, isError: false}),
-        needsSaving1 || needsSaving2 || needsSaving3,
+        ({ ...migratedConfig4, isError: false}),
+        needsSaving1 || needsSaving2 || needsSaving3 || needsSaving4,
     ]
 }
 
@@ -239,6 +245,25 @@ function migrateTextTemplates(config: any): [any, boolean] {
     }
 
     return [newConfig, needsSaving]
+}
+
+function migratePositionGroupsAddHiddenField(config: any): [any, boolean] {
+  if (config.version <= 3) {
+    const newConfig = ({
+      ...config,
+      cameras: (config.cameras ?? []).map(({ positionGroups, ...rest }: any) => ({
+        ...rest,
+        positionGroups: (positionGroups ?? []).map((group: any) => ({
+          ...group,
+          hidden: group.hidden !== undefined ? group.hidden : false,
+        })),
+      })),
+      version: 4,
+    })
+
+    return [newConfig, true]
+  }
+  else return [config, false]
 }
 
 type ZustandConfigStore = {
