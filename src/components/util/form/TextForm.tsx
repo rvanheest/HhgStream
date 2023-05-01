@@ -10,11 +10,15 @@ type TextFormProps = {
 
 const TextForm = ({ children, onClear, onSubmit }: TextFormProps) => {
     return (
-        <Container fluid className={`${styling.scrollable}`}>
+        <Container fluid className="ps-0 pe-0">
             <Form>
-                { children }
+                <div className="pb-1">
+                    <div className={`${styling.scrollable}`}>
+                        { children }
+                    </div>
+                </div>
 
-                <Row className="mb-2">
+                <Row className="pt-1 mb-1" style={{borderTop: "var(--bs-card-border-width) solid var(--bs-card-border-color)"}}>
                     <Col sm={{offset: 3, span: 1}}>
                         <Button variant="primary" onClick={onSubmit}>Opslaan</Button>
                     </Col>
