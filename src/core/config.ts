@@ -29,6 +29,7 @@ export type Position = {
 
 export type PositionGroup = {
   title: string
+  hidden: boolean
   positions: Position[]
 }
 
@@ -106,10 +107,11 @@ function migrateConfig(config: any): [AppConfig & { isError: false }, boolean] {
     const [migratedConfig1, needsSaving1] = migrateCameraPositionGroups(config)
     const [migratedConfig2, needsSaving2] = migrateTexts(migratedConfig1)
     const [migratedConfig3, needsSaving3] = migrateTextTemplates(migratedConfig2)
+    const [migratedConfig4, needsSaving4] = migratePositionGroupsAddHiddenField(migratedConfig3)
 
     return [
-        ({ ...migratedConfig3, isError: false}),
-        needsSaving1 || needsSaving2 || needsSaving3,
+        ({ ...migratedConfig4, isError: false}),
+        needsSaving1 || needsSaving2 || needsSaving3 || needsSaving4,
     ]
 }
 
@@ -239,6 +241,25 @@ function migrateTextTemplates(config: any): [any, boolean] {
     }
 
     return [newConfig, needsSaving]
+}
+
+function migratePositionGroupsAddHiddenField(config: any): [any, boolean] {
+  if (config.version <= 3) {
+    const newConfig = ({
+      ...config,
+      cameras: (config.cameras ?? []).map(({ positionGroups, ...rest }: any) => ({
+        ...rest,
+        positionGroups: (positionGroups ?? []).map((group: any) => ({
+          ...group,
+          hidden: group.hidden !== undefined ? group.hidden : false,
+        })),
+      })),
+      version: 4,
+    })
+
+    return [newConfig, true]
+  }
+  else return [config, false]
 }
 
 type ZustandConfigStore = {

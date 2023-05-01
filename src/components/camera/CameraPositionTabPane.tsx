@@ -8,7 +8,7 @@ const CameraPositionTabPane = () => {
     const { positionGroups: groups } = useCamera()
     const tabs = {
         "Besturing": () => <CameraManualControl />,
-        ...groups.reduce((obj, group) => ({ ...obj, [group.title]: () => <CameraPositionGroup positions={group.positions} /> }), {})
+        ...groups.filter(g => !g.hidden).reduce((obj, group) => ({ ...obj, [group.title]: () => <CameraPositionGroup positions={group.positions} /> }), {})
     }
 
     return (
