@@ -3,6 +3,8 @@ type Book = {
     bookName: string
 }
 
+type VerseReference = ScriptureVerseRange | string
+
 type ScriptureVerseRange = {
     start: string
     end: string
@@ -10,7 +12,7 @@ type ScriptureVerseRange = {
 
 type ChapterAndVerse = {
     chapter: string | undefined
-    verses: ScriptureVerseRange[] | string[] | string | undefined
+    verses: VerseReference[] | string | undefined
 }
 
 type ChapterAndVerseRange = {
@@ -30,12 +32,18 @@ function undefinedOnFalsy<T>(t: T): T | undefined {
     return !!t ? t : undefined
 }
 
-function parseVerses(verses: string) {
-    const verseRanges = verses.match(/(\d+\w*)\s*-\s*(\d+\w*)/gi)
+function parseVerses(verses: string): VerseReference[] | string | undefined {
+    const verseRanges = verses.match(/(\d+\w*)(\s*-\s*(\d+\w*))?/gi)
     if (verseRanges) {
-        const ranges = verseRanges
-            .map(rangeString => rangeString.match(/^(\d+\w*)\s*-\s*(\d+\w*)$/))
-            .flatMap(range => range ? [{ start: range[1], end: range[2] }] : [])
+        const ranges = verseRanges.flatMap<VerseReference>(match => {
+            const range = match.match(/^(\d+\w*)\s*-\s*(\d+\w*)$/)
+            if (range) return [{ start: range[1], end: range[2] }]
+
+            const singleVerse = match.match(/^(\d+\w*)$/)
+            if (singleVerse) return [singleVerse[1]]
+
+            return [match]
+        })
         if (!!ranges.length) return ranges
     }
 
@@ -75,8 +83,12 @@ function isScripture(scripture: Scripture | string): scripture is Scripture {
     return typeof scripture === "object" && "bookName" in scripture
 }
 
-function isScriptureVerseRangeArray(range: unknown): range is ScriptureVerseRange[] {
-    return Array.isArray(range) && range.every(isScriptureVerseRange)
+function isVerseReferenceArray(range: unknown): range is VerseReference[] {
+    return Array.isArray(range) && range.every(isVerseReference)
+}
+
+function isVerseReference(range: unknown): range is VerseReference {
+    return isScriptureVerseRange(range) || typeof range === 'string'
 }
 
 function isScriptureVerseRange(range: unknown): range is ScriptureVerseRange {
@@ -91,8 +103,8 @@ function formatVerseArray(verses: string[]): string {
     return `${init.reverse().join(', ')} en ${lastElement}`
 }
 
-function formatScriptureVerses(verses: ScriptureVerseRange[] | string[] | string): string {
-    if (isScriptureVerseRangeArray(verses)) return formatVerseArray(verses.map(v => `${v.start} - ${v.end}`))
+function formatScriptureVerses(verses: VerseReference[] | string): string {
+    if (isVerseReferenceArray(verses)) return formatVerseArray(verses.map(v => isScriptureVerseRange(v) ? `${v.start} - ${v.end}` : v))
     if (Array.isArray(verses)) return formatVerseArray(verses)
     return verses
 }
