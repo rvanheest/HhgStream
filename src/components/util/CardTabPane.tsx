@@ -31,13 +31,13 @@ const CardTabPane = ({ tabs, defaultOpen, onSelectTab }: TabPaneProps) => {
                     </Nav>
                 </div>
 
-                <Tab.Content>
+                <Tab.Content className="pt-1">
                     {Object.entries(tabs).map(([title, Element]) => (
                         <Tab.Pane key={title} eventKey={title}>
                             <Element />
                         </Tab.Pane>
                     ))}
-                </Tab.Content>>
+                </Tab.Content>
             </Tab.Container>
         </div>
     )
