@@ -1,5 +1,5 @@
 import React from "react"
-import { Button } from "react-bootstrap";
+import { Button, Col, Container, Row } from "react-bootstrap";
 import { useSetLastOpenedTextTab, useTextStoreLastOpenedTab, useTextStorePath } from "../../core/config"
 import { openFile } from "../../core/utils";
 import CardTabPane from "../util/CardTabPane"
@@ -33,14 +33,20 @@ const TextTab = () => {
 
     return (
         <LoadTextStore>
-            <div className="border border-dark border-3 rounded-3 overflow-hidden d-flex flex-column h-100">
-                <div className="flex-grow-0 flex-shrink-1 d-flex justify-content-center position-relative">
-                    <h3>Teksten</h3>
-                    <Button className="position-absolute translate-middle-y top-50 end-0 me-1" onClick={async () => await openFile(textStorePath)}>Open JSON</Button>
-                </div>
-                <div className="flex-grow-1 flex-shrink-1">
-                    <CardTabPane tabs={tabs} defaultOpen={lastOpenedTabString} onSelectTab={setLastOpenedTextTab} />
-                </div>
+            <div className="border border-dark border-3 rounded-3 h-100">
+                <Container fluid className="gx-0 d-flex flex-column h-100">
+                    <Row className="gx-0">
+                        <Col sm={12} className="position-relative">
+                            <h3 className="text-center">Teksten</h3>
+                            <Button className="position-absolute translate-middle-y top-50 end-0 me-1" onClick={async () => await openFile(textStorePath)}>Open JSON</Button>
+                        </Col>
+                    </Row>
+                    <Row className="gx-0 h-100 flex-grow-1">
+                        <Col sm={12} className="h-100">
+                            <CardTabPane tabs={tabs} defaultOpen={lastOpenedTabString} onSelectTab={setLastOpenedTextTab} fillHeight={true} />
+                        </Col>
+                    </Row>
+                </Container>
             </div>
         </LoadTextStore>
     )
