@@ -1,13 +1,15 @@
 import { createContext, useContext } from "react"
 import { createStore, StoreApi, useStore } from "zustand"
-import { Camera, Position } from "./config"
+import { Camera, Position, PositionGroup } from "./config"
 import { AeLevels, CameraStatus, ColorScheme, getCameraInteraction, ICameraInteraction, WhiteBalance } from "./camera";
 import { sleep } from "./utils"
 import { shallow } from "zustand/shallow";
 
 type ZustandCameraStore = {
     position: Position | undefined
-    camera: Camera
+    title: string
+    baseUrl: string
+    positionGroups: {[name: string]: PositionGroup}
     cameraInteraction: ICameraInteraction
     cameraStatus: CameraStatus | undefined
     setCameraPosition: (position: Position) => Promise<void>
@@ -22,8 +24,10 @@ type ZustandCameraStore = {
 export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<ZustandCameraStore> {
     return createStore<ZustandCameraStore>((setState, getState) => ({
         position: undefined,
-        camera: camera,
-        cameraInteraction: getCameraInteraction(camera, isDev),
+        title: camera.title,
+        baseUrl: camera.baseUrl,
+        positionGroups: camera.positionGroups.reduce((obj, c) => ({ ...obj, [c.title]: c }), {}),
+        cameraInteraction: getCameraInteraction(camera.title, camera.baseUrl, camera.sessionId, isDev),
         cameraStatus: undefined,
         setCameraPosition: async position => {
             await getState().cameraInteraction.moveCamera(position)
@@ -95,13 +99,19 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
 const CameraContext = createContext<StoreApi<ZustandCameraStore> | undefined>(undefined);
 export const CameraContextProvider = CameraContext.Provider
 
+export type CameraTitle = Pick<Camera, 'title' | 'baseUrl'>
+
 function useCameraStore<T>(selector: (store: ZustandCameraStore) => T, equalityFn?: (a: T, b: T) => boolean) {
     const ctx = useContext(CameraContext)
     return useStore(ctx!, selector, equalityFn)
 }
 
-export function useCamera(): Camera {
-    return useCameraStore(s => s.camera)
+export function useCameraTitle(): CameraTitle {
+    return useCameraStore(({ title, baseUrl }) => ({ title, baseUrl }), shallow)
+}
+
+export function useCameraPositionGroups(): PositionGroup[] {
+    return useCameraStore(s => Object.values(s.positionGroups), shallow)
 }
 
 export function useCameraInteraction(): ICameraInteraction {

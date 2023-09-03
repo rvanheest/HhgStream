@@ -1,13 +1,13 @@
 import React from "react"
-import { useCamera } from "../../core/cameraStore"
+import { useCameraTitle } from "../../core/cameraStore"
 
 const CameraTitle = () => {
-    const camera = useCamera()
+    const { title, baseUrl } = useCameraTitle()
 
     return (
         <>
-            <h1 className="m-0 fs-4">{camera.title}</h1>
-            <div className="fst-italic" style={{ fontSize: 12 }}>{camera.baseUrl}</div>
+            <h1 className="m-0 fs-4">{title}</h1>
+            <div className="fst-italic" style={{ fontSize: 12 }}>{baseUrl}</div>
         </>
     )
 }
