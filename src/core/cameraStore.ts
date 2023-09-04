@@ -12,6 +12,7 @@ type ZustandCameraStore = {
     positionGroups: {[name: string]: PositionGroup}
     cameraInteraction: ICameraInteraction
     cameraStatus: CameraStatus | undefined
+    configMode: boolean
     setCameraPosition: (position: Position) => Promise<void>
     setCameraStatus: (cameraStatus: CameraStatus | undefined) => void
     setColorScheme: (scheme: ColorScheme) => Promise<void>
@@ -19,6 +20,8 @@ type ZustandCameraStore = {
     setWhiteBalanceRed: (change: number) => Promise<void>
     setWhiteBalanceBlue: (change: number) => Promise<void>
     correctWhiteBalance: () => Promise<void>
+    setConfigMode: (newConfigMode: boolean) => void
+    setGroupVisibility: (tabTitle: string, newVisibility: boolean) => void
 }
 
 export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<ZustandCameraStore> {
@@ -29,6 +32,7 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
         positionGroups: camera.positionGroups.reduce((obj, c) => ({ ...obj, [c.title]: c }), {}),
         cameraInteraction: getCameraInteraction(camera.title, camera.baseUrl, camera.sessionId, isDev),
         cameraStatus: undefined,
+        configMode: false,
         setCameraPosition: async position => {
             await getState().cameraInteraction.moveCamera(position)
             setState(s => ({ ...s, position: position }))
@@ -92,7 +96,21 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
             await sleep(5000)
             const whiteBalanceOverride = getState().position?.adjustedWhiteBalance
             if (whiteBalanceOverride) await getState().cameraInteraction.changeWhiteBalence(whiteBalanceOverride)
-        }
+        },
+        setConfigMode: newConfigMode => setState(s => ({
+            ...s,
+            configMode: newConfigMode,
+        })),
+        setGroupVisibility: (tabTitle: string, newVisibility: boolean) => setState(s => ({
+            ...s,
+            positionGroups: {
+                ...s.positionGroups,
+                [tabTitle]: {
+                    ...s.positionGroups[tabTitle],
+                    hidden: newVisibility,
+                },
+            },
+        })),
     }))
 }
 
@@ -116,6 +134,17 @@ export function useCameraPositionGroups(): PositionGroup[] {
 
 export function useCameraInteraction(): ICameraInteraction {
     return useCameraStore(s => s.cameraInteraction)
+}
+
+export function useCameraConfigMode(): [boolean, (newConfigMode: boolean) => void] {
+    const get = useCameraStore(s => s.configMode)
+    const set = useCameraStore(s => s.setConfigMode)
+
+    return [get, set]
+}
+
+export function useSetGroupVisibility(): (tabTitle: string, newVisibility: boolean) => void {
+    return useCameraStore(s => s.setGroupVisibility)
 }
 
 export function useCurrentColorScheme(): [ColorScheme | undefined, (scheme: ColorScheme) => Promise<void>] {

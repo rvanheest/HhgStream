@@ -272,6 +272,7 @@ type ZustandConfigStore = {
     loaded: boolean
     loadConfig: () => void
     setLastOpenedTextTab: (tabName: string) => void
+    updateCameraGroupVisibility: (cameraName: string, hidden: {[positionGroupName: string]: boolean}) => void
 }
 
 const useConfigStore = create<ZustandConfigStore>()(setState => ({
@@ -294,7 +295,19 @@ const useConfigStore = create<ZustandConfigStore>()(setState => ({
         const newConfig = ({ ...s.config, texts: { ...s.config.texts, lastOpenedTab: tabName }})
         saveConfig(newConfig, getConfigPath())
         return ({ ...s, config: newConfig })
-    })
+    }),
+    updateCameraGroupVisibility: (cameraName: string, hidden: {[positionGroupName: string]: boolean}) => setState(s => {
+        if (!s.config) return s
+        const newConfig: AppConfig = {
+            ...s.config,
+            cameras: s.config.cameras.map(c => c.title === cameraName ? ({
+                ...c,
+                positionGroups: c.positionGroups.map(p => ({...p, hidden: hidden[p.title]}))
+            }) : c)
+        }
+        saveConfig(newConfig, getConfigPath())
+        return ({...s, config: newConfig})
+    }),
 }))
 
 export function useConfig(): AppConfig {
@@ -302,7 +315,7 @@ export function useConfig(): AppConfig {
 }
 
 export function useCamerasConfig(): Camera[] {
-    return useConfigStore(s => s.config!.cameras)
+    return useConfigStore(s => s.config!.cameras, shallow)
 }
 
 export function useTextStorePath(): string {
@@ -329,4 +342,8 @@ export function useLoadConfig(): Pick<ZustandConfigStore, "loaded" | "error"> {
 
 export function useSetLastOpenedTextTab(): (tabName: string) => void {
     return useConfigStore(s => s.setLastOpenedTextTab)
+}
+
+export function useUpdateCameraGroupVisibility(): (cameraName: string, hidden: {[positionGroupName: string]: boolean}) => void {
+  return useConfigStore(s => s.updateCameraGroupVisibility)
 }
