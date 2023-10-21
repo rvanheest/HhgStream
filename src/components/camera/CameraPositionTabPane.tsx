@@ -6,20 +6,29 @@ import styling from "./CameraPositionTabPane.module.css"
 import CameraManualControl from "./CameraManualControl"
 import CameraPositionGroup from "./CameraPositionGroup"
 import CardTabPane, { TabPaneRef } from "../util/CardTabPane";
-import { useCameraPositionGroups, useCameraConfigMode, useSetGroupVisibility, useCameraTitle } from "../../core/cameraStore";
+import { useCameraPositionGroups, useCameraConfigMode, useSetGroupVisibility, useCameraId } from "../../core/cameraStore";
 import { useUpdateCameraGroupVisibility } from "../../core/config"
 
-type PositionTabTitleProps = {
+type ViewModePositionTabTitleProps = {
+    title: string
+}
+
+const ViewModePositionTabTitle = ({ title }: ViewModePositionTabTitleProps) => (
+    <span>{title}</span>
+)
+
+type ConfigModePositionTabTitleProps = {
+    id: string
     title: string
     hidden: boolean
 }
 
-const PositionTabTitle = ({ title, hidden }: PositionTabTitleProps) => {
+const ConfigModePositionTabTitle = ({ id, title, hidden }: ConfigModePositionTabTitleProps) => {
     const setGroupVisibility = useSetGroupVisibility()
 
     function toggleVisibility(e: React.MouseEvent<HTMLSpanElement, MouseEvent>) {
         e.stopPropagation()
-        setGroupVisibility(title, !hidden)
+        setGroupVisibility(id, !hidden)
     }
 
     return (
@@ -35,14 +44,14 @@ const PositionTabTitle = ({ title, hidden }: PositionTabTitleProps) => {
 }
 
 type ConfigButtonProps = {
-    cameraName: string
+    cameraId: string
     isInConfigMode: boolean
     onClick: () => void
 }
 
-const ConfigButton = ({ cameraName, isInConfigMode, onClick }: ConfigButtonProps) => (
+const ConfigButton = ({ cameraId, isInConfigMode, onClick }: ConfigButtonProps) => (
     <ToggleButtonGroup type="checkbox" value={isInConfigMode ? ["config"] : []} onChange={onClick}>
-        <ToggleButton id={`config-button-${cameraName}`} value="config" variant="outline-secondary" className={`border-0 bg-transparent ${styling.configToggleButton}`}>
+        <ToggleButton id={`config-button-${cameraId}`} value="config" variant="outline-secondary" className={`border-0 bg-transparent ${styling.configToggleButton}`}>
             { isInConfigMode
                 ? <FontAwesomeIcon icon={faFloppyDisk} />
                 : <FontAwesomeIcon icon={faGear} />
@@ -54,7 +63,7 @@ const ConfigButton = ({ cameraName, isInConfigMode, onClick }: ConfigButtonProps
 const besturingTabTitle = "Besturing"
 
 const CameraPositionTabPane = () => {
-    const { title: cameraTitle } = useCameraTitle()
+    const cameraId = useCameraId()
     const groups = useCameraPositionGroups()
     const updateCameraGroupVisibility = useUpdateCameraGroupVisibility();
     const [configMode, setConfigMode] = useCameraConfigMode()
@@ -64,22 +73,25 @@ const CameraPositionTabPane = () => {
         [besturingTabTitle]: () => <CameraManualControl />,
         ...groups
             .filter(g => configMode || !g.hidden)
-            .reduce((obj, {title, positions}) => ({ ...obj, [title]: () => <CameraPositionGroup positions={positions} /> }), {})
+            .reduce((obj, {id, positions}) => ({ ...obj, [id]: () => <CameraPositionGroup positions={positions} /> }), {})
     }
 
-    const tabNavLinks = configMode ? {
-        ...groups.reduce((obj, {title, hidden}) => ({ ...obj, [title]: () => <PositionTabTitle title={title} hidden={hidden} />}), {})
-    } : undefined
+    const tabNavLinks = groups.reduce((obj, {id, title, hidden}) => ({
+        ...obj,
+        [id]: () => configMode
+            ? <ConfigModePositionTabTitle id={id} title={title} hidden={hidden} />
+            : <ViewModePositionTabTitle title={title} />
+    }), {})
 
     function changeConfigMode() {
         setConfigMode(!configMode)
         if (configMode) {
-            updateCameraGroupVisibility(cameraTitle, groups.reduce((obj, g) => ({ ...obj, [g.title]: g.hidden }), {}))
+            updateCameraGroupVisibility(cameraId, groups.reduce((obj, g) => ({ ...obj, [g.id]: g.hidden }), {}))
             const tabPane = tabPaneRef.current;
             if (tabPane) {
                 const selectedTab = tabPane.getSelectedTab()
-                if (groups.find(g => g.title === selectedTab)?.hidden) {
-                    tabPane.setSelectedTab(groups.find(g => !g.hidden)?.title ?? besturingTabTitle)
+                if (groups.find(g => g.id === selectedTab)?.hidden) {
+                    tabPane.setSelectedTab(groups.find(g => !g.hidden)?.id ?? besturingTabTitle)
                 }
             }
         }
@@ -87,10 +99,10 @@ const CameraPositionTabPane = () => {
 
     return (
         <CardTabPane ref={tabPaneRef}
-                     defaultOpen={groups.find(g => !g.hidden)?.title ?? besturingTabTitle}
+                     defaultOpen={groups.find(g => !g.hidden)?.id ?? besturingTabTitle}
                      tabs={tabs}
                      tabNavLink={tabNavLinks}
-                     rightAlignElement={() => <ConfigButton cameraName={cameraTitle} isInConfigMode={configMode} onClick={changeConfigMode} />} />
+                     rightAlignElement={() => <ConfigButton cameraId={cameraId} isInConfigMode={configMode} onClick={changeConfigMode} />} />
     )
 }
 

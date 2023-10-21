@@ -3,11 +3,11 @@ import styling from "./CardTabPane.module.css"
 import { Nav, Tab } from "react-bootstrap"
 
 type TabPaneProps = {
-    tabs: { [title: string]: () => JSX.Element }
-    tabNavLink?: { [title: string]: () => JSX.Element } | undefined
+    tabs: { [id: string]: () => JSX.Element }
+    tabNavLink?: { [id: string]: () => JSX.Element } | undefined
     defaultOpen: string
     fillHeight?: boolean
-    onSelectTab?: ((title: string) => void) | undefined
+    onSelectTab?: ((id: string) => void) | undefined
     rightAlignElement?: () => JSX.Element | undefined
 }
 
@@ -38,11 +38,11 @@ const CardTabPane = forwardRef(({ tabs, tabNavLink, defaultOpen, fillHeight, onS
             <Tab.Container activeKey={selected} onSelect={onSelectCallback}>
                 <div className={`px-1 pt-1 pb-0 ${styling.cardHeader} card-header`}>
                     <Nav variant="tabs" className={`${styling.cardNav} border-bottom-0`}>
-                        {Object.keys(tabs).map(title => {
-                            const TitleElement = (tabNavLink && tabNavLink[title]) ?? (() => <span>{title}</span>)
+                        {Object.keys(tabs).map(id => {
+                            const TitleElement = (tabNavLink && tabNavLink[id]) ?? (() => <span>{id}</span>)
                             return(
-                                <Nav.Item key={title}>
-                                    <Nav.Link eventKey={title} className={styling.cardNavLink}>
+                                <Nav.Item key={id}>
+                                    <Nav.Link eventKey={id} className={styling.cardNavLink}>
                                         <TitleElement />
                                     </Nav.Link>
                                 </Nav.Item>
@@ -55,8 +55,8 @@ const CardTabPane = forwardRef(({ tabs, tabNavLink, defaultOpen, fillHeight, onS
                 </div>
 
                 <Tab.Content className={`${fillHeightCss}`}>
-                    {Object.entries(tabs).map(([title, Element]) => (
-                        <Tab.Pane key={title} eventKey={title} className={`${fillHeightCss}`}>
+                    {Object.entries(tabs).map(([id, Element]) => (
+                        <Tab.Pane key={id} eventKey={id} className={`${fillHeightCss}`}>
                             <Element />
                         </Tab.Pane>
                     ))}

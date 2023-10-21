@@ -9,8 +9,8 @@ type CameraPositionGroupProps = {
 
 const CameraPositionGroup = ({ positions }: CameraPositionGroupProps) => (
     <Row className="row-cols-4 p-1 g-1 align-items-center">
-        {positions.map((position, index) => (
-            <Col key={`${position.title}-${index}`}>
+        {positions.map(position => (
+            <Col key={position.id}>
                 <CameraPosition position={position} />
             </Col>
         ))}

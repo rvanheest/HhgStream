@@ -7,6 +7,7 @@ import { shallow } from "zustand/shallow";
 
 type ZustandCameraStore = {
     position: Position | undefined
+    id: string
     title: string
     baseUrl: string
     positionGroups: {[name: string]: PositionGroup}
@@ -21,15 +22,16 @@ type ZustandCameraStore = {
     setWhiteBalanceBlue: (change: number) => Promise<void>
     correctWhiteBalance: () => Promise<void>
     setConfigMode: (newConfigMode: boolean) => void
-    setGroupVisibility: (tabTitle: string, newVisibility: boolean) => void
+    setGroupVisibility: (tabId: string, newVisibility: boolean) => void
 }
 
 export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<ZustandCameraStore> {
     return createStore<ZustandCameraStore>((setState, getState) => ({
         position: undefined,
+        id: camera.id,
         title: camera.title,
         baseUrl: camera.baseUrl,
-        positionGroups: camera.positionGroups.reduce((obj, c) => ({ ...obj, [c.title]: c }), {}),
+        positionGroups: camera.positionGroups.reduce((obj, c) => ({ ...obj, [c.id]: c }), {}),
         cameraInteraction: getCameraInteraction(camera.title, camera.baseUrl, camera.sessionId, isDev),
         cameraStatus: undefined,
         configMode: false,
@@ -101,12 +103,12 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
             ...s,
             configMode: newConfigMode,
         })),
-        setGroupVisibility: (tabTitle: string, newVisibility: boolean) => setState(s => ({
+        setGroupVisibility: (tabId: string, newVisibility: boolean) => setState(s => ({
             ...s,
             positionGroups: {
                 ...s.positionGroups,
-                [tabTitle]: {
-                    ...s.positionGroups[tabTitle],
+                [tabId]: {
+                    ...s.positionGroups[tabId],
                     hidden: newVisibility,
                 },
             },
@@ -122,6 +124,10 @@ export type CameraTitle = Pick<Camera, 'title' | 'baseUrl'>
 function useCameraStore<T>(selector: (store: ZustandCameraStore) => T, equalityFn?: (a: T, b: T) => boolean) {
     const ctx = useContext(CameraContext)
     return useStore(ctx!, selector, equalityFn)
+}
+
+export function useCameraId(): string {
+    return useCameraStore(({ id }) => id)
 }
 
 export function useCameraTitle(): CameraTitle {
@@ -143,7 +149,7 @@ export function useCameraConfigMode(): [boolean, (newConfigMode: boolean) => voi
     return [get, set]
 }
 
-export function useSetGroupVisibility(): (tabTitle: string, newVisibility: boolean) => void {
+export function useSetGroupVisibility(): (tabId: string, newVisibility: boolean) => void {
     return useCameraStore(s => s.setGroupVisibility)
 }
 
