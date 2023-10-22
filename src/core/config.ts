@@ -299,6 +299,8 @@ type ZustandConfigStore = {
     config: AppConfig | undefined
     error: ConfigError | undefined
     loaded: boolean
+    cameraConfigModeEnabled: boolean
+    setCameraConfigModeEnabled: (configModeEnabled: boolean) => void
     loadConfig: () => void
     setLastOpenedTextTab: (tabName: string) => void
     updateCameraGroupVisibility: (cameraId: string, hidden: {[positionGroupName: string]: boolean}) => void
@@ -308,6 +310,10 @@ const useConfigStore = create<ZustandConfigStore>()(setState => ({
     loaded: false,
     config: undefined,
     error: undefined,
+    cameraConfigModeEnabled: false,
+    setCameraConfigModeEnabled: (configModeEnabled: boolean) => setState(s => {
+        return ({ ...s, cameraConfigModeEnabled: configModeEnabled })
+    }),
     loadConfig: () => {
         const config = loadConfig()
         if (config.isError) {
@@ -367,6 +373,14 @@ export function useLoadConfig(): Pick<ZustandConfigStore, "loaded" | "error"> {
     }, [loadConfig])
 
     return store
+}
+
+export function useCameraConfigModeEnabled(): boolean {
+    return useConfigStore(s => s.cameraConfigModeEnabled)
+}
+
+export function useSetCameraConfigModeEnabled(): (mode: boolean) => void {
+    return useConfigStore(s => s.setCameraConfigModeEnabled)
 }
 
 export function useSetLastOpenedTextTab(): (tabName: string) => void {

@@ -1,4 +1,4 @@
-import React, { memo, useCallback, useState } from "react"
+import React, { JSX, memo, useCallback, useState } from "react"
 import { Button, ButtonGroup, Col, Form, Row } from "react-bootstrap"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faArrowUp, faArrowDown, faArrowLeft, faArrowRight, faHome, faAnglesRight, faAngleRight, faAnglesLeft, faAngleLeft, IconDefinition } from "@fortawesome/free-solid-svg-icons"

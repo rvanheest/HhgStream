@@ -1,4 +1,4 @@
-import React, { ForwardedRef, forwardRef, useCallback, useImperativeHandle, useState } from "react"
+import React, { ForwardedRef, JSX, forwardRef, useCallback, useImperativeHandle, useState } from "react"
 import styling from "./CardTabPane.module.css"
 import { Nav, Tab } from "react-bootstrap"
 

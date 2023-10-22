@@ -7,7 +7,7 @@ import CameraManualControl from "./CameraManualControl"
 import CameraPositionGroup from "./CameraPositionGroup"
 import CardTabPane, { TabPaneRef } from "../util/CardTabPane";
 import { useCameraPositionGroups, useCameraConfigMode, useSetGroupVisibility, useCameraId } from "../../core/cameraStore";
-import { useUpdateCameraGroupVisibility } from "../../core/config"
+import { useCameraConfigModeEnabled, useUpdateCameraGroupVisibility } from "../../core/config"
 
 type ViewModePositionTabTitleProps = {
     title: string
@@ -67,6 +67,7 @@ const CameraPositionTabPane = () => {
     const groups = useCameraPositionGroups()
     const updateCameraGroupVisibility = useUpdateCameraGroupVisibility();
     const [configMode, setConfigMode] = useCameraConfigMode()
+    const configModeEnabled = useCameraConfigModeEnabled()
     const tabPaneRef = useRef<TabPaneRef>(null);
 
     const tabs = {
@@ -102,7 +103,7 @@ const CameraPositionTabPane = () => {
                      defaultOpen={groups.find(g => !g.hidden)?.id ?? besturingTabTitle}
                      tabs={tabs}
                      tabNavLink={tabNavLinks}
-                     rightAlignElement={() => <ConfigButton cameraId={cameraId} isInConfigMode={configMode} onClick={changeConfigMode} />} />
+                     rightAlignElement={() => configModeEnabled ? <ConfigButton cameraId={cameraId} isInConfigMode={configMode} onClick={changeConfigMode} /> : undefined} />
     )
 }
 
