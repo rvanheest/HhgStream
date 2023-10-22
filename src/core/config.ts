@@ -303,7 +303,7 @@ type ZustandConfigStore = {
     setCameraConfigModeEnabled: (configModeEnabled: boolean) => void
     loadConfig: () => void
     setLastOpenedTextTab: (tabName: string) => void
-    updateCameraGroupVisibility: (cameraId: string, hidden: {[positionGroupName: string]: boolean}) => void
+    setCameraGroups: (cameraId: string, groups: PositionGroup[]) => void
 }
 
 const useConfigStore = create<ZustandConfigStore>()(setState => ({
@@ -331,18 +331,18 @@ const useConfigStore = create<ZustandConfigStore>()(setState => ({
         saveConfig(newConfig, getConfigPath())
         return ({ ...s, config: newConfig })
     }),
-    updateCameraGroupVisibility: (cameraId: string, hidden: {[positionGroupId: string]: boolean}) => setState(s => {
+    setCameraGroups: (cameraId, groups) => setState(s => {
         if (!s.config) return s
         const newConfig: AppConfig = {
             ...s.config,
-            cameras: s.config.cameras.map(c => c.id === cameraId ? ({
+            cameras: s.config.cameras.map(c => c.id !== cameraId ? c : ({
                 ...c,
-                positionGroups: c.positionGroups.map(p => ({...p, hidden: hidden[p.id]}))
-            }) : c)
+                positionGroups: groups
+            })),
         }
         saveConfig(newConfig, getConfigPath())
         return ({...s, config: newConfig})
-    }),
+    })
 }))
 
 export function useConfig(): AppConfig {
@@ -387,6 +387,6 @@ export function useSetLastOpenedTextTab(): (tabName: string) => void {
     return useConfigStore(s => s.setLastOpenedTextTab)
 }
 
-export function useUpdateCameraGroupVisibility(): (cameraId: string, hidden: {[positionGroupName: string]: boolean}) => void {
-  return useConfigStore(s => s.updateCameraGroupVisibility)
+export function useUpdateConfigCameraGroups(): (cameraId: string, groups: PositionGroup[]) => void {
+  return useConfigStore(s => s.setCameraGroups)
 }

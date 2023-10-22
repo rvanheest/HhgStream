@@ -22,6 +22,7 @@ type ZustandCameraStore = {
     setWhiteBalanceBlue: (change: number) => Promise<void>
     correctWhiteBalance: () => Promise<void>
     setConfigMode: (newConfigMode: boolean) => void
+    setGroupName: (groupId: string, newTitle: string) => void
     setGroupVisibility: (tabId: string, newVisibility: boolean) => void
 }
 
@@ -103,6 +104,16 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
             ...s,
             configMode: newConfigMode,
         })),
+        setGroupName: (groupId: string, newTitle: string) => setState(s => ({
+            ...s,
+            positionGroups: {
+                ...s.positionGroups,
+                [groupId]: {
+                    ...s.positionGroups[groupId],
+                    title: newTitle,
+                },
+            },
+        })),
         setGroupVisibility: (tabId: string, newVisibility: boolean) => setState(s => ({
             ...s,
             positionGroups: {
@@ -136,6 +147,13 @@ export function useCameraTitle(): CameraTitle {
 
 export function useCameraPositionGroups(): PositionGroup[] {
     return useCameraStore(s => Object.values(s.positionGroups), shallow)
+}
+
+export function useCameraPositionGroupTitle(id: string): [string, (groupId: string, newTitle: string) => void] {
+    const get = useCameraStore(s => s.positionGroups[id].title)
+    const set = useCameraStore(s => s.setGroupName)
+
+    return [get, set]
 }
 
 export function useCameraInteraction(): ICameraInteraction {

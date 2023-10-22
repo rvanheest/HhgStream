@@ -1,13 +1,14 @@
 import React, { useRef } from "react"
-import { ToggleButton, ToggleButtonGroup } from "react-bootstrap"
+import { Form, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faGear, faFloppyDisk, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"
 import styling from "./CameraPositionTabPane.module.css"
 import CameraManualControl from "./CameraManualControl"
 import CameraPositionGroup from "./CameraPositionGroup"
 import CardTabPane, { TabPaneRef } from "../util/CardTabPane";
-import { useCameraPositionGroups, useCameraConfigMode, useSetGroupVisibility, useCameraId } from "../../core/cameraStore";
-import { useCameraConfigModeEnabled, useUpdateCameraGroupVisibility } from "../../core/config"
+import { useCameraPositionGroups, useCameraConfigMode, useSetGroupVisibility, useCameraId, useCameraPositionGroupTitle } from "../../core/cameraStore";
+import { useCameraConfigModeEnabled, useUpdateConfigCameraGroups } from "../../core/config"
+import {useForm, useWatch} from "react-hook-form"
 
 type ViewModePositionTabTitleProps = {
     title: string
@@ -19,12 +20,29 @@ const ViewModePositionTabTitle = ({ title }: ViewModePositionTabTitleProps) => (
 
 type ConfigModePositionTabTitleProps = {
     id: string
-    title: string
     hidden: boolean
 }
 
-const ConfigModePositionTabTitle = ({ id, title, hidden }: ConfigModePositionTabTitleProps) => {
+type TitleForm = {
+    title: string
+}
+
+const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitleProps) => {
     const setGroupVisibility = useSetGroupVisibility()
+    const [title, setTitle] = useCameraPositionGroupTitle(id)
+    const { register, control, handleSubmit } = useForm<TitleForm>({ defaultValues: { title: title }, mode: "onBlur" })
+    const textWidth = useWatch({ control: control, name: "title" }).length
+    const inputStyle = { width: `calc(${textWidth}ch + 0.5rem)` }
+
+    function onTitleChange({title: newTitle}: TitleForm): void {
+        if (newTitle !== title) {
+            setTitle(id, newTitle)
+        }
+    }
+
+    function onTitleClick(e: React.MouseEvent<HTMLInputElement | HTMLTextAreaElement>): void {
+        e.stopPropagation()
+    }
 
     function toggleVisibility(e: React.MouseEvent<HTMLSpanElement, MouseEvent>) {
         e.stopPropagation()
@@ -33,7 +51,14 @@ const ConfigModePositionTabTitle = ({ id, title, hidden }: ConfigModePositionTab
 
     return (
         <div>
-            <span>{title}</span>
+            <span className="d-inline">
+                <form className="d-inline" onBlur={handleSubmit(onTitleChange)}>
+                    <Form.Control style={inputStyle}
+                                  className="p-0 ps-1 pe-1 d-inline text-center"
+                                  onClick={onTitleClick}
+                                  {...register("title")} />
+                </form>
+            </span>
             <span className={`${styling.eye}`} onClick={toggleVisibility}>{
                 hidden
                     ? <FontAwesomeIcon className={`${styling.icon}`} icon={faEyeSlash} />
@@ -65,7 +90,7 @@ const besturingTabTitle = "Besturing"
 const CameraPositionTabPane = () => {
     const cameraId = useCameraId()
     const groups = useCameraPositionGroups()
-    const updateCameraGroupVisibility = useUpdateCameraGroupVisibility();
+    const updateCameraGroupsInConfig = useUpdateConfigCameraGroups();
     const [configMode, setConfigMode] = useCameraConfigMode()
     const configModeEnabled = useCameraConfigModeEnabled()
     const tabPaneRef = useRef<TabPaneRef>(null);
@@ -80,14 +105,14 @@ const CameraPositionTabPane = () => {
     const tabNavLinks = groups.reduce((obj, {id, title, hidden}) => ({
         ...obj,
         [id]: () => configMode
-            ? <ConfigModePositionTabTitle id={id} title={title} hidden={hidden} />
+            ? <ConfigModePositionTabTitle id={id} hidden={hidden} />
             : <ViewModePositionTabTitle title={title} />
     }), {})
 
     function changeConfigMode() {
         setConfigMode(!configMode)
         if (configMode) {
-            updateCameraGroupVisibility(cameraId, groups.reduce((obj, g) => ({ ...obj, [g.id]: g.hidden }), {}))
+            updateCameraGroupsInConfig(cameraId, groups)
             const tabPane = tabPaneRef.current;
             if (tabPane) {
                 const selectedTab = tabPane.getSelectedTab()
