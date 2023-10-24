@@ -15,6 +15,7 @@ import { v4 as uuid } from "uuid"
 import { create } from "zustand"
 import { shallow } from "zustand/shallow"
 import { useEffect } from "react";
+import { CameraTitle } from "./cameraStore";
 
 export type WhiteBalanceOverride = {
   blue: number
@@ -303,7 +304,7 @@ type ZustandConfigStore = {
     setCameraConfigModeEnabled: (configModeEnabled: boolean) => void
     loadConfig: () => void
     setLastOpenedTextTab: (tabName: string) => void
-    setCameraGroups: (cameraId: string, groups: PositionGroup[]) => void
+    updateCamera: (cameraId: string, title: CameraTitle, groups: PositionGroup[]) => void
 }
 
 const useConfigStore = create<ZustandConfigStore>()(setState => ({
@@ -331,12 +332,14 @@ const useConfigStore = create<ZustandConfigStore>()(setState => ({
         saveConfig(newConfig, getConfigPath())
         return ({ ...s, config: newConfig })
     }),
-    setCameraGroups: (cameraId, groups) => setState(s => {
+    updateCamera: (cameraId, { title, baseUrl }, groups) => setState(s => {
         if (!s.config) return s
         const newConfig: AppConfig = {
             ...s.config,
             cameras: s.config.cameras.map(c => c.id !== cameraId ? c : ({
                 ...c,
+                title: title,
+                baseUrl: baseUrl,
                 positionGroups: groups
             })),
         }
@@ -387,6 +390,6 @@ export function useSetLastOpenedTextTab(): (tabName: string) => void {
     return useConfigStore(s => s.setLastOpenedTextTab)
 }
 
-export function useUpdateConfigCameraGroups(): (cameraId: string, groups: PositionGroup[]) => void {
-  return useConfigStore(s => s.setCameraGroups)
+export function useUpdateConfigCamera(): (cameraId: string, title: CameraTitle, groups: PositionGroup[]) => void {
+  return useConfigStore(s => s.updateCamera)
 }

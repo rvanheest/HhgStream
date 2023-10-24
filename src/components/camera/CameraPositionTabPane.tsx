@@ -6,8 +6,15 @@ import styling from "./CameraPositionTabPane.module.css"
 import CameraManualControl from "./CameraManualControl"
 import CameraPositionGroup from "./CameraPositionGroup"
 import CardTabPane, { TabPaneRef } from "../util/CardTabPane";
-import { useCameraPositionGroups, useCameraConfigMode, useSetGroupVisibility, useCameraId, useCameraPositionGroupTitle } from "../../core/cameraStore";
-import { useCameraConfigModeEnabled, useUpdateConfigCameraGroups } from "../../core/config"
+import {
+    useCameraPositionGroups,
+    useCameraConfigMode,
+    useSetGroupVisibility,
+    useCameraId,
+    useCameraPositionGroupTitle,
+    useCameraTitle,
+} from "../../core/cameraStore";
+import { useCameraConfigModeEnabled, useUpdateConfigCamera } from "../../core/config"
 import {useForm, useWatch} from "react-hook-form"
 
 type ViewModePositionTabTitleProps = {
@@ -15,7 +22,7 @@ type ViewModePositionTabTitleProps = {
 }
 
 const ViewModePositionTabTitle = ({ title }: ViewModePositionTabTitleProps) => (
-    <span>{title}</span>
+    <div style={{ paddingTop: 0.8, paddingBottom: 0.8 }}>{title}</div>
 )
 
 type ConfigModePositionTabTitleProps = {
@@ -32,7 +39,6 @@ const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitlePr
     const [title, setTitle] = useCameraPositionGroupTitle(id)
     const { register, control, handleSubmit } = useForm<TitleForm>({ defaultValues: { title: title }, mode: "onBlur" })
     const textWidth = useWatch({ control: control, name: "title" }).length
-    const inputStyle = { width: `calc(${textWidth}ch + 0.5rem)` }
 
     function onTitleChange({title: newTitle}: TitleForm): void {
         if (newTitle !== title) {
@@ -53,7 +59,7 @@ const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitlePr
         <div>
             <span className="d-inline">
                 <form className="d-inline" onBlur={handleSubmit(onTitleChange)}>
-                    <Form.Control style={inputStyle}
+                    <Form.Control style={{ width: `calc(${textWidth}ch + 0.5rem)`, marginLeft: "calc(0.8px - 0.5rem)", marginRight: "calc(0.8px - 0.5rem)" }}
                                   className="p-0 ps-1 pe-1 d-inline text-center"
                                   onClick={onTitleClick}
                                   {...register("title")} />
@@ -69,29 +75,41 @@ const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitlePr
 }
 
 type ConfigButtonProps = {
-    cameraId: string
-    isInConfigMode: boolean
-    onClick: () => void
+    onSave: () => void
 }
 
-const ConfigButton = ({ cameraId, isInConfigMode, onClick }: ConfigButtonProps) => (
-    <ToggleButtonGroup type="checkbox" value={isInConfigMode ? ["config"] : []} onChange={onClick}>
-        <ToggleButton id={`config-button-${cameraId}`} value="config" variant="outline-secondary" className={`border-0 bg-transparent ${styling.configToggleButton}`}>
-            { isInConfigMode
-                ? <FontAwesomeIcon icon={faFloppyDisk} />
-                : <FontAwesomeIcon icon={faGear} />
-            }
-        </ToggleButton>
-    </ToggleButtonGroup>
-)
+const ConfigButton = ({ onSave }: ConfigButtonProps) => {
+    const cameraId = useCameraId()
+    const [isInConfigMode, setConfigMode] = useCameraConfigMode()
+    const [title] = useCameraTitle()
+    const groups = useCameraPositionGroups()
+    const updateCameraInConfig = useUpdateConfigCamera()
+
+    function onToggle(): void {
+        setConfigMode(!isInConfigMode)
+        if (isInConfigMode) {
+            updateCameraInConfig(cameraId, title, groups)
+            onSave()
+        }
+    }
+
+    return (
+        <ToggleButtonGroup type="checkbox" value={isInConfigMode ? ["config"] : []} onChange={onToggle}>
+            <ToggleButton id={`config-button-${cameraId}`} value="config" variant="outline-secondary" className={`border-0 bg-transparent ${styling.configToggleButton}`}>
+                { isInConfigMode
+                    ? <FontAwesomeIcon icon={faFloppyDisk} />
+                    : <FontAwesomeIcon icon={faGear} />
+                }
+            </ToggleButton>
+        </ToggleButtonGroup>
+    )
+}
 
 const besturingTabTitle = "Besturing"
 
 const CameraPositionTabPane = () => {
-    const cameraId = useCameraId()
     const groups = useCameraPositionGroups()
-    const updateCameraGroupsInConfig = useUpdateConfigCameraGroups();
-    const [configMode, setConfigMode] = useCameraConfigMode()
+    const [configMode] = useCameraConfigMode()
     const configModeEnabled = useCameraConfigModeEnabled()
     const tabPaneRef = useRef<TabPaneRef>(null);
 
@@ -109,16 +127,13 @@ const CameraPositionTabPane = () => {
             : <ViewModePositionTabTitle title={title} />
     }), {})
 
-    function changeConfigMode() {
-        setConfigMode(!configMode)
-        if (configMode) {
-            updateCameraGroupsInConfig(cameraId, groups)
-            const tabPane = tabPaneRef.current;
-            if (tabPane) {
-                const selectedTab = tabPane.getSelectedTab()
-                if (groups.find(g => g.id === selectedTab)?.hidden) {
-                    tabPane.setSelectedTab(groups.find(g => !g.hidden)?.id ?? besturingTabTitle)
-                }
+    // when we exit config mode, we want to change to a different tab when the currently selected tab has become hidden
+    function onSaveConfig() {
+        const tabPane = tabPaneRef.current;
+        if (tabPane) {
+            const selectedTab = tabPane.getSelectedTab()
+            if (groups.find(g => g.id === selectedTab)?.hidden) {
+                tabPane.setSelectedTab(groups.find(g => !g.hidden)?.id ?? besturingTabTitle)
             }
         }
     }
@@ -128,7 +143,7 @@ const CameraPositionTabPane = () => {
                      defaultOpen={groups.find(g => !g.hidden)?.id ?? besturingTabTitle}
                      tabs={tabs}
                      tabNavLink={tabNavLinks}
-                     rightAlignElement={() => configModeEnabled ? <ConfigButton cameraId={cameraId} isInConfigMode={configMode} onClick={changeConfigMode} /> : undefined} />
+                     rightAlignElement={() => configModeEnabled ? <ConfigButton onSave={onSaveConfig} /> : undefined} />
     )
 }
 

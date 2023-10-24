@@ -14,6 +14,7 @@ type ZustandCameraStore = {
     cameraInteraction: ICameraInteraction
     cameraStatus: CameraStatus | undefined
     configMode: boolean
+    setTitleAndBaseUrl: (title: string, baseUrl: string) => void
     setCameraPosition: (position: Position) => Promise<void>
     setCameraStatus: (cameraStatus: CameraStatus | undefined) => void
     setColorScheme: (scheme: ColorScheme) => Promise<void>
@@ -36,6 +37,11 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
         cameraInteraction: getCameraInteraction(camera.title, camera.baseUrl, camera.sessionId, isDev),
         cameraStatus: undefined,
         configMode: false,
+        setTitleAndBaseUrl: (title, baseUrl) => setState(s => ({
+            ...s,
+            title: title,
+            baseUrl: baseUrl
+        })),
         setCameraPosition: async position => {
             await getState().cameraInteraction.moveCamera(position)
             setState(s => ({ ...s, position: position }))
@@ -141,8 +147,11 @@ export function useCameraId(): string {
     return useCameraStore(({ id }) => id)
 }
 
-export function useCameraTitle(): CameraTitle {
-    return useCameraStore(({ title, baseUrl }) => ({ title, baseUrl }), shallow)
+export function useCameraTitle(): [CameraTitle, (title: string, baseUrl: string) => void] {
+    const get = useCameraStore(({ title, baseUrl }) => ({ title, baseUrl }), shallow)
+    const set = useCameraStore(s => s.setTitleAndBaseUrl)
+
+    return [get, set]
 }
 
 export function useCameraPositionGroups(): PositionGroup[] {
