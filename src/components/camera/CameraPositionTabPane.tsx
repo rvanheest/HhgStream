@@ -117,7 +117,7 @@ const CameraPositionTabPane = () => {
         [besturingTabTitle]: () => <CameraManualControl />,
         ...groups
             .filter(g => configMode || !g.hidden)
-            .reduce((obj, {id, positions}) => ({ ...obj, [id]: () => <CameraPositionGroup positions={positions} /> }), {})
+            .reduce((obj, {id, positions}) => ({ ...obj, [id]: () => <CameraPositionGroup groupId={id} positions={positions} /> }), {})
     }
 
     const tabNavLinks = groups.reduce((obj, {id, title, hidden}) => ({

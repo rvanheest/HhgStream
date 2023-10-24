@@ -24,7 +24,8 @@ type ZustandCameraStore = {
     correctWhiteBalance: () => Promise<void>
     setConfigMode: (newConfigMode: boolean) => void
     setGroupName: (groupId: string, newTitle: string) => void
-    setGroupVisibility: (tabId: string, newVisibility: boolean) => void
+    setGroupVisibility: (groupId: string, newVisibility: boolean) => void
+    setCameraPositionName: (groupId: string, positionId: string, newTitle: string) => void
 }
 
 export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<ZustandCameraStore> {
@@ -120,16 +121,29 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
                 },
             },
         })),
-        setGroupVisibility: (tabId: string, newVisibility: boolean) => setState(s => ({
+        setGroupVisibility: (groupId, newVisibility) => setState(s => ({
             ...s,
             positionGroups: {
                 ...s.positionGroups,
-                [tabId]: {
-                    ...s.positionGroups[tabId],
+                [groupId]: {
+                    ...s.positionGroups[groupId],
                     hidden: newVisibility,
                 },
             },
         })),
+        setCameraPositionName: (groupId, positionId, newTitle) => setState(s => ({
+            ...s,
+            positionGroups: {
+                ...s.positionGroups,
+                [groupId]: {
+                    ...s.positionGroups[groupId],
+                    positions: s.positionGroups[groupId].positions.map(position => position.id !== positionId ? position : {
+                        ...position,
+                        title: newTitle,
+                    }),
+                },
+            },
+        }))
     }))
 }
 
@@ -176,8 +190,12 @@ export function useCameraConfigMode(): [boolean, (newConfigMode: boolean) => voi
     return [get, set]
 }
 
-export function useSetGroupVisibility(): (tabId: string, newVisibility: boolean) => void {
+export function useSetGroupVisibility(): (groupId: string, newVisibility: boolean) => void {
     return useCameraStore(s => s.setGroupVisibility)
+}
+
+export function useSetCameraPositionName(): (groupId: string, positionId: string, newTitle: string) => void {
+    return useCameraStore(s => s.setCameraPositionName)
 }
 
 export function useCurrentColorScheme(): [ColorScheme | undefined, (scheme: ColorScheme) => Promise<void>] {

@@ -4,14 +4,15 @@ import { Position } from "../../core/config"
 import CameraPosition from "./CameraPosition"
 
 type CameraPositionGroupProps = {
+    groupId: string
     positions: Position[]
 }
 
-const CameraPositionGroup = ({ positions }: CameraPositionGroupProps) => (
+const CameraPositionGroup = ({ groupId, positions }: CameraPositionGroupProps) => (
     <Row className="row-cols-4 p-1 g-1 align-items-center">
         {positions.map(position => (
             <Col key={position.id}>
-                <CameraPosition position={position} />
+                <CameraPosition groupId={groupId} position={position} />
             </Col>
         ))}
     </Row>
