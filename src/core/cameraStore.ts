@@ -1,15 +1,20 @@
 import { createContext, useContext } from "react"
 import { createStore, StoreApi, useStore } from "zustand"
-import { Camera, Position } from "./config"
+import { Camera, Position, PositionGroup } from "./config"
 import { AeLevels, CameraStatus, ColorScheme, getCameraInteraction, ICameraInteraction, WhiteBalance } from "./camera";
 import { sleep } from "./utils"
 import { shallow } from "zustand/shallow";
 
 type ZustandCameraStore = {
     position: Position | undefined
-    camera: Camera
+    id: string
+    title: string
+    baseUrl: string
+    positionGroups: {[name: string]: PositionGroup}
     cameraInteraction: ICameraInteraction
     cameraStatus: CameraStatus | undefined
+    configMode: boolean
+    setTitleAndBaseUrl: (title: string, baseUrl: string) => void
     setCameraPosition: (position: Position) => Promise<void>
     setCameraStatus: (cameraStatus: CameraStatus | undefined) => void
     setColorScheme: (scheme: ColorScheme) => Promise<void>
@@ -17,14 +22,27 @@ type ZustandCameraStore = {
     setWhiteBalanceRed: (change: number) => Promise<void>
     setWhiteBalanceBlue: (change: number) => Promise<void>
     correctWhiteBalance: () => Promise<void>
+    setConfigMode: (newConfigMode: boolean) => void
+    setGroupName: (groupId: string, newTitle: string) => void
+    setGroupVisibility: (groupId: string, newVisibility: boolean) => void
+    setCameraPositionName: (groupId: string, positionId: string, newTitle: string) => void
 }
 
 export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<ZustandCameraStore> {
     return createStore<ZustandCameraStore>((setState, getState) => ({
         position: undefined,
-        camera: camera,
-        cameraInteraction: getCameraInteraction(camera, isDev),
+        id: camera.id,
+        title: camera.title,
+        baseUrl: camera.baseUrl,
+        positionGroups: camera.positionGroups.reduce((obj, c) => ({ ...obj, [c.id]: c }), {}),
+        cameraInteraction: getCameraInteraction(camera.title, camera.baseUrl, camera.sessionId, isDev),
         cameraStatus: undefined,
+        configMode: false,
+        setTitleAndBaseUrl: (title, baseUrl) => setState(s => ({
+            ...s,
+            title: title,
+            baseUrl: baseUrl
+        })),
         setCameraPosition: async position => {
             await getState().cameraInteraction.moveCamera(position)
             setState(s => ({ ...s, position: position }))
@@ -88,24 +106,96 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
             await sleep(5000)
             const whiteBalanceOverride = getState().position?.adjustedWhiteBalance
             if (whiteBalanceOverride) await getState().cameraInteraction.changeWhiteBalence(whiteBalanceOverride)
-        }
+        },
+        setConfigMode: newConfigMode => setState(s => ({
+            ...s,
+            configMode: newConfigMode,
+        })),
+        setGroupName: (groupId: string, newTitle: string) => setState(s => ({
+            ...s,
+            positionGroups: {
+                ...s.positionGroups,
+                [groupId]: {
+                    ...s.positionGroups[groupId],
+                    title: newTitle,
+                },
+            },
+        })),
+        setGroupVisibility: (groupId, newVisibility) => setState(s => ({
+            ...s,
+            positionGroups: {
+                ...s.positionGroups,
+                [groupId]: {
+                    ...s.positionGroups[groupId],
+                    hidden: newVisibility,
+                },
+            },
+        })),
+        setCameraPositionName: (groupId, positionId, newTitle) => setState(s => ({
+            ...s,
+            positionGroups: {
+                ...s.positionGroups,
+                [groupId]: {
+                    ...s.positionGroups[groupId],
+                    positions: s.positionGroups[groupId].positions.map(position => position.id !== positionId ? position : {
+                        ...position,
+                        title: newTitle,
+                    }),
+                },
+            },
+        }))
     }))
 }
 
 const CameraContext = createContext<StoreApi<ZustandCameraStore> | undefined>(undefined);
 export const CameraContextProvider = CameraContext.Provider
 
+export type CameraTitle = Pick<Camera, 'title' | 'baseUrl'>
+
 function useCameraStore<T>(selector: (store: ZustandCameraStore) => T, equalityFn?: (a: T, b: T) => boolean) {
     const ctx = useContext(CameraContext)
     return useStore(ctx!, selector, equalityFn)
 }
 
-export function useCamera(): Camera {
-    return useCameraStore(s => s.camera)
+export function useCameraId(): string {
+    return useCameraStore(({ id }) => id)
+}
+
+export function useCameraTitle(): [CameraTitle, (title: string, baseUrl: string) => void] {
+    const get = useCameraStore(({ title, baseUrl }) => ({ title, baseUrl }), shallow)
+    const set = useCameraStore(s => s.setTitleAndBaseUrl)
+
+    return [get, set]
+}
+
+export function useCameraPositionGroups(): PositionGroup[] {
+    return useCameraStore(s => Object.values(s.positionGroups), shallow)
+}
+
+export function useCameraPositionGroupTitle(id: string): [string, (groupId: string, newTitle: string) => void] {
+    const get = useCameraStore(s => s.positionGroups[id].title)
+    const set = useCameraStore(s => s.setGroupName)
+
+    return [get, set]
 }
 
 export function useCameraInteraction(): ICameraInteraction {
     return useCameraStore(s => s.cameraInteraction)
+}
+
+export function useCameraConfigMode(): [boolean, (newConfigMode: boolean) => void] {
+    const get = useCameraStore(s => s.configMode)
+    const set = useCameraStore(s => s.setConfigMode)
+
+    return [get, set]
+}
+
+export function useSetGroupVisibility(): (groupId: string, newVisibility: boolean) => void {
+    return useCameraStore(s => s.setGroupVisibility)
+}
+
+export function useSetCameraPositionName(): (groupId: string, positionId: string, newTitle: string) => void {
+    return useCameraStore(s => s.setCameraPositionName)
 }
 
 export function useCurrentColorScheme(): [ColorScheme | undefined, (scheme: ColorScheme) => Promise<void>] {

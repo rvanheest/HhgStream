@@ -11,9 +11,11 @@ import {
     resolve,
     saveJsonFile
 } from "./utils";
+import { v4 as uuid } from "uuid"
 import { create } from "zustand"
 import { shallow } from "zustand/shallow"
 import { useEffect } from "react";
+import { CameraTitle } from "./cameraStore";
 
 export type WhiteBalanceOverride = {
   blue: number
@@ -21,6 +23,7 @@ export type WhiteBalanceOverride = {
 }
 
 export type Position = {
+  id: string
   index: number
   title: string
   thumbnail?: string
@@ -28,12 +31,14 @@ export type Position = {
 }
 
 export type PositionGroup = {
+  id: string
   title: string
   hidden: boolean
   positions: Position[]
 }
 
 export type Camera = {
+  id: string
   baseUrl: string
   sessionId: string
   title: string
@@ -112,10 +117,11 @@ function migrateConfig(config: any): [AppConfig & { isError: false }, boolean] {
     const [migratedConfig2, needsSaving2] = migrateTexts(migratedConfig1)
     const [migratedConfig3, needsSaving3] = migrateTextTemplates(migratedConfig2)
     const [migratedConfig4, needsSaving4] = migratePositionGroupsAddHiddenField(migratedConfig3)
+    const [migratedConfig5, needsSaving5] = migrateUuids(migratedConfig4)
 
     return [
-        ({ ...migratedConfig4, isError: false}),
-        needsSaving1 || needsSaving2 || needsSaving3 || needsSaving4,
+      ({ ...migratedConfig5, isError: false}),
+        needsSaving1 || needsSaving2 || needsSaving3 || needsSaving4 || needsSaving5,
     ]
 }
 
@@ -266,18 +272,49 @@ function migratePositionGroupsAddHiddenField(config: any): [any, boolean] {
   else return [config, false]
 }
 
+function migrateUuids(config: any): [any, boolean] {
+  if (config.version <= 4) {
+    const newConfig = ({
+      ...config,
+      cameras: (config.cameras ?? []).map((camera: any) => ({
+        id: uuid(),
+        ...camera,
+        positionGroups: (camera.positionGroups ?? []).map((group: any) => ({
+          id: uuid(),
+          ...group,
+          positions: (group.positions ?? []).map((position: any) => ({
+            id: uuid(),
+            ...position,
+          })),
+        })),
+      })),
+      version: 5,
+    })
+
+    return [newConfig, true]
+  }
+  else return [config, false]
+}
+
 type ZustandConfigStore = {
     config: AppConfig | undefined
     error: ConfigError | undefined
     loaded: boolean
+    cameraConfigModeEnabled: boolean
+    setCameraConfigModeEnabled: (configModeEnabled: boolean) => void
     loadConfig: () => void
     setLastOpenedTextTab: (tabName: string) => void
+    updateCamera: (cameraId: string, title: CameraTitle, groups: PositionGroup[]) => void
 }
 
 const useConfigStore = create<ZustandConfigStore>()(setState => ({
     loaded: false,
     config: undefined,
     error: undefined,
+    cameraConfigModeEnabled: false,
+    setCameraConfigModeEnabled: (configModeEnabled: boolean) => setState(s => {
+        return ({ ...s, cameraConfigModeEnabled: configModeEnabled })
+    }),
     loadConfig: () => {
         const config = loadConfig()
         if (config.isError) {
@@ -294,6 +331,20 @@ const useConfigStore = create<ZustandConfigStore>()(setState => ({
         const newConfig = ({ ...s.config, texts: { ...s.config.texts, lastOpenedTab: tabName }})
         saveConfig(newConfig, getConfigPath())
         return ({ ...s, config: newConfig })
+    }),
+    updateCamera: (cameraId, { title, baseUrl }, groups) => setState(s => {
+        if (!s.config) return s
+        const newConfig: AppConfig = {
+            ...s.config,
+            cameras: s.config.cameras.map(c => c.id !== cameraId ? c : ({
+                ...c,
+                title: title,
+                baseUrl: baseUrl,
+                positionGroups: groups
+            })),
+        }
+        saveConfig(newConfig, getConfigPath())
+        return ({...s, config: newConfig})
     })
 }))
 
@@ -302,7 +353,7 @@ export function useConfig(): AppConfig {
 }
 
 export function useCamerasConfig(): Camera[] {
-    return useConfigStore(s => s.config!.cameras)
+    return useConfigStore(s => s.config!.cameras, shallow)
 }
 
 export function useTextStorePath(): string {
@@ -327,6 +378,18 @@ export function useLoadConfig(): Pick<ZustandConfigStore, "loaded" | "error"> {
     return store
 }
 
+export function useCameraConfigModeEnabled(): boolean {
+    return useConfigStore(s => s.cameraConfigModeEnabled)
+}
+
+export function useSetCameraConfigModeEnabled(): (mode: boolean) => void {
+    return useConfigStore(s => s.setCameraConfigModeEnabled)
+}
+
 export function useSetLastOpenedTextTab(): (tabName: string) => void {
     return useConfigStore(s => s.setLastOpenedTextTab)
+}
+
+export function useUpdateConfigCamera(): (cameraId: string, title: CameraTitle, groups: PositionGroup[]) => void {
+  return useConfigStore(s => s.updateCamera)
 }

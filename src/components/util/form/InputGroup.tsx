@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import React, { JSX, ReactNode } from "react";
 import { Col, Form, Row } from "react-bootstrap";
 import Label from "./Label";
 

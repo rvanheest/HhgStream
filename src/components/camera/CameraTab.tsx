@@ -52,7 +52,7 @@ const CameraTab = () => {
     return (
         <Row className="row-cols-2 g-2">
             {cameras.map(camera => (
-                <Col key={camera.title}>
+                <Col key={camera.id}>
                     <CameraStore camera={camera}/>
                 </Col>
             ))}

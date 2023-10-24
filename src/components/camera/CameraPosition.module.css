@@ -1,8 +1,8 @@
-.button {
+.button.viewMode {
     cursor: pointer;
 }
 
-.button:hover,
-.button:focus {
+.button.viewMode:hover,
+.button.viewMode:focus {
     background-color: #424649!important;
 }

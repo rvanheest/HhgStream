@@ -1,4 +1,4 @@
-.motionGroup, button:not(:first-child),
+.motionGroup button:not(:first-child),
 .zoomGroup button:not(:first-child),
 .presetGroup button:not(:first-child) {
     margin-left: 0!important;
