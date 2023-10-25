@@ -22,6 +22,7 @@ type CameraTitleForm = {
 const ConfigModeCameraTitle = () => {
     const [{ title, baseUrl }, setData] = useCameraTitle()
     const { register, handleSubmit } = useForm<CameraTitleForm>({ defaultValues: { title, baseUrl }, mode: "onBlur"})
+    const onSubmit = handleSubmit(onChange)
 
     function onChange({title: newTitle, baseUrl: newBaseUrl}: CameraTitleForm): void {
         if (newTitle !== title || newBaseUrl !== baseUrl) {
@@ -30,7 +31,7 @@ const ConfigModeCameraTitle = () => {
     }
 
     return (
-        <form className="ms-1 me-1" onBlur={handleSubmit(onChange)}>
+        <form className="ms-1 me-1" onBlur={onSubmit} onSubmit={onSubmit}>
             <Form.Control className="p-0 ps-1 pe-1 mb-1 fs-4 text-center" style={{ fontWeight: 500, lineHeight: 1.2 }} {...register("title")} />
             <Form.Control className="p-0 ps-1 pe-1 fst-italic text-center" style={{ fontSize: 12 }} {...register("baseUrl")} />
         </form>

@@ -1,28 +1,31 @@
-import React, { useRef } from "react"
-import { Form, ToggleButton, ToggleButtonGroup } from "react-bootstrap"
+import React, { useEffect, useRef } from "react"
+import { Form } from "react-bootstrap"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faGear, faFloppyDisk, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"
+import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"
 import styling from "./CameraPositionTabPane.module.css"
 import CameraManualControl from "./CameraManualControl"
 import CameraPositionGroup from "./CameraPositionGroup"
 import CardTabPane, { TabPaneRef } from "../util/CardTabPane";
-import {
-    useCameraPositionGroups,
-    useCameraConfigMode,
-    useSetGroupVisibility,
-    useCameraId,
-    useCameraPositionGroupTitle,
-    useCameraTitle,
-} from "../../core/cameraStore";
-import { useCameraConfigModeEnabled, useUpdateConfigCamera } from "../../core/config"
+import { useCameraPositionGroups, useCameraConfigMode, useSetGroupVisibility, useCameraPositionGroupTitle } from "../../core/cameraStore";
 import {useForm, useWatch} from "react-hook-form"
+
+function tabWidth(text: string): number {
+    return (text.length + 1) * 8
+}
 
 type ViewModePositionTabTitleProps = {
     title: string
 }
 
 const ViewModePositionTabTitle = ({ title }: ViewModePositionTabTitleProps) => (
-    <div style={{ paddingTop: 0.8, paddingBottom: 0.8 }}>{title}</div>
+    <div className="text-center"
+         style={{
+             width: `${tabWidth(title)}px`,
+             paddingTop: 0.8,
+             paddingBottom: 0.8,
+         }}>
+        {title}
+    </div>
 )
 
 type ConfigModePositionTabTitleProps = {
@@ -38,7 +41,9 @@ const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitlePr
     const setGroupVisibility = useSetGroupVisibility()
     const [title, setTitle] = useCameraPositionGroupTitle(id)
     const { register, control, handleSubmit } = useForm<TitleForm>({ defaultValues: { title: title }, mode: "onBlur" })
-    const textWidth = useWatch({ control: control, name: "title" }).length
+    const textWidth = useWatch({ control: control, name: "title" })
+
+    const onSubmit = handleSubmit(onTitleChange)
 
     function onTitleChange({title: newTitle}: TitleForm): void {
         if (newTitle !== title) {
@@ -56,11 +61,11 @@ const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitlePr
     }
 
     return (
-        <div>
+        <>
             <span className="d-inline">
-                <form className="d-inline" onBlur={handleSubmit(onTitleChange)}>
-                    <Form.Control style={{ width: `calc(${textWidth}ch + 0.5rem)`, marginLeft: "calc(0.8px - 0.5rem)", marginRight: "calc(0.8px - 0.5rem)" }}
-                                  className="p-0 ps-1 pe-1 d-inline text-center"
+                <form className="d-inline" onBlur={onSubmit} onSubmit={onSubmit}>
+                    <Form.Control className="p-0 d-inline text-center"
+                                  style={{ width: `${tabWidth(textWidth)}px` }}
                                   onClick={onTitleClick}
                                   {...register("title")} />
                 </form>
@@ -70,38 +75,7 @@ const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitlePr
                     ? <FontAwesomeIcon className={`${styling.icon}`} icon={faEyeSlash} />
                     : <FontAwesomeIcon className={`${styling.icon}`} icon={faEye} />
             }</span>
-        </div>
-    )
-}
-
-type ConfigButtonProps = {
-    onSave: () => void
-}
-
-const ConfigButton = ({ onSave }: ConfigButtonProps) => {
-    const cameraId = useCameraId()
-    const [isInConfigMode, setConfigMode] = useCameraConfigMode()
-    const [title] = useCameraTitle()
-    const groups = useCameraPositionGroups()
-    const updateCameraInConfig = useUpdateConfigCamera()
-
-    function onToggle(): void {
-        setConfigMode(!isInConfigMode)
-        if (isInConfigMode) {
-            updateCameraInConfig(cameraId, title, groups)
-            onSave()
-        }
-    }
-
-    return (
-        <ToggleButtonGroup type="checkbox" value={isInConfigMode ? ["config"] : []} onChange={onToggle}>
-            <ToggleButton id={`config-button-${cameraId}`} value="config" variant="outline-secondary" className={`border-0 bg-transparent ${styling.configToggleButton}`}>
-                { isInConfigMode
-                    ? <FontAwesomeIcon icon={faFloppyDisk} />
-                    : <FontAwesomeIcon icon={faGear} />
-                }
-            </ToggleButton>
-        </ToggleButtonGroup>
+        </>
     )
 }
 
@@ -110,7 +84,6 @@ const besturingTabTitle = "Besturing"
 const CameraPositionTabPane = () => {
     const groups = useCameraPositionGroups()
     const [configMode] = useCameraConfigMode()
-    const configModeEnabled = useCameraConfigModeEnabled()
     const tabPaneRef = useRef<TabPaneRef>(null);
 
     const tabs = {
@@ -125,25 +98,25 @@ const CameraPositionTabPane = () => {
         [id]: () => configMode
             ? <ConfigModePositionTabTitle id={id} hidden={hidden} />
             : <ViewModePositionTabTitle title={title} />
-    }), {})
+    }), {[besturingTabTitle]: () => <ViewModePositionTabTitle title={besturingTabTitle} />})
 
-    // when we exit config mode, we want to change to a different tab when the currently selected tab has become hidden
-    function onSaveConfig() {
-        const tabPane = tabPaneRef.current;
-        if (tabPane) {
-            const selectedTab = tabPane.getSelectedTab()
-            if (groups.find(g => g.id === selectedTab)?.hidden) {
-                tabPane.setSelectedTab(groups.find(g => !g.hidden)?.id ?? besturingTabTitle)
+    useEffect(() => {
+        if (!configMode) {
+            const tabPane = tabPaneRef.current;
+            if (tabPane) {
+                const selectedTab = tabPane.getSelectedTab()
+                if (groups.find(g => g.id === selectedTab)?.hidden) {
+                    tabPane.setSelectedTab(groups.find(g => !g.hidden)?.id ?? besturingTabTitle)
+                }
             }
         }
-    }
+    }, [configMode, groups])
 
     return (
         <CardTabPane ref={tabPaneRef}
                      defaultOpen={groups.find(g => !g.hidden)?.id ?? besturingTabTitle}
                      tabs={tabs}
-                     tabNavLink={tabNavLinks}
-                     rightAlignElement={() => configModeEnabled ? <ConfigButton onSave={onSaveConfig} /> : undefined} />
+                     tabNavLink={tabNavLinks} />
     )
 }
 

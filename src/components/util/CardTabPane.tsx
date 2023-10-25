@@ -8,7 +8,6 @@ type TabPaneProps = {
     defaultOpen: string
     fillHeight?: boolean
     onSelectTab?: ((id: string) => void) | undefined
-    rightAlignElement?: () => JSX.Element | undefined
 }
 
 export type TabPaneRef = {
@@ -16,7 +15,7 @@ export type TabPaneRef = {
     setSelectedTab: (tab: string | null) => void,
 }
 
-const CardTabPane = forwardRef(({ tabs, tabNavLink, defaultOpen, fillHeight, onSelectTab, rightAlignElement }: TabPaneProps, _ref: ForwardedRef<TabPaneRef>) => {
+const CardTabPane = forwardRef(({ tabs, tabNavLink, defaultOpen, fillHeight, onSelectTab }: TabPaneProps, _ref: ForwardedRef<TabPaneRef>) => {
     const [selected, setSelected] = useState<string>(defaultOpen)
     const fillHeightCss = fillHeight ? 'h-100' : ''
 
@@ -42,15 +41,12 @@ const CardTabPane = forwardRef(({ tabs, tabNavLink, defaultOpen, fillHeight, onS
                             const TitleElement = (tabNavLink && tabNavLink[id]) ?? (() => <span>{id}</span>)
                             return(
                                 <Nav.Item key={id}>
-                                    <Nav.Link eventKey={id} className={styling.cardNavLink}>
+                                    <Nav.Link eventKey={id} className={`p-2 ${styling.cardNavLink}`}>
                                         <TitleElement />
                                     </Nav.Link>
                                 </Nav.Item>
                             )
                         })}
-                        {rightAlignElement && <Nav.Item className="ms-auto">
-                            {rightAlignElement()}
-                        </Nav.Item>}
                     </Nav>
                 </div>
 
