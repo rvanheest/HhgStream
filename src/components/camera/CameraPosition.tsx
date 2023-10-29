@@ -49,7 +49,7 @@ const ConfigModeCameraPosition = ({ groupId, position: { id: positionId, title }
         <div className={`py-2 border border-light border-3 rounded-3 bg-dark bg-gradient ${styling.button}`}>
             <form className="ms-1 me-1" onBlur={onSubmit} onSubmit={onSubmit}>
                 <Form.Control
-                    className="p-0 ps-1 pe-1 text-center border border-0"
+                    className="p-0 text-center border border-0"
                     {...register("title")}/>
             </form>
         </div>
