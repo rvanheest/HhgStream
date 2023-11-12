@@ -15,7 +15,6 @@ import { v4 as uuid } from "uuid"
 import { create } from "zustand"
 import { shallow } from "zustand/shallow"
 import { useEffect } from "react";
-import { CameraTitle } from "./cameraStore";
 
 export type WhiteBalanceOverride = {
   blue: number
@@ -26,9 +25,11 @@ export type Position = {
   id: string
   index: number
   title: string
-  thumbnail?: string
-  adjustedWhiteBalance?: WhiteBalanceOverride
+  thumbnail?: string | undefined
+  adjustedWhiteBalance: WhiteBalanceOverride
 }
+
+export type NewPosition = Pick<Position, 'index' | 'title' | 'adjustedWhiteBalance'>
 
 export type PositionGroup = {
   id: string
@@ -37,13 +38,22 @@ export type PositionGroup = {
   positions: Position[]
 }
 
+export type Preset = {
+  index: number
+  title: string
+  adjustedWhiteBalance: WhiteBalanceOverride
+}
+
 export type Camera = {
   id: string
   baseUrl: string
   sessionId: string
   title: string
   positionGroups: PositionGroup[]
+  presets: Preset[]
 }
+
+export type CameraSettings = Pick<Camera, "title" | "sessionId" | "baseUrl">
 
 export type TextFormConfig = {
     templateDir: string
@@ -118,10 +128,11 @@ function migrateConfig(config: any): [AppConfig & { isError: false }, boolean] {
     const [migratedConfig3, needsSaving3] = migrateTextTemplates(migratedConfig2)
     const [migratedConfig4, needsSaving4] = migratePositionGroupsAddHiddenField(migratedConfig3)
     const [migratedConfig5, needsSaving5] = migrateUuids(migratedConfig4)
+    const [migratedConfig6, needsSaving6] = migratePresets(migratedConfig5)
 
     return [
-      ({ ...migratedConfig5, isError: false}),
-        needsSaving1 || needsSaving2 || needsSaving3 || needsSaving4 || needsSaving5,
+      ({ ...migratedConfig6, isError: false}),
+        needsSaving1 || needsSaving2 || needsSaving3 || needsSaving4 || needsSaving5 || needsSaving6,
     ]
 }
 
@@ -296,6 +307,43 @@ function migrateUuids(config: any): [any, boolean] {
   else return [config, false]
 }
 
+function migratePresets(config: any): [any, boolean] {
+  const defaultAdjustedWhiteBalance = { blue: 0, red: 0 };
+
+  function createPresets(camera: any): Preset[] {
+    const knownPositions: Preset[] = (camera.positionGroups ?? [])
+      .flatMap((positionGroup: any) => positionGroup.positions ?? [])
+      .map((position: any) => ({ index: position.index, title: position.title, adjustedWhiteBalance: position.adjustedWhiteBalance ?? defaultAdjustedWhiteBalance }))
+
+    return [...new Map(knownPositions.map(p => [p.index, p])).values()].sort(sortPresets)
+  }
+
+  if (config.version <= 5) {
+    const newConfig = ({
+      ...config,
+      cameras: (config.cameras ?? []).map((camera: any) => ({
+        ...camera,
+        positionGroups: (camera.positionGroups ?? []).map((group: any) => ({
+          ...group,
+          positions: (group.positions ?? []).map((position: any) => ({
+            ...position,
+            adjustedWhiteBalance: position.adjustedWhiteBalance !== undefined ? position.adjustedWhiteBalance : defaultAdjustedWhiteBalance,
+          })),
+        })),
+        presets: createPresets(camera),
+      })),
+      version: 6,
+    })
+
+    return [newConfig, true]
+  }
+  else return [config, false]
+}
+
+function sortPresets(a: Preset, b: Preset) {
+  return a.index - b.index
+}
+
 type ZustandConfigStore = {
     config: AppConfig | undefined
     error: ConfigError | undefined
@@ -304,7 +352,10 @@ type ZustandConfigStore = {
     setCameraConfigModeEnabled: (configModeEnabled: boolean) => void
     loadConfig: () => void
     setLastOpenedTextTab: (tabName: string) => void
-    updateCamera: (cameraId: string, title: CameraTitle, groups: PositionGroup[]) => void
+    updateCameraGroups: (cameraId: string, groups: PositionGroup[]) => void
+    updateCameraSettings: (cameraId: string, settings: CameraSettings) => void
+    upsertPreset: (cameraId: string, updatedPreset: Preset) => void
+    deletePreset: (cameraId: string, index: number) => void
 }
 
 const useConfigStore = create<ZustandConfigStore>()(setState => ({
@@ -332,7 +383,19 @@ const useConfigStore = create<ZustandConfigStore>()(setState => ({
         saveConfig(newConfig, getConfigPath())
         return ({ ...s, config: newConfig })
     }),
-    updateCamera: (cameraId, { title, baseUrl }, groups) => setState(s => {
+    updateCameraGroups: (cameraId, groups) => setState(s => {
+        if (!s.config) return s
+        const newConfig: AppConfig = {
+            ...s.config,
+            cameras: s.config.cameras.map(c => c.id !== cameraId ? c : ({
+                ...c,
+                positionGroups: groups,
+            })),
+        }
+        saveConfig(newConfig, getConfigPath())
+        return ({ ...s, config: newConfig })
+    }),
+    updateCameraSettings: (cameraId, { title, baseUrl, sessionId }) => setState(s => {
         if (!s.config) return s
         const newConfig: AppConfig = {
             ...s.config,
@@ -340,12 +403,52 @@ const useConfigStore = create<ZustandConfigStore>()(setState => ({
                 ...c,
                 title: title,
                 baseUrl: baseUrl,
-                positionGroups: groups
+                sessionId: sessionId,
+            }))
+        }
+        saveConfig(newConfig, getConfigPath())
+        return ({ ...s, config: newConfig })
+    }),
+    upsertPreset: (cameraId, updatedPreset) => setState(s => {
+        if (!s.config) return s
+        const newConfig: AppConfig = {
+            ...s.config,
+            cameras: s.config.cameras.map(c => c.id !== cameraId ? c : ({
+                ...c,
+                positionGroups: c.positionGroups.map(g => ({
+                    ...g,
+                    positions: g.positions.map(p => {
+                        if (p.index !== updatedPreset.index) return p
+                        const correspondingPreset = c.presets.find(preset => preset.index === p.index)
+                        const newTitle = !!correspondingPreset && correspondingPreset.title === p.title ? updatedPreset.title : p.title
+                        return {
+                            ...p,
+                            title: newTitle,
+                            adjustedWhiteBalance: {
+                                blue: updatedPreset.adjustedWhiteBalance.blue,
+                                red: updatedPreset.adjustedWhiteBalance.red,
+                            },
+                        }
+                    }),
+                })),
+                presets: [...c.presets.filter(p => p.index !== updatedPreset.index), updatedPreset].sort(sortPresets),
             })),
         }
         saveConfig(newConfig, getConfigPath())
-        return ({...s, config: newConfig})
-    })
+        return ({ ...s, config: newConfig })
+    }),
+    deletePreset: (cameraId, index) => setState(s => {
+        if (!s.config) return s
+        const newConfig: AppConfig = {
+            ...s.config,
+            cameras: s.config.cameras.map(c => c.id !== cameraId ? c : ({
+                ...c,
+                presets: c.presets.filter(p => p.index !== index),
+            })),
+        }
+        saveConfig(newConfig, getConfigPath())
+        return ({ ...s, config: newConfig })
+    }),
 }))
 
 export function useConfig(): AppConfig {
@@ -366,6 +469,20 @@ export function useTextStoreLastOpenedTab(): number | string {
 
 export function useTextFormConfig(formName: string): TextFormConfig | undefined {
     return useConfigStore(s => s.config!.texts.forms[formName])
+}
+
+export function usePresets(cameraId: string): Preset[] {
+    return useConfigStore(s => s.config!.cameras.find(c => c.id === cameraId)!.presets)
+}
+
+export function useCameraSettings(cameraId: string): [CameraSettings, (updatedSettings: CameraSettings) => void] {
+    const get = useConfigStore(s => {
+        const camera = s.config!.cameras.find(c => c.id === cameraId)!
+        return { title: camera.title, baseUrl: camera.baseUrl, sessionId: camera.sessionId }
+    }, shallow)
+    const set = useConfigStore(s => s.updateCameraSettings)
+
+    return [get, (updatedSettings: CameraSettings) => set(cameraId, updatedSettings)]
 }
 
 export function useLoadConfig(): Pick<ZustandConfigStore, "loaded" | "error"> {
@@ -390,6 +507,14 @@ export function useSetLastOpenedTextTab(): (tabName: string) => void {
     return useConfigStore(s => s.setLastOpenedTextTab)
 }
 
-export function useUpdateConfigCamera(): (cameraId: string, title: CameraTitle, groups: PositionGroup[]) => void {
-  return useConfigStore(s => s.updateCamera)
+export function useUpdateConfigCameraGroups(): (cameraId: string, groups: PositionGroup[]) => void {
+  return useConfigStore(s => s.updateCameraGroups)
+}
+
+export function useUpsertPreset(): (cameraId: string, updatedPreset: Preset) => void {
+    return useConfigStore(s => s.upsertPreset)
+}
+
+export function useDeletePreset(): (cameraId: string, index: number) => void {
+    return useConfigStore(s => s.deletePreset)
 }

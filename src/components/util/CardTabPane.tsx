@@ -5,7 +5,7 @@ import { Nav, Tab } from "react-bootstrap"
 type TabPaneProps = {
     tabs: { [id: string]: () => JSX.Element }
     tabNavLink?: { [id: string]: () => JSX.Element } | undefined
-    defaultOpen: string
+    defaultOpen?: string | undefined
     fillHeight?: boolean
     onSelectTab?: ((id: string) => void) | undefined
 }
@@ -16,7 +16,7 @@ export type TabPaneRef = {
 }
 
 const CardTabPane = forwardRef(({ tabs, tabNavLink, defaultOpen, fillHeight, onSelectTab }: TabPaneProps, _ref: ForwardedRef<TabPaneRef>) => {
-    const [selected, setSelected] = useState<string>(defaultOpen)
+    const [selected, setSelected] = useState<string>(defaultOpen ?? Object.keys(tabs).find(() => true) ?? "")
     const fillHeightCss = fillHeight ? 'h-100' : ''
 
     function onSelect(newSelected: string | null) {

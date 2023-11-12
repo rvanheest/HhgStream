@@ -1,0 +1,3 @@
+.whiteRightBorder {
+    border-right: 2px var(--bs-border-style) var(--bs-border-color)!important;
+}

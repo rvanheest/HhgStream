@@ -1,0 +1,9 @@
+.hoverSuccess:hover,
+.hoverSuccess:focus  {
+    --bs-btn-hover-color: var(--bs-success);
+}
+
+.hoverDanger:hover,
+.hoverDanger:focus  {
+    --bs-btn-hover-color: var(--bs-danger);
+}

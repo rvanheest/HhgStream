@@ -35,10 +35,12 @@ const TextTab = () => {
         <LoadTextStore>
             <div className="border border-dark border-3 rounded-3 h-100">
                 <Container fluid className="gx-0 d-flex flex-column h-100">
-                    <Row className="gx-0">
-                        <Col sm={12} className="position-relative">
-                            <h3 className="text-center">Teksten</h3>
-                            <Button className="position-absolute translate-middle-y top-50 end-0 me-1" onClick={async () => await openFile(textStorePath)}>Open JSON</Button>
+                    <Row className="gx-0 align-items-center">
+                        <Col sm={{ span: 10, offset: 1 }}>
+                            <h3 className="text-center my-1">Teksten</h3>
+                        </Col>
+                        <Col sm={1} className="d-flex justify-content-end pe-1">
+                            <Button onClick={async () => await openFile(textStorePath)}>Open JSON</Button>
                         </Col>
                     </Row>
                     <Row className="gx-0 h-100 flex-grow-1">
