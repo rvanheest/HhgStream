@@ -36,10 +36,10 @@ const TextTab = () => {
             <div className="border border-dark border-3 rounded-3 h-100">
                 <Container fluid className="gx-0 d-flex flex-column h-100">
                     <Row className="gx-0 align-items-center">
-                        <Col sm={{ span: 10, offset: 1 }}>
+                        <Col sm={{ span: 8, offset: 2 }}>
                             <h3 className="text-center my-1">Teksten</h3>
                         </Col>
-                        <Col sm={1} className="d-flex justify-content-end pe-1">
+                        <Col sm={2} className="d-flex justify-content-end pe-1">
                             <Button onClick={async () => await openFile(textStorePath)}>Open JSON</Button>
                         </Col>
                     </Row>
