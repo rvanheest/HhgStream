@@ -20,3 +20,7 @@
 .cardNavLink:focus {
     --bs-nav-link-hover-color: #777
 }
+
+.addButton {
+    --bs-nav-tabs-border-width: 0;
+}

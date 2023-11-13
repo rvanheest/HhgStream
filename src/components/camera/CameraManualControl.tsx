@@ -202,7 +202,7 @@ const CameraManualControl = () => {
     }
 
     async function moveToPreset(): Promise<void> {
-        await onPositionClick({ id: emptyUUID, index: Number.parseInt(preset), title: "handmatig" })
+        await onPositionClick({ id: emptyUUID, index: Number.parseInt(preset), title: "handmatig", adjustedWhiteBalance: { blue: 0, red: 0 }, thumbnail: undefined })
         setMoved(true)
     }
 

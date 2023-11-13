@@ -1,16 +1,23 @@
-import React, { useEffect, useRef } from "react"
-import { Form } from "react-bootstrap"
+import React, { useEffect, useRef, useState } from "react"
+import { Button, Form, Modal } from "react-bootstrap"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"
+import { faCircleXmark, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"
 import styling from "./CameraPositionTabPane.module.css"
 import CameraManualControl from "./CameraManualControl"
 import CameraPositionGroup from "./CameraPositionGroup"
 import CardTabPane, { TabPaneRef } from "../util/CardTabPane";
-import { useCameraPositionGroups, useCameraConfigMode, useSetGroupVisibility, useCameraPositionGroupTitle } from "../../core/cameraStore";
-import {useForm, useWatch} from "react-hook-form"
+import {
+    useCameraPositionGroups,
+    useCameraConfigMode,
+    useSetGroupVisibility,
+    useCameraPositionGroupTitle,
+    useAddNewPositionGroup,
+    useDeletePositionGroup,
+} from "../../core/cameraStore";
+import { useForm, useWatch } from "react-hook-form"
 
 function tabWidth(text: string): number {
-    return (text.length + 1) * 8
+    return (Math.max(3, text.length) + 1) * 8
 }
 
 type ViewModePositionTabTitleProps = {
@@ -38,10 +45,12 @@ type TitleForm = {
 }
 
 const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitleProps) => {
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
     const setGroupVisibility = useSetGroupVisibility()
+    const deletePositionGroup = useDeletePositionGroup()
     const [title, setTitle] = useCameraPositionGroupTitle(id)
     const { register, control, handleSubmit } = useForm<TitleForm>({ defaultValues: { title: title }, mode: "onBlur" })
-    const textWidth = useWatch({ control: control, name: "title" })
+    const currentTitle = useWatch({ control: control, name: "title" })
 
     const onSubmit = handleSubmit(onTitleChange)
 
@@ -60,21 +69,51 @@ const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitlePr
         setGroupVisibility(id, !hidden)
     }
 
+    function onDeleteClick(e: React.MouseEvent<HTMLSpanElement, MouseEvent>) {
+        e.stopPropagation()
+        setShowDeleteModal(true)
+    }
+
+    function onCancelDelete(): void {
+        setShowDeleteModal(false)
+    }
+
+    function onDeleteConfirmed(): void {
+        deletePositionGroup(id)
+        setShowDeleteModal(false)
+    }
+
     return (
         <>
-            <span className="d-inline">
-                <form className="d-inline" onBlur={onSubmit} onSubmit={onSubmit}>
-                    <Form.Control className="p-0 d-inline text-center"
-                                  style={{ width: `${tabWidth(textWidth)}px` }}
-                                  onClick={onTitleClick}
-                                  {...register("title")} />
-                </form>
-            </span>
             <span className={`${styling.eye}`} onClick={toggleVisibility}>{
                 hidden
                     ? <FontAwesomeIcon className={`${styling.icon}`} icon={faEyeSlash} />
                     : <FontAwesomeIcon className={`${styling.icon}`} icon={faEye} />
             }</span>
+            <span className="d-inline">
+                <form className="d-inline" onBlur={onSubmit} onSubmit={onSubmit}>
+                    <Form.Control className="p-0 d-inline text-center"
+                                  style={{ width: `${tabWidth(currentTitle)}px` }}
+                                  onClick={onTitleClick}
+                                  {...register("title")} />
+                </form>
+            </span>
+            <span className={`${styling.delete}`} onClick={onDeleteClick}>
+                <FontAwesomeIcon className={`${styling.icon}`} icon={faCircleXmark} />
+            </span>
+
+            <Modal show={showDeleteModal} onHide={onCancelDelete} animation={false} centered>
+                <Modal.Header closeButton />
+                <Modal.Body>Weet u zeker dat u positiegroep {currentTitle.length > 0 ? currentTitle : "<leeg>"} wilt verwijderen?</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={onCancelDelete}>
+                        Nee
+                    </Button>
+                    <Button variant="primary" onClick={onDeleteConfirmed}>
+                        Ja
+                    </Button>
+                </Modal.Footer>
+            </Modal>
         </>
     )
 }
@@ -83,6 +122,7 @@ const besturingTabTitle = "Besturing"
 
 const CameraPositionTabPane = () => {
     const groups = useCameraPositionGroups()
+    const addNewGroup = useAddNewPositionGroup()
     const [configMode] = useCameraConfigMode()
     const tabPaneRef = useRef<TabPaneRef>(null);
 
@@ -101,22 +141,22 @@ const CameraPositionTabPane = () => {
     }), {[besturingTabTitle]: () => <ViewModePositionTabTitle title={besturingTabTitle} />})
 
     useEffect(() => {
-        if (!configMode) {
-            const tabPane = tabPaneRef.current;
-            if (tabPane) {
-                const selectedTab = tabPane.getSelectedTab()
-                if (groups.find(g => g.id === selectedTab)?.hidden) {
-                    tabPane.setSelectedTab(groups.find(g => !g.hidden)?.id ?? besturingTabTitle)
-                }
+        const tabPane = tabPaneRef.current;
+        if (tabPane) {
+            const selectedTab = tabPane.getSelectedTab()
+            const tabInGroups = groups.find(g => g.id === selectedTab)
+            if (!tabInGroups || tabInGroups.hidden) {
+                tabPane.setSelectedTab(groups.find(g => !g.hidden)?.id ?? besturingTabTitle)
             }
         }
-    }, [configMode, groups])
+    }, [groups])
 
     return (
         <CardTabPane ref={tabPaneRef}
                      defaultOpen={groups.find(g => !g.hidden)?.id ?? besturingTabTitle}
                      tabs={tabs}
-                     tabNavLink={tabNavLinks} />
+                     tabNavLink={tabNavLinks}
+                     onAddNewTab={configMode ? addNewGroup : undefined}/>
     )
 }
 

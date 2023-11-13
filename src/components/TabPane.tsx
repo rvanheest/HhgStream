@@ -3,7 +3,7 @@ import { Col, Container, Row } from "react-bootstrap";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
 import { faVideoCamera, faGear, faFileLines, IconDefinition } from "@fortawesome/free-solid-svg-icons"
 import styles from "./TabPane.module.css"
-import WIP from "./configuration/WIP";
+import ConfigurationTab from "./configuration/ConfigurationTab";
 import CameraTab from "./camera/CameraTab";
 import TextTab from "./text/TextTab";
 
@@ -31,8 +31,8 @@ function renderTab(activeTab: string): () => JSX.Element {
     switch (activeTab) {
         case camerasKey: return CameraTab
         case textKey: return TextTab
-        case configurationKey: return WIP
-        default: return WIP
+        case configurationKey: return ConfigurationTab
+        default: return ConfigurationTab
     }
 }
 

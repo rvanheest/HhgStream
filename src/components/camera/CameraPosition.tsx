@@ -1,9 +1,18 @@
-import React from "react"
+import React, { useState } from "react"
 import styling from "./CameraPosition.module.css"
 import { Position } from "../../core/config"
-import { useCameraConfigMode, useIsPositionActive, useSetCameraPosition, useSetCameraPositionName } from "../../core/cameraStore";
-import { Form } from "react-bootstrap";
+import {
+    useCameraConfigMode,
+    useDeleteCameraPosition,
+    useIsPositionActive,
+    useSetCameraPosition,
+    useSetCameraPositionName
+} from "../../core/cameraStore";
+import { Form, Modal } from "react-bootstrap";
 import { useForm } from "react-hook-form";
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import { Button } from "react-bootstrap";
 
 type CameraPositionProps = {
     groupId: string
@@ -20,7 +29,7 @@ const ViewModeCameraPosition = ({ position }: Pick<CameraPositionProps, "positio
     }
 
     return (
-        <div className={`py-2 border ${isCurrentActivePosition ? 'border-danger' : 'border-light'} border-3 rounded-3 bg-dark bg-gradient text-light text-center ${styling.button} ${styling.viewMode}`}
+        <div className={`py-2 border ${isCurrentActivePosition ? 'border-danger' : 'border-light'} border-3 rounded-3 bg-dark bg-gradient text-light text-center ${styling.viewMode}`}
              onClick={onClick}>
             {position.thumbnail ? <img style={{width: 100}}
                                    src={position.thumbnail}
@@ -35,9 +44,11 @@ type CameraPositionForm = {
 }
 
 const ConfigModeCameraPosition = ({ groupId, position: { id: positionId, title } }: CameraPositionProps) => {
+    const [showDeleteModal, setShowDeleteModal] = useState(false)
     const { register, handleSubmit } = useForm<CameraPositionForm>({ defaultValues: { title: title }, mode: "onBlur" })
     const onSubmit = handleSubmit(onTitleChange)
     const setCameraPositionName = useSetCameraPositionName()
+    const deleteCameraPosition = useDeleteCameraPosition()
 
     function onTitleChange({ title: newTitle }: CameraPositionForm): void {
         if (newTitle !== title) {
@@ -45,14 +56,45 @@ const ConfigModeCameraPosition = ({ groupId, position: { id: positionId, title }
         }
     }
 
+    function onDeleteClick(): void {
+        setShowDeleteModal(true)
+    }
+
+    function onCancelDelete(): void {
+        setShowDeleteModal(false)
+    }
+
+    function onDeleteConfirmed(): void {
+        deleteCameraPosition(groupId, positionId)
+        setShowDeleteModal(false)
+    }
+
     return (
-        <div className={`py-2 border border-light border-3 rounded-3 bg-dark bg-gradient ${styling.button}`}>
-            <form className="ms-1 me-1" onBlur={onSubmit} onSubmit={onSubmit}>
-                <Form.Control
-                    className="p-0 ps-1 pe-1 text-center border border-0"
-                    {...register("title")}/>
-            </form>
-        </div>
+        <>
+            <div className="py-2 border border-light border-3 rounded-3 bg-dark bg-gradient position-relative">
+                <form className="ms-1 me-1" onBlur={onSubmit} onSubmit={onSubmit}>
+                    <Form.Control className="p-0 text-center border border-0" {...register("title")}/>
+                </form>
+                <Button variant="outline-danger"
+                        className={`p-0 text-end position-absolute top-0 end-0 border-0 rounded-5 bg-dark ${styling.deleteButton}`}
+                        onClick={onDeleteClick}>
+                    <FontAwesomeIcon icon={faCircleXmark} />
+                </Button>
+            </div>
+
+            <Modal show={showDeleteModal} onHide={onCancelDelete} animation={false} centered>
+                <Modal.Header closeButton />
+                <Modal.Body>Weet u zeker dat u positie {title} wilt verwijderen?</Modal.Body>
+                <Modal.Footer>
+                    <Button variant="secondary" onClick={onCancelDelete}>
+                        Nee
+                    </Button>
+                    <Button variant="primary" onClick={onDeleteConfirmed}>
+                        Ja
+                    </Button>
+                </Modal.Footer>
+            </Modal>
+        </>
     )
 }
 

@@ -1,9 +1,10 @@
 import { createContext, useContext } from "react"
 import { createStore, StoreApi, useStore } from "zustand"
-import { Camera, Position, PositionGroup } from "./config"
+import {Camera, NewPosition, Position, PositionGroup} from "./config"
 import { AeLevels, CameraStatus, ColorScheme, getCameraInteraction, ICameraInteraction, WhiteBalance } from "./camera";
 import { sleep } from "./utils"
 import { shallow } from "zustand/shallow";
+import { v4 as uuid } from "uuid"
 
 type ZustandCameraStore = {
     position: Position | undefined
@@ -25,7 +26,11 @@ type ZustandCameraStore = {
     setConfigMode: (newConfigMode: boolean) => void
     setGroupName: (groupId: string, newTitle: string) => void
     setGroupVisibility: (groupId: string, newVisibility: boolean) => void
+    addNewPositionGroup: () => void
+    deletePositionGroup: (groupId: string) => void
     setCameraPositionName: (groupId: string, positionId: string, newTitle: string) => void
+    addCameraPosition: (groupId: string, newPosition: NewPosition) => void
+    deleteCameraPosition: (groupId: string, positionId: string) => void
 }
 
 export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<ZustandCameraStore> {
@@ -131,6 +136,28 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
                 },
             },
         })),
+        addNewPositionGroup: () => {
+            const groupId = uuid()
+            return setState(s => ({
+                ...s,
+                positionGroups: {
+                    ...s.positionGroups,
+                    [groupId]: {
+                        id: groupId,
+                        title: "",
+                        positions: [],
+                        hidden: false,
+                    },
+                },
+            }))
+        },
+        deletePositionGroup: (groupId) => setState(s => {
+            const {[groupId]:_, ...remainder} = s.positionGroups;
+            return ({
+                ...s,
+                positionGroups: remainder,
+            })
+        }),
         setCameraPositionName: (groupId, positionId, newTitle) => setState(s => ({
             ...s,
             positionGroups: {
@@ -143,14 +170,40 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
                     }),
                 },
             },
-        }))
+        })),
+        addCameraPosition: (groupId, { index, title, adjustedWhiteBalance }) => setState(s => ({
+            ...s,
+            positionGroups: {
+                ...s.positionGroups,
+                [groupId]: {
+                    ...s.positionGroups[groupId],
+                    positions: [
+                        ...s.positionGroups[groupId].positions,
+                        {
+                            id: uuid(),
+                            index: index,
+                            title: title,
+                            adjustedWhiteBalance: adjustedWhiteBalance,
+                        },
+                    ],
+                },
+            },
+        })),
+        deleteCameraPosition: (groupId, positionId) => setState(s => ({
+            ...s,
+            positionGroups: {
+                ...s.positionGroups,
+                [groupId]: {
+                    ...s.positionGroups[groupId],
+                    positions: s.positionGroups[groupId].positions.filter(p => p.id !== positionId),
+                },
+            },
+        })),
     }))
 }
 
 const CameraContext = createContext<StoreApi<ZustandCameraStore> | undefined>(undefined);
 export const CameraContextProvider = CameraContext.Provider
-
-export type CameraTitle = Pick<Camera, 'title' | 'baseUrl'>
 
 function useCameraStore<T>(selector: (store: ZustandCameraStore) => T, equalityFn?: (a: T, b: T) => boolean) {
     const ctx = useContext(CameraContext)
@@ -161,11 +214,8 @@ export function useCameraId(): string {
     return useCameraStore(({ id }) => id)
 }
 
-export function useCameraTitle(): [CameraTitle, (title: string, baseUrl: string) => void] {
-    const get = useCameraStore(({ title, baseUrl }) => ({ title, baseUrl }), shallow)
-    const set = useCameraStore(s => s.setTitleAndBaseUrl)
-
-    return [get, set]
+export function useCameraTitle(): Pick<Camera, 'title' | 'baseUrl'> {
+    return useCameraStore(({ title, baseUrl }) => ({ title, baseUrl }), shallow)
 }
 
 export function useCameraPositionGroups(): PositionGroup[] {
@@ -194,8 +244,24 @@ export function useSetGroupVisibility(): (groupId: string, newVisibility: boolea
     return useCameraStore(s => s.setGroupVisibility)
 }
 
+export function useAddNewPositionGroup(): () => void {
+    return useCameraStore(s => s.addNewPositionGroup)
+}
+
+export function useDeletePositionGroup(): (groupId: string) => void {
+    return useCameraStore(s => s.deletePositionGroup)
+}
+
 export function useSetCameraPositionName(): (groupId: string, positionId: string, newTitle: string) => void {
     return useCameraStore(s => s.setCameraPositionName)
+}
+
+export function useAddCameraPosition(): (groupId: string, newPosition: NewPosition) => void {
+    return useCameraStore(s => s.addCameraPosition)
+}
+
+export function useDeleteCameraPosition(): (groupId: string, positionId: string) => void {
+    return useCameraStore(s => s.deleteCameraPosition)
 }
 
 export function useCurrentColorScheme(): [ColorScheme | undefined, (scheme: ColorScheme) => Promise<void>] {

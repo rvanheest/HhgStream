@@ -1,0 +1,9 @@
+.hoverDark:hover,
+.hoverDark:focus {
+    --bs-btn-hover-color: var(--bs-dark);
+}
+
+.hoverDanger:hover,
+.hoverDanger:focus  {
+    --bs-btn-hover-color: var(--bs-danger);
+}

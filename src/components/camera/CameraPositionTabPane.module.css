@@ -13,5 +13,23 @@
     position: absolute;
     text-align: right;
     top: -8px;
+    left: -9px;
+}
+
+.delete {
+    color: indianred;
+    position: relative;
+}
+
+.delete:hover {
+    color: #dc3545;
+}
+
+.delete .icon {
+    width: 16px;
+    height: 16px;
+    position: absolute;
+    text-align: left;
+    top: -8px;
     right: -9px;
 }

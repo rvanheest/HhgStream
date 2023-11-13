@@ -1,0 +1,4 @@
+.newPosition {
+    --bs-border-style: dashed;
+    cursor: pointer;
+}

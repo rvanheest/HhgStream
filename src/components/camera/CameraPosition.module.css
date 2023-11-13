@@ -1,8 +1,21 @@
-.button.viewMode {
+.viewMode {
     cursor: pointer;
 }
 
-.button.viewMode:hover,
-.button.viewMode:focus {
+.viewMode:hover,
+.viewMode:focus {
     background-color: #424649!important;
+}
+
+.deleteButton {
+    color: indianred;
+    height: 16px;
+    width: 16px;
+}
+.deleteButton:hover,
+.deleteButton:focus {
+    color: var(--bs-btn-hover-bg)!important;
+}
+.deleteButton svg {
+    vertical-align: 0.25rem;
 }
