@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import { faPlus } from "@fortawesome/free-solid-svg-icons";
 import styling from "./NewCameraPosition.module.css"
 import { NewPosition, usePresets } from "../../core/config";
-import { useAddCameraPosition, useCameraConfigMode, useCameraId } from "../../core/cameraStore";
+import { useAddCameraPosition, useCameraId } from "../../core/cameraStore";
 
 type NewCameraPositionModalProps = {
     show: boolean
