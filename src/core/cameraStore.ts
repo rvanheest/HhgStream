@@ -26,6 +26,8 @@ type ZustandCameraStore = {
     setConfigMode: (newConfigMode: boolean) => void
     setGroupName: (groupId: string, newTitle: string) => void
     setGroupVisibility: (groupId: string, newVisibility: boolean) => void
+    addNewPositionGroup: () => void
+    deletePositionGroup: (groupId: string) => void
     setCameraPositionName: (groupId: string, positionId: string, newTitle: string) => void
     addCameraPosition: (groupId: string, newPosition: NewPosition) => void
     deleteCameraPosition: (groupId: string, positionId: string) => void
@@ -134,6 +136,28 @@ export function createCameraStore(camera: Camera, isDev: boolean): StoreApi<Zust
                 },
             },
         })),
+        addNewPositionGroup: () => {
+            const groupId = uuid()
+            return setState(s => ({
+                ...s,
+                positionGroups: {
+                    ...s.positionGroups,
+                    [groupId]: {
+                        id: groupId,
+                        title: "",
+                        positions: [],
+                        hidden: false,
+                    },
+                },
+            }))
+        },
+        deletePositionGroup: (groupId) => setState(s => {
+            const {[groupId]:_, ...remainder} = s.positionGroups;
+            return ({
+                ...s,
+                positionGroups: remainder,
+            })
+        }),
         setCameraPositionName: (groupId, positionId, newTitle) => setState(s => ({
             ...s,
             positionGroups: {
@@ -218,6 +242,14 @@ export function useCameraConfigMode(): [boolean, (newConfigMode: boolean) => voi
 
 export function useSetGroupVisibility(): (groupId: string, newVisibility: boolean) => void {
     return useCameraStore(s => s.setGroupVisibility)
+}
+
+export function useAddNewPositionGroup(): () => void {
+    return useCameraStore(s => s.addNewPositionGroup)
+}
+
+export function useDeletePositionGroup(): (groupId: string) => void {
+    return useCameraStore(s => s.deletePositionGroup)
 }
 
 export function useSetCameraPositionName(): (groupId: string, positionId: string, newTitle: string) => void {

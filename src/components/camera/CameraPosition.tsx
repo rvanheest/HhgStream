@@ -81,6 +81,7 @@ const ConfigModeCameraPosition = ({ groupId, position: { id: positionId, title }
                     <FontAwesomeIcon icon={faCircleXmark} />
                 </Button>
             </div>
+
             <Modal show={showDeleteModal} onHide={onCancelDelete} animation={false} centered>
                 <Modal.Header closeButton />
                 <Modal.Body>Weet u zeker dat u positie {title} wilt verwijderen?</Modal.Body>

@@ -1,6 +1,8 @@
 import React, { ForwardedRef, JSX, forwardRef, useCallback, useImperativeHandle, useState } from "react"
 import styling from "./CardTabPane.module.css"
-import { Nav, Tab } from "react-bootstrap"
+import { Button, Nav, Tab } from "react-bootstrap"
+import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import { faPlus } from "@fortawesome/free-solid-svg-icons";
 
 type TabPaneProps = {
     tabs: { [id: string]: () => JSX.Element }
@@ -8,6 +10,7 @@ type TabPaneProps = {
     defaultOpen?: string | undefined
     fillHeight?: boolean
     onSelectTab?: ((id: string) => void) | undefined
+    onAddNewTab?: (() => void) | undefined
 }
 
 export type TabPaneRef = {
@@ -15,7 +18,7 @@ export type TabPaneRef = {
     setSelectedTab: (tab: string | null) => void,
 }
 
-const CardTabPane = forwardRef(({ tabs, tabNavLink, defaultOpen, fillHeight, onSelectTab }: TabPaneProps, _ref: ForwardedRef<TabPaneRef>) => {
+const CardTabPane = forwardRef(({ tabs, tabNavLink, defaultOpen, fillHeight, onSelectTab, onAddNewTab }: TabPaneProps, _ref: ForwardedRef<TabPaneRef>) => {
     const [selected, setSelected] = useState<string>(defaultOpen ?? Object.keys(tabs).find(() => true) ?? "")
     const fillHeightCss = fillHeight ? 'h-100' : ''
 
@@ -47,6 +50,15 @@ const CardTabPane = forwardRef(({ tabs, tabNavLink, defaultOpen, fillHeight, onS
                                 </Nav.Item>
                             )
                         })}
+                        {!!onAddNewTab
+                         ? <Nav.Item>
+                            <Nav.Link as={Button}
+                                      className={`ms-2 px-2 py-2 btn btn-light ${styling.cardNavLink} ${styling.addButton}`}
+                                      onClick={onAddNewTab}>
+                                <FontAwesomeIcon icon={faPlus} />
+                            </Nav.Link>
+                        </Nav.Item>
+                        : undefined }
                     </Nav>
                 </div>
 
