@@ -9,13 +9,24 @@
 
 .deleteButton {
     color: indianred;
-    height: 16px;
-    width: 16px;
+    height: 15px;
+    width: 15px;
+    top: -5px;
+    right: 1px;
 }
 .deleteButton:hover,
 .deleteButton:focus {
-    color: var(--bs-btn-hover-bg)!important;
+    color: #dc3545;
 }
-.deleteButton svg {
-    vertical-align: 0.25rem;
+
+.editButton {
+    color: mediumseagreen;
+    height: 15px;
+    width: 15px;
+    bottom: 5px;
+    right: -1px;
+}
+.editButton:hover,
+.editButton:focus {
+    color: darkseagreen;
 }

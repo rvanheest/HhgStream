@@ -11,7 +11,7 @@ const ConfigurationTab = () => {
     const camerasConfig = useCamerasConfig()
     const [tabs, tabHeaders] = camerasConfig.reduce(([ts, hs], c) => {
         const tab = ({ ...ts, [c.id]: () => <CameraConfiguration cameraId={c.id} /> })
-        const tabHeader = ({ ...hs, [c.id]: () => <span>{c.title}</span>})
+        const tabHeader = ({ ...hs, [c.id]: () => <div className="p-2">{c.title}</div>})
 
         return [tab, tabHeader]
     }, [{}, {}])

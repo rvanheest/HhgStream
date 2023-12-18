@@ -1,35 +1,47 @@
 .eye {
     color: #777;
-    position: relative;
 }
 
-.eye:hover {
+.eye:hover,
+.eye:focus {
     color: #444;
 }
 
 .eye .icon {
-    width: 20px;
+    width: 16px;
     height: 15px;
-    position: absolute;
-    text-align: right;
-    top: -8px;
-    left: -9px;
+    top: -10px;
+    left: -8px;
 }
 
 .delete {
     color: indianred;
-    position: relative;
 }
 
-.delete:hover {
+.delete:hover,
+.delete:focus {
     color: #dc3545;
 }
 
 .delete .icon {
-    width: 16px;
-    height: 16px;
-    position: absolute;
-    text-align: left;
-    top: -8px;
+    width: 15px;
+    height: 15px;
+    top: -9px;
+    right: -9px;
+}
+
+.edit {
+    color: mediumseagreen;
+}
+
+.edit:hover,
+.edit:focus {
+    color: darkseagreen;
+}
+
+.edit .icon {
+    height: 15px;
+    width: 15px;
+    bottom: -11px;
     right: -9px;
 }

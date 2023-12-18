@@ -41,10 +41,10 @@ const CardTabPane = forwardRef(({ tabs, tabNavLink, defaultOpen, fillHeight, onS
                 <div className={`px-1 pt-1 pb-0 ${styling.cardHeader} card-header`}>
                     <Nav variant="tabs" className={`${styling.cardNav} border-bottom-0`}>
                         {Object.keys(tabs).map(id => {
-                            const TitleElement = (tabNavLink && tabNavLink[id]) ?? (() => <span>{id}</span>)
+                            const TitleElement = (tabNavLink && tabNavLink[id]) ?? (() => <div className="p-2">{id}</div>)
                             return(
                                 <Nav.Item key={id}>
-                                    <Nav.Link eventKey={id} className={`p-2 ${styling.cardNavLink}`}>
+                                    <Nav.Link eventKey={id} className={`p-0 ${styling.cardNavLink}`}>
                                         <TitleElement />
                                     </Nav.Link>
                                 </Nav.Item>

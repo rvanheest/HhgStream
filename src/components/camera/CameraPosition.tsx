@@ -11,7 +11,7 @@ import {
 import { Form, Modal } from "react-bootstrap";
 import { useForm } from "react-hook-form";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleXmark } from "@fortawesome/free-solid-svg-icons";
+import { faCircleXmark, faSquarePen } from "@fortawesome/free-solid-svg-icons";
 import { Button } from "react-bootstrap";
 
 type CameraPositionProps = {
@@ -43,8 +43,10 @@ type CameraPositionForm = {
     title: string
 }
 
-const ConfigModeCameraPosition = ({ groupId, position: { id: positionId, title } }: CameraPositionProps) => {
+const ConfigModeCameraPosition = ({ groupId, position: { id: positionId, index: positionIndex, title } }: CameraPositionProps) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [hovering, setHovering] = useState(false)
+    const [editMode, setEditMode] = useState(false)
     const { register, handleSubmit } = useForm<CameraPositionForm>({ defaultValues: { title: title }, mode: "onBlur" })
     const onSubmit = handleSubmit(onTitleChange)
     const setCameraPositionName = useSetCameraPositionName()
@@ -69,17 +71,43 @@ const ConfigModeCameraPosition = ({ groupId, position: { id: positionId, title }
         setShowDeleteModal(false)
     }
 
+    function onEditClick(): void {
+        setEditMode(prev => !prev)
+    }
+
+    function onEnterComponent(): void {
+        setHovering(true)
+    }
+
+    function onExitComponent(): void {
+        setHovering(false)
+    }
+
     return (
         <>
-            <div className="py-2 border border-light border-3 rounded-3 bg-dark bg-gradient position-relative">
-                <form className="ms-1 me-1" onBlur={onSubmit} onSubmit={onSubmit}>
-                    <Form.Control className="p-0 text-center border border-0" {...register("title")}/>
-                </form>
-                <Button variant="outline-danger"
-                        className={`p-0 text-end position-absolute top-0 end-0 border-0 rounded-5 bg-dark ${styling.deleteButton}`}
-                        onClick={onDeleteClick}>
-                    <FontAwesomeIcon icon={faCircleXmark} />
-                </Button>
+            <div className="py-2 border border-light border-3 rounded-3 bg-dark bg-gradient position-relative"
+                 onMouseOver={onEnterComponent}
+                 onMouseOut={onExitComponent}>
+                {editMode
+                    ? <Form className="ms-1 me-1" onBlur={onSubmit} onSubmit={onSubmit}>
+                        <Form.Control className={`p-0 text-center border-0`} {...register("title")} />
+                    </Form>
+                    : <div className="p-0 text-center border-0 text-light">{positionIndex}. {title}</div>
+                }
+                {hovering && !editMode
+                    ? <span className={`position-absolute ${styling.deleteButton}`}
+                            onClick={onDeleteClick}>
+                        <FontAwesomeIcon icon={faCircleXmark} />
+                    </span>
+                    : undefined
+                }
+                {hovering || editMode
+                    ? <span className={`position-absolute border-0 ${styling.editButton}`}
+                            onClick={onEditClick}>
+                        <FontAwesomeIcon icon={faSquarePen} />
+                    </span>
+                    : undefined
+                }
             </div>
 
             <Modal show={showDeleteModal} onHide={onCancelDelete} animation={false} centered>
