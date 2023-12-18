@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from "react"
 import { Button, Form, Modal } from "react-bootstrap"
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome"
-import { faCircleXmark, faEye, faEyeSlash } from "@fortawesome/free-solid-svg-icons"
+import { faCircleXmark, faEye, faEyeSlash, faSquarePen } from "@fortawesome/free-solid-svg-icons"
 import styling from "./CameraPositionTabPane.module.css"
 import CameraManualControl from "./CameraManualControl"
 import CameraPositionGroup from "./CameraPositionGroup"
@@ -25,7 +25,7 @@ type ViewModePositionTabTitleProps = {
 }
 
 const ViewModePositionTabTitle = ({ title }: ViewModePositionTabTitleProps) => (
-    <div className="text-center"
+    <div className="m-2 text-center"
          style={{
              width: `${tabWidth(title)}px`,
              paddingTop: 0.8,
@@ -46,11 +46,13 @@ type TitleForm = {
 
 const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitleProps) => {
     const [showDeleteModal, setShowDeleteModal] = useState(false)
+    const [hovering, setHovering] = useState(false)
     const setGroupVisibility = useSetGroupVisibility()
     const deletePositionGroup = useDeletePositionGroup()
     const [title, setTitle] = useCameraPositionGroupTitle(id)
     const { register, control, handleSubmit } = useForm<TitleForm>({ defaultValues: { title: title }, mode: "onBlur" })
     const currentTitle = useWatch({ control: control, name: "title" })
+    const [editMode, setEditMode] = useState(currentTitle.length === 0)
 
     const onSubmit = handleSubmit(onTitleChange)
 
@@ -83,24 +85,49 @@ const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitlePr
         setShowDeleteModal(false)
     }
 
+    function onEditClick(e: React.MouseEvent<HTMLSpanElement, MouseEvent>): void {
+        e.stopPropagation()
+        setEditMode(prev => !prev)
+    }
+
+    function onEnterComponent(): void {
+        setHovering(true)
+    }
+
+    function onExitComponent(): void {
+        setHovering(false)
+    }
+
     return (
-        <>
-            <span className={`${styling.eye}`} onClick={toggleVisibility}>{
-                hidden
-                    ? <FontAwesomeIcon className={`${styling.icon}`} icon={faEyeSlash} />
-                    : <FontAwesomeIcon className={`${styling.icon}`} icon={faEye} />
-            }</span>
+        <div className="p-2" onMouseOver={onEnterComponent} onMouseOut={onExitComponent}>
+            {!editMode
+                ? <span className={`position-relative ${styling.eye}`} onClick={toggleVisibility}>
+                    <FontAwesomeIcon className={`position-absolute text-end ${styling.icon}`} icon={hidden ? faEyeSlash : faEye} />
+                </span>
+                : undefined
+            }
             <span className="d-inline">
-                <form className="d-inline" onBlur={onSubmit} onSubmit={onSubmit}>
+                <Form className="d-inline" onBlur={onSubmit} onSubmit={onSubmit}>
                     <Form.Control className="p-0 d-inline text-center"
                                   style={{ width: `${tabWidth(currentTitle)}px` }}
+                                  readOnly={!editMode}
+                                  plaintext={!editMode}
                                   onClick={onTitleClick}
                                   {...register("title")} />
-                </form>
+                </Form>
             </span>
-            <span className={`${styling.delete}`} onClick={onDeleteClick}>
-                <FontAwesomeIcon className={`${styling.icon}`} icon={faCircleXmark} />
-            </span>
+            {hovering && !editMode
+                ? <span className={`position-relative ${styling.delete}`} onClick={onDeleteClick}>
+                    <FontAwesomeIcon className={`position-absolute text-end ${styling.icon}`} icon={faCircleXmark} />
+                </span>
+                : undefined
+            }
+            {hovering || editMode
+                ? <span className={`position-relative ${styling.edit}`} onClick={onEditClick}>
+                    <FontAwesomeIcon className={`position-absolute text-end ${styling.icon}`} icon={faSquarePen} />
+                </span>
+                : undefined
+            }
 
             <Modal show={showDeleteModal} onHide={onCancelDelete} animation={false} centered>
                 <Modal.Header closeButton />
@@ -114,7 +141,7 @@ const ConfigModePositionTabTitle = ({ id, hidden }: ConfigModePositionTabTitlePr
                     </Button>
                 </Modal.Footer>
             </Modal>
-        </>
+        </div>
     )
 }
 
@@ -142,14 +169,14 @@ const CameraPositionTabPane = () => {
 
     useEffect(() => {
         const tabPane = tabPaneRef.current;
-        if (tabPane) {
+        if (tabPane && !configMode) {
             const selectedTab = tabPane.getSelectedTab()
             const tabInGroups = groups.find(g => g.id === selectedTab)
             if (!tabInGroups || tabInGroups.hidden) {
                 tabPane.setSelectedTab(groups.find(g => !g.hidden)?.id ?? besturingTabTitle)
             }
         }
-    }, [groups])
+    }, [configMode, groups])
 
     return (
         <CardTabPane ref={tabPaneRef}
